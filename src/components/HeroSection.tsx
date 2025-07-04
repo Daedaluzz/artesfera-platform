@@ -14,7 +14,7 @@ export default function HeroSection() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className="text-4xl sm:text-5xl lg:text-6xl mb-4 leading-tight relative z-10 bg-gradient-to-r from-brand-yellow via-brand-blue to-brand-orange bg-[length:200%_200%] bg-clip-text text-transparent animate-[holographic-shimmer_3s_ease-in-out_infinite] contrast-[1.2] saturate-[1.3] dark:contrast-100 dark:saturate-110"
+        className="text-4xl sm:text-5xl lg:text-6xl mb-4 leading-tight relative z-10 bg-gradient-to-r from-brand-navy-blue via-brand-navy-blue to-brand-navy-blue dark:from-brand-yellow dark:via-brand-yellow dark:to-brand-yellow bg-[length:200%_200%] bg-clip-text text-transparent animate-[holographic-shimmer_3s_ease-in-out_infinite] contrast-[1.2] saturate-[1.3] dark:contrast-100 dark:saturate-110"
         style={{
           fontFamily: "var(--font-serif)",
           animation: "holographic-shimmer 8s ease-in-out infinite",
@@ -46,7 +46,7 @@ export default function HeroSection() {
       >
         <Button
           asChild
-          className="relative overflow-hidden px-8 py-4 text-lg font-medium rounded-full backdrop-blur-2xl bg-white/15 dark:bg-white/8 border border-white/25 dark:border-white/12 transition-all duration-300 hover:bg-white/25 dark:hover:bg-white/15 hover:border-white/40 dark:hover:border-white/25 hover:-translate-y-1 text-brand-black dark:text-brand-white hover:text-brand-blue dark:hover:text-brand-blue before:content-[''] before:absolute before:top-[-1px] before:left-[-100%] before:w-full before:h-[calc(100%+2px)] before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:transition-all before:duration-500 hover:before:left-full before:pointer-events-none before:z-[1]"
+          className="relative overflow-hidden px-8 py-4 text-lg font-medium rounded-full backdrop-blur-2xl bg-white/15 dark:bg-white/8 border border-white/25 dark:border-white/12 transition-all duration-300 hover:bg-white/25 dark:hover:bg-white/15 hover:border-white/40 dark:hover:border-white/25 hover:-translate-y-1 text-brand-black dark:text-brand-white hover:text-brand-navy-blue dark:hover:text-brand-yellow before:content-[''] before:absolute before:top-[-1px] before:left-[-100%] before:w-full before:h-[calc(100%+2px)] before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:transition-all before:duration-500 hover:before:left-full before:pointer-events-none before:z-[1]"
         >
           <Link
             href="/gallery"

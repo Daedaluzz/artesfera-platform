@@ -20,7 +20,7 @@ export default function NavBar() {
   return (
     <nav
       role="navigation"
-      className="sticky top-0 w-full backdrop-blur-2xl bg-white/15 dark:bg-white/8 border-b border-white/30 dark:border-white/15 p-4 z-[9999] before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/60 before:to-transparent before:pointer-events-none before:z-[1] relative"
+      className="sticky top-0 w-full backdrop-blur-2xl bg-white/15 dark:bg-white/8 border-b border-white/30 dark:border-white/15 p-4 z-[9999] before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/60 before:to-transparent before:pointer-events-none before:z-[1]"
     >
       <div className="flex items-center justify-between w-full max-w-6xl mx-auto">
         {/* Logo */}
@@ -49,10 +49,10 @@ export default function NavBar() {
                       href={path}
                       className={cn(
                         "nav-link flex items-center text-sm md:text-base p-2 md:p-3 rounded-lg transition-all duration-300",
-                        "hover:bg-white/15 hover:backdrop-blur-md hover:text-brand-blue dark:hover:text-brand-blue",
-                        "focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-transparent",
+                        "hover:bg-white/15 hover:backdrop-blur-md hover:text-brand-navy-blue dark:hover:text-brand-yellow",
+                        "focus:outline-none focus:text-brand-navy-blue dark:focus:text-brand-black",
                         isActive
-                          ? "bg-white/10 text-brand-blue dark:text-brand-blue"
+                          ? "bg-white/10 text-brand-navy-blue dark:text-brand-yellow"
                           : "text-brand-black dark:text-brand-white"
                       )}
                       aria-current={isActive ? "page" : undefined}
