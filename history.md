@@ -36,3 +36,23 @@ Task 1: Implement a global layout wrapper with a liquid glass background effect.
 ## Recommended Next Step
 
 Task 2: Glassmorphic Navigation Bar (Mobile + Desktop).
+
+# Task 2: Glassmorphic Navigation Bar (Mobile + Desktop)
+
+## Files Created
+
+- `src/components/NavBar.tsx`
+- `src/lib/links.ts`
+
+## Implemented Features
+
+- Created a responsive navigation bar that is fixed to the bottom on mobile and sticky to the top on desktop.
+- Sourced navigation links from `src/lib/links.ts`.
+- Used Lucide Icons for navigation links.
+- Applied glassmorphism styling to the navigation bar.
+- Added Framer Motion animations for hover effects and initial fade-in.
+- Ensured accessibility with proper ARIA attributes and semantic HTML.
+
+## Recommended Next Step
+
+Task 3: Theme Toggle Component.
