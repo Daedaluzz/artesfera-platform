@@ -56,3 +56,20 @@ Task 2: Glassmorphic Navigation Bar (Mobile + Desktop).
 ## Recommended Next Step
 
 Task 3: Theme Toggle Component.
+
+# Task 3: Theme Toggle Component
+
+## Files Created
+
+- `src/components/ThemeToggle.tsx`
+
+## Implemented Features
+
+- Created a theme toggle component using `next-themes`.
+- Integrated Lucide Icons for Sun and Moon.
+- Applied Framer Motion for smooth animations.
+- Added to the `NavBar` component.
+
+## Recommended Next Step
+
+Task 4: Hero Section Component.

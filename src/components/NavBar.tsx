@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { navLinks } from '@/lib/links';
 import * as Icons from 'lucide-react';
+import { ThemeToggle } from './ThemeToggle';
 
 export default function NavBar() {
   const pathname = usePathname();
@@ -13,9 +14,9 @@ export default function NavBar() {
   return (
     <nav
       role="navigation"
-      className="fixed bottom-4 md:top-4 md:bottom-auto left-1/2 -translate-x-1/2 w-11/12 md:w-auto glass-card p-2 rounded-2xl border border-white/10 shadow-glass-sm z-50"
+      className="fixed bottom-4 md:top-4 md:bottom-auto left-1/2 -translate-x-1/2 w-11/12 md:w-auto glass-card p-2 rounded-2xl border border-white/10 shadow-glass-sm z-50 flex items-center justify-between"
     >
-      <ul className="flex justify-around md:justify-center md:gap-x-8">
+      <ul className="flex justify-around md:justify-center md:gap-x-8 flex-grow">
         {navLinks.map(({ title, path, icon }) => {
           const LucideIcon = Icons[icon as keyof typeof Icons];
           const isActive = pathname === path;
@@ -41,6 +42,7 @@ export default function NavBar() {
           );
         })}
       </ul>
+      <ThemeToggle />
     </nav>
   );
 }
