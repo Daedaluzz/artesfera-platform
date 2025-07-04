@@ -30,7 +30,7 @@ export default function NavBar() {
             alt="ArtEsfera"
             width={32}
             height={32}
-            className="w-8 h-8"
+            className="w-8 h-8 color-red-500 dark:color-yellow-500"
           />
           <span className="ml-2 text-lg font-semibold text-brand-black dark:text-brand-white">
             ArtEsfera
