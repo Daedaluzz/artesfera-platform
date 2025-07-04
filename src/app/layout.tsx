@@ -14,9 +14,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="font-sans antialiased">
+      <body className="font-sans antialiased bg-gradient-to-br from-navy-blue to-daeva-blue">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          {children}
+          <main className="min-h-screen flex flex-col p-4 sm:p-6 lg:p-8">
+            <div className="glass-card flex-grow p-4 sm:p-6 lg:p-8">
+              {children}
+            </div>
+          </main>
         </ThemeProvider>
       </body>
     </html>
