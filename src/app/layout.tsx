@@ -20,7 +20,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <NavBar />
           <main className="min-h-screen flex flex-col p-4 sm:p-6 lg:p-8">
-            <div className="glass-card flex-grow p-4 sm:p-6 lg:p-8 refractive-border">
+            <div className="relative flex-grow p-4 sm:p-6 lg:p-8 rounded-lg backdrop-blur-lg bg-white/20 dark:bg-black/20 border border-blue-500/20 dark:border-white/10 shadow-lg shadow-blue-500/10 dark:shadow-white/5 before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-yellow-400/60 dark:before:via-cyan-400/60 before:to-transparent before:pointer-events-none before:z-[1]">
               {children}
             </div>
             <Footer />

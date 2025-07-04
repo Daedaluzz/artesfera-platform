@@ -12,10 +12,10 @@ export default function Footer() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, ease: "easeOut", delay: 0.6 }}
-      className="w-full py-4 px-8 glass-card text-sm mt-8 refractive-border"
+      className="relative w-full py-4 px-8 text-sm mt-8 rounded-lg backdrop-blur-lg bg-white/20 dark:bg-black/20 border border-blue-500/20 dark:border-white/10 shadow-lg shadow-blue-500/10 dark:shadow-white/5 before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-yellow-400/60 dark:before:via-cyan-400/60 before:to-transparent before:pointer-events-none before:z-[1]"
     >
       <div className="flex flex-col md:flex-row items-center justify-between">
-        <p className="text-adaptive">
+        <p className="text-gray-800 dark:text-white">
           &copy; {new Date().getFullYear()} ArtEsfera. Todos os direitos
           reservados.
         </p>
@@ -34,14 +34,15 @@ export default function Footer() {
                   variant="ghost"
                   size="icon"
                   asChild
-                  className="glass-button hover:bg-white/10 hover:text-accent-iridescent-blue w-10 h-10 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-accent-iridescent-blue/50"
+                  className="relative overflow-hidden w-10 h-10 rounded-full backdrop-blur-lg bg-white/20 dark:bg-black/20 border border-blue-500/20 dark:border-white/10 shadow-md shadow-blue-500/5 dark:shadow-white/5 transition-all duration-300 hover:bg-white/30 dark:hover:bg-black/30 hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 before:content-[''] before:absolute before:top-[-1px] before:left-[-100%] before:w-full before:h-[calc(100%+2px)] before:bg-gradient-to-r before:from-transparent before:via-blue-500/20 dark:before:via-cyan-400/20 before:to-transparent before:transition-all before:duration-500 hover:before:left-full before:pointer-events-none before:z-[1]"
                 >
                   <Link
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
+                    className="relative z-[2] flex items-center justify-center w-full h-full"
                   >
-                    <LucideIcon className="w-5 h-5 text-adaptive transition-colors duration-300" />
+                    <LucideIcon className="w-5 h-5 text-gray-800 dark:text-white transition-colors duration-300" />
                     <span className="sr-only">{link.name}</span>
                   </Link>
                 </Button>
