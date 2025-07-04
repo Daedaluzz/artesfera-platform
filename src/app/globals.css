@@ -43,24 +43,35 @@
   --font-serif: var(--font-serif);
   --font-script: var(--font-script);
 
-  /* ArtEsfera Brand Colors for Tailwind */
-  --color-primary-pink: var(--primary-pink);
-  --color-accent-orange: var(--accent-orange);
-  --color-daeva-blue: var(--daeva-blue);
-  --color-navy-blue: var(--navy-blue);
-  --color-surface-black: var(--surface-black);
-  --color-foreground-white: var(--foreground-white);
-  --color-red: var(--red);
-  --color-yellow: var(--yellow);
-  --color-green: var(--green);
-  --color-brown: var(--brown);
+  /* ArtEsfera Brand Colors */
+  --color-brand-pink: #a4144e;
+  --color-brand-orange: #f05913;
+  --color-brand-navy-blue: #000167;
+  --color-brand-blue: #21daed;
+  --color-brand-red: #da0f17;
+  --color-brand-yellow: #fcc931;
+  --color-brand-green: #1f9c74;
+  --color-brand-white: #fdf6ec;
+  --color-brand-black: #292423;
+  --color-brand-brown: #574c42;
+
+  /* Legacy ArtEsfera Colors for backward compatibility */
+  --color-primary-pink: var(--color-brand-pink);
+  --color-accent-orange: var(--color-brand-orange);
+  --color-daeva-blue: var(--color-brand-blue);
+  --color-navy-blue: var(--color-brand-navy-blue);
+  --color-surface-black: var(--color-brand-black);
+  --color-foreground-white: var(--color-brand-white);
+  --color-red: var(--color-brand-red);
+  --color-yellow: var(--color-brand-yellow);
+  --color-green: var(--color-brand-green);
+  --color-brown: var(--color-brand-brown);
 
   /* Glass Effects for Tailwind */
   --color-glass-bg: var(--glass-bg);
   --shadow-glass-xl: var(--shadow-glass-xl);
   --shadow-glass-sm: var(--shadow-glass-sm);
   --shadow-hover-glow: var(--shadow-hover-glow);
-
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -103,35 +114,35 @@
   --font-script: "Caveat", cursive;
 
   /* Apple 2025 Liquid Glass Color Scheme - Light Mode */
-  --primary-holographic: #ffd700;
-  --primary-holographic-rgb: 255, 215, 0;
+  --primary-holographic: var(--color-brand-yellow);
+  --primary-holographic-rgb: 252, 201, 49;
   --background-light: rgba(255, 255, 255, 0.95);
-  --accent-iridescent-blue: #0066cc;
-  --accent-iridescent-blue-rgb: 0, 102, 204;
-  --accent-glowing-orange: #ff6600;
-  --accent-glowing-orange-rgb: 255, 102, 0;
-  --foreground-dark: #1a1a1a;
-  --foreground-dark-rgb: 26, 26, 26;
+  --accent-iridescent-blue: var(--color-brand-blue);
+  --accent-iridescent-blue-rgb: 33, 218, 237;
+  --accent-glowing-orange: var(--color-brand-orange);
+  --accent-glowing-orange-rgb: 240, 89, 19;
+  --foreground-dark: var(--color-brand-black);
+  --foreground-dark-rgb: 41, 36, 35;
 
   /* Legacy ArtEsfera Colors (for backward compatibility) */
-  --primary-pink: #a4144e;
-  --daeva-blue: #0066cc; /* Updated for light mode contrast */
-  --accent-orange: #ff6600; /* Updated for light mode contrast */
-  --navy-blue: #000167;
-  --surface-light: rgba(255, 255, 255, 0.9);
+  --primary-pink: var(--color-brand-pink);
+  --daeva-blue: var(--color-brand-blue);
+  --accent-orange: var(--color-brand-orange);
+  --navy-blue: var(--color-brand-navy-blue);
+  --surface-light: rgba(253, 246, 236, 0.9);
 
-  /* Liquid Glass Effects - Light Mode */
-  --glass-bg: rgba(255, 255, 255, 0.4);
-  --glass-bg-light: rgba(255, 255, 255, 0.8);
-  --glass-border: rgba(0, 102, 204, 0.3);
-  --glass-shadow: 0 0 10px rgba(0, 102, 204, 0.2);
-  --glass-shadow-xl: 0 8px 32px rgba(0, 102, 204, 0.15);
-  --glass-hover-glow: 0 0 20px rgba(0, 102, 204, 0.3);
+  /* Clean Glass Effects - Light Mode (No Shadows) */
+  --glass-bg: rgba(255, 255, 255, 0.15);
+  --glass-bg-light: rgba(255, 255, 255, 0.25);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --glass-shadow: none;
+  --glass-shadow-xl: none;
+  --glass-hover-glow: none;
 
-  /* Dynamic Blur Values */
-  --blur-light: blur(8px);
-  --blur-medium: blur(12px);
-  --blur-heavy: blur(16px);
+  /* Dynamic Blur Values - Enhanced */
+  --blur-light: blur(12px);
+  --blur-medium: blur(16px);
+  --blur-heavy: blur(24px);
 
   /* Standard Design System Variables */
   --radius: 0.625rem;
@@ -170,21 +181,22 @@
 
 .dark {
   /* Apple 2025 Liquid Glass - Dark Mode */
-  --primary-holographic: #ffee00;
-  --primary-holographic-rgb: 255, 238, 0;
+  --primary-holographic: var(--color-brand-yellow);
+  --primary-holographic-rgb: 252, 201, 49;
   --background-dark: rgba(10, 10, 10, 0.8);
-  --accent-iridescent-blue: #00f2ff;
-  --accent-iridescent-blue-rgb: 0, 242, 255;
-  --accent-glowing-orange: #ff8c00;
-  --accent-glowing-orange-rgb: 255, 140, 0;
-  --foreground-white: #ffffff;
-  --foreground-white-rgb: 255, 255, 255;
+  --accent-iridescent-blue: var(--color-brand-blue);
+  --accent-iridescent-blue-rgb: 33, 218, 237;
+  --accent-glowing-orange: var(--color-brand-orange);
+  --accent-glowing-orange-rgb: 240, 89, 19;
+  --foreground-white: var(--color-brand-white);
+  --foreground-white-rgb: 253, 246, 236;
 
-  --glass-bg: rgba(10, 10, 10, 0.3);
-  --glass-bg-dark: rgba(10, 10, 10, 0.8);
-  --glass-border: rgba(0, 242, 255, 0.3);
-  --glass-shadow: 0 0 10px rgba(0, 242, 255, 0.2);
-  --glass-hover-glow: 0 0 20px rgba(0, 242, 255, 0.4);
+  /* Clean Glass Effects - Dark Mode (No Shadows) */
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-bg-dark: rgba(0, 0, 0, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.15);
+  --glass-shadow: none;
+  --glass-hover-glow: none;
 
   /* Standard Design System Variables - Dark Mode */
   --background: #0a0a0a;
@@ -229,9 +241,11 @@
   body {
     background: linear-gradient(
       135deg,
-      rgba(255, 255, 255, 0.98) 0%,
-      rgba(248, 250, 252, 0.95) 50%,
-      rgba(255, 255, 255, 0.98) 100%
+      #f8fafc 0%,
+      #e2e8f0 25%,
+      #cbd5e1 50%,
+      #e2e8f0 75%,
+      #f8fafc 100%
     );
     backdrop-filter: var(--blur-light);
     color: var(--foreground-dark);
@@ -243,9 +257,11 @@
   .dark body {
     background: linear-gradient(
       135deg,
-      rgba(10, 10, 10, 0.95) 0%,
-      rgba(20, 20, 30, 0.9) 50%,
-      rgba(10, 10, 10, 0.95) 100%
+      #000000 0%,
+      #1a1a1a 25%,
+      #2d2d2d 50%,
+      #1a1a1a 75%,
+      #000000 100%
     );
     backdrop-filter: var(--blur-heavy);
     color: var(--foreground-white);
@@ -276,26 +292,28 @@
 
 @layer utilities {
   .glass-card {
-    border-radius: 0.5rem;
-    backdrop-filter: blur(16px);
-    border: 1px solid rgb(255 255 255 / 0.2);
+    border-radius: 0.75rem;
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     background: var(--glass-bg);
-    box-shadow: var(--shadow-glass-xl);
+    box-shadow: none;
   }
 
   .glass-button {
     border-radius: 9999px;
-    backdrop-filter: blur(8px);
-    border: 1px solid rgb(255 255 255 / 0.2);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
     background: var(--glass-bg);
     padding: 0.75rem 1.5rem;
-    box-shadow: var(--shadow-glass-sm);
+    box-shadow: none;
     transition: all 0.3s ease;
   }
 
   .glass-button:hover {
-    box-shadow: var(--glass-hover-glow);
+    box-shadow: none;
     transform: translateY(-1px);
+    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.2);
   }
 
   .glass-overlay {
@@ -364,9 +382,9 @@
   .holographic-text {
     background: linear-gradient(
       45deg,
-      var(--primary-holographic) 0%,
-      var(--accent-iridescent-blue) 50%,
-      var(--accent-glowing-orange) 100%
+      var(--color-brand-yellow) 0%,
+      var(--color-brand-blue) 50%,
+      var(--color-brand-orange) 100%
     );
     background-size: 200% 200%;
     background-clip: text;
@@ -467,26 +485,20 @@
     font-family: var(--font-sans), system-ui, sans-serif;
   }
 
-  /* Light mode glass effects */
-  .glass-card {
-    background: var(--glass-bg);
-    border-color: rgb(0 102 204 / 0.2);
-    box-shadow: var(--glass-shadow-xl);
-  }
-
-  .glass-button {
-    background: var(--glass-bg);
-    border-color: rgb(0 102 204 / 0.2);
-  }
-
-  /* Dark mode glass effects */
+  /* Clean Dark mode glass effects (No Shadows) */
   .dark .glass-card {
     background: var(--glass-bg);
-    border-color: rgb(255 255 255 / 0.1);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: none;
   }
 
   .dark .glass-button {
     background: var(--glass-bg);
-    border-color: rgb(255 255 255 / 0.1);
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+
+  .dark .glass-button:hover {
+    border-color: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.12);
   }
 }
