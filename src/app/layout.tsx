@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import NavBar from "@/components/NavBar";
+import Footer from "@/components/Footer";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -22,6 +23,7 @@ export default function RootLayout({
             <div className="glass-card flex-grow p-4 sm:p-6 lg:p-8">
               {children}
             </div>
+            <Footer />
           </main>
         </ThemeProvider>
       </body>
