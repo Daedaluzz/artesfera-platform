@@ -73,3 +73,19 @@ Task 3: Theme Toggle Component.
 ## Recommended Next Step
 
 Task 4: Hero Section Component.
+
+# Task 4: Hero Section Component
+
+## Files Created
+
+- `src/components/HeroSection.tsx`
+
+## Implemented Features
+
+- Created a responsive Hero Section component.
+- Applied Framer Motion for animations.
+- Integrated with the main page (`src/app/page.tsx`).
+
+## Recommended Next Step
+
+Task 5: Footer Component.
