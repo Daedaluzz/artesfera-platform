@@ -13,6 +13,17 @@ pnpm dev
 # or
 bun dev
 ```
+SHADCN
+npx shadcn@latest init
+
+MOTION
+npm install motion
+
+THEME PROVIDER
+npm install next-themes
+
+lucide-react
+npm install lucide-react
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
