@@ -1,6 +1,13 @@
+import * as Icons from "lucide-react";
 
-export const navLinks = [
-  { title: 'Home', path: '/', icon: 'Home' },
-  { title: 'Gallery', path: '/gallery', icon: 'GalleryHorizontal' },
-  { title: 'Contact', path: '/contact', icon: 'MessageSquare' },
+interface NavLink {
+  title: string;
+  path: string;
+  icon: keyof typeof Icons; // Type for icon name
+}
+
+export const navLinks: NavLink[] = [
+  { title: "Início", path: "/", icon: "Home" },
+  { title: "Galeria", path: "/gallery", icon: "GalleryHorizontal" },
+  { title: "Contato", path: "/contact", icon: "MessageSquare" },
 ];
