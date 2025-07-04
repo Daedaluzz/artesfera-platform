@@ -13,23 +13,81 @@ pnpm dev
 # or
 bun dev
 ```
-SHADCN
-npx shadcn@latest init
-
-MOTION
-npm install motion
-
-THEME PROVIDER
-npm install next-themes
-
-lucide-react
-npm install lucide-react
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Installed Libraries
+
+This project utilizes the following key libraries:
+
+- **Next.js**: A React framework for building full-stack web applications.
+- **TypeScript**: A typed superset of JavaScript that compiles to plain JavaScript.
+- **Tailwind CSS**: A utility-first CSS framework for rapidly building custom designs.
+- **shadcn/ui**: A collection of accessible and customizable UI components built with Radix UI and Tailwind CSS.
+- **Framer Motion**: A production-ready motion library for React.
+- **next-themes**: A library for managing themes (light/dark mode) in Next.js applications.
+- **lucide-react**: A collection of beautiful and customizable SVG icons for React.
+
+## Custom Styling Variables
+
+Custom styling variables (design tokens) are defined in `src/app/globals.css` under the `:root` and `.dark` selectors. These variables are used to manage fonts, brand colors, shadows, and other design aspects, ensuring consistency across the application and supporting light/dark themes.
+
+Example usage in Tailwind CSS classes:
+`bg-[var(--glass-bg)]`
+`text-[var(--primary-pink)]`
+
+## Lucide React Icons
+
+Lucide React icons can be imported and used in two main ways:
+
+1.  **Direct Import (for specific icons):**
+    Import individual icons by their name:
+    ```typescript
+    import { Home, MessageSquare } from 'lucide-react';
+
+    function MyComponent() {
+      return (
+        <>
+          <Home className="w-5 h-5" />
+          <MessageSquare size={24} />
+        </>
+      );
+    }
+    ```
+
+2.  **Importing all as a namespace (for dynamic usage):**
+    Import all icons under a namespace for dynamic rendering, useful when icon names are stored as strings (e.g., in a configuration array):
+    ```typescript
+    import * as Icons from 'lucide-react';
+
+    interface NavLink {
+      title: string;
+      path: string;
+      icon: keyof typeof Icons; // Type for icon name
+    }
+
+    const navLinks: NavLink[] = [
+      { title: 'Home', path: '/', icon: 'Home' },
+      { title: 'Contact', path: '/contact', icon: 'MessageSquare' },
+    ];
+
+    function NavBar() {
+      return (
+        <nav>
+          {navLinks.map((link) => {
+            const LucideIcon = Icons[link.icon];
+            return (
+              <a key={link.title} href={link.path}>
+                <LucideIcon className="w-5 h-5" /> {link.title}
+              </a>
+            );
+          })}
+        </nav>
+      );
+    }
+    ```
 
 ## Learn More
 
