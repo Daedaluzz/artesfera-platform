@@ -38,6 +38,10 @@ Example usage in Tailwind CSS classes:
 `bg-[var(--glass-bg)]`
 `text-[var(--primary-pink)]`
 
+### Using custom variables and classes in Tailwind
+
+All custom styling variables and modifications should be added directly to `src/app/globals.css`. This file is the single source of truth for all design tokens and custom utility classes. There is no need to create or modify `tailwind.config.ts` or any other separate styling files. Ensure new variables and classes follow the existing pattern within `globals.css`.
+
 ## Lucide React Icons
 
 Lucide React icons can be imported and used in two main ways:
