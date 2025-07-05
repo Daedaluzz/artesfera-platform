@@ -30,27 +30,27 @@ export default function CTASection() {
                 Junte-se à revolução que está conectando arte e negócios. Sua
                 próxima grande oportunidade está esperando na ArtEsfera.
               </p>
-              {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                {/* Primary CTA with refined glassmorphism */}
+              {/* CTA Buttons - Stacked vertically */}
+              <div className="flex flex-col gap-3 justify-center items-center max-w-sm mx-auto">
+                {/* Primary CTA with sleeker glassmorphism */}
                 <motion.button
-                  whileHover={{ scale: 1.02, y: -1 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="group px-8 py-4 rounded-2xl backdrop-blur-xl bg-white/[0.15] dark:bg-white/[0.08] border border-white/[0.2] dark:border-white/[0.15] shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.24)] hover:bg-white/[0.25] dark:hover:bg-white/[0.12] hover:border-white/[0.3] dark:hover:border-white/[0.25] hover:shadow-[0_16px_40px_rgba(0,0,0,0.16)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.32)] transition-all duration-300 relative overflow-hidden"
+                  whileHover={{ scale: 1.01, y: -0.5 }}
+                  whileTap={{ scale: 0.99 }}
+                  className="group w-full px-6 py-3 rounded-xl backdrop-blur-lg bg-white/[0.12] dark:bg-white/[0.06] border border-white/[0.18] dark:border-white/[0.12] shadow-[0_4px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.18)] hover:bg-white/[0.18] dark:hover:bg-white/[0.09] hover:border-white/[0.25] dark:hover:border-white/[0.18] hover:shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_8px_32px_rgba(0,0,0,0.24)] transition-all duration-200 relative overflow-hidden"
                 >
-                  <span className="relative z-10 flex items-center text-lg font-semibold text-brand-black dark:text-brand-white group-hover:text-brand-navy-blue dark:group-hover:text-brand-yellow transition-colors duration-300">
+                  <span className="relative z-10 flex items-center justify-center text-base font-medium text-brand-black dark:text-brand-white group-hover:text-brand-navy-blue dark:group-hover:text-brand-yellow transition-colors duration-200">
                     Comece Gratuitamente
-                    <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+                    <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
                   </span>
                 </motion.button>
 
-                {/* Secondary CTA with refined glassmorphism */}
+                {/* Secondary CTA with sleeker glassmorphism */}
                 <motion.button
-                  whileHover={{ scale: 1.02, y: -1 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="px-8 py-4 rounded-2xl backdrop-blur-xl bg-white/[0.08] dark:bg-white/[0.04] border border-white/[0.15] dark:border-white/[0.1] shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.16)] hover:bg-white/[0.15] dark:hover:bg-white/[0.08] hover:border-white/[0.25] dark:hover:border-white/[0.2] hover:shadow-[0_16px_40px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.24)] transition-all duration-300"
+                  whileHover={{ scale: 1.01, y: -0.5 }}
+                  whileTap={{ scale: 0.99 }}
+                  className="w-full px-6 py-3 rounded-xl backdrop-blur-lg bg-white/[0.06] dark:bg-white/[0.03] border border-white/[0.12] dark:border-white/[0.08] shadow-[0_4px_20px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.12)] hover:bg-white/[0.12] dark:hover:bg-white/[0.06] hover:border-white/[0.18] dark:hover:border-white/[0.15] hover:shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_8px_32px_rgba(0,0,0,0.18)] transition-all duration-200"
                 >
-                  <span className="relative z-10 text-lg font-semibold text-brand-black dark:text-brand-white hover:text-brand-navy-blue dark:hover:text-brand-yellow transition-colors duration-300">
+                  <span className="relative z-10 text-base font-medium text-brand-black dark:text-brand-white hover:text-brand-navy-blue dark:hover:text-brand-yellow transition-colors duration-200">
                     Saiba Mais
                   </span>
                 </motion.button>

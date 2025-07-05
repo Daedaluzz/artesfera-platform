@@ -1,4 +1,5 @@
 import HeroSection from "@/components/HeroSection";
+import AboutSection from "@/components/AboutSection";
 import FeaturesSection from "@/components/FeaturesSection";
 import DaevaAISection from "@/components/DaevaAISection";
 import HowItWorksSection from "@/components/HowItWorksSection";
@@ -10,6 +11,7 @@ export default function Home() {
   return (
     <main className="min-h-screen">
       <HeroSection />
+      <AboutSection />
       <FeaturesSection />
       <DaevaAISection />
       <HowItWorksSection />

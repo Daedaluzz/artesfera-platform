@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { navLinks } from "@/lib/links";
+import { navLinks, authLinks } from "@/lib/links";
 import { ThemeToggle } from "./ThemeToggle";
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { LogIn, UserPlus } from "lucide-react";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -46,7 +48,7 @@ export default function NavBar() {
           </span>
         </Link>
 
-        {/* Navigation and Theme Toggle - Right Side */}
+        {/* Navigation, Auth Buttons and Theme Toggle - Right Side */}
         <div className="flex items-stretch h-full">
           <NavigationMenu className="flex items-stretch h-full">
             <NavigationMenuList className="flex items-stretch h-full gap-0">
@@ -59,7 +61,7 @@ export default function NavBar() {
                       <Link
                         href={path}
                         className={cn(
-                          "flex items-center justify-center h-full text-sm md:text-base px-3 md:px-4 relative group",
+                          "flex items-center justify-center h-full text-sm md:text-base px-2 sm:px-3 md:px-4 relative group",
                           "hover:text-brand-navy-blue dark:hover:text-brand-yellow transition-colors duration-300",
                           "bg-transparent backdrop-filter-none shadow-none transition-all duration-300 relative overflow-hidden",
                           "before:content-[''] before:absolute before:top-[-2px] before:left-[-100%] before:w-full before:h-[calc(100%+4px)] before:bg-gradient-to-r before:from-transparent before:via-white/40 before:to-transparent before:transition-all before:duration-600 before:ease-in-out before:pointer-events-none before:z-10",
@@ -82,7 +84,44 @@ export default function NavBar() {
             </NavigationMenuList>
           </NavigationMenu>
 
-          <div className="flex items-center h-full px-4">
+          {/* Auth Buttons */}
+          <div className="flex items-center h-full gap-1 sm:gap-2 px-2 sm:px-4">
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Button
+                variant="ghost"
+                size="sm"
+                asChild
+                className="text-brand-black dark:text-brand-white hover:text-brand-navy-blue dark:hover:text-brand-yellow px-2 sm:px-3"
+              >
+                <Link
+                  href="/login"
+                  className="flex items-center gap-1 sm:gap-2"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span className="hidden md:inline">Entrar</span>
+                </Link>
+              </Button>
+            </motion.div>
+
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Button
+                variant="default"
+                size="sm"
+                asChild
+                className="text-brand-black dark:text-brand-white hover:text-brand-navy-blue dark:hover:text-brand-yellow px-2 sm:px-3"
+              >
+                <Link
+                  href="/register"
+                  className="flex items-center gap-1 sm:gap-2"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span className="hidden md:inline">Cadastrar</span>
+                </Link>
+              </Button>
+            </motion.div>
+          </div>
+
+          <div className="flex items-center h-full px-2 sm:px-4">
             <ThemeToggle />
           </div>
         </div>
