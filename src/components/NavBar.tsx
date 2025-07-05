@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { navLinks, } from "@/lib/links";
+import { navLinks } from "@/lib/links";
 import { ThemeToggle } from "./ThemeToggle";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -33,7 +33,10 @@ export default function NavBar() {
 
       <div className="flex items-stretch justify-between w-full max-w-6xl mx-auto relative z-10 h-full px-4">
         {/* Logo */}
-        <Link href="/" className="flex items-center relative group h-full">
+        <Link
+          href="/"
+          className="flex items-center relative group h-full cursor-pointer"
+        >
           <div className="bg-brand-black rounded-lg p-3 mr-3 transition-transform duration-300 group-hover:scale-105">
             <Image
               src="/logo.svg"
@@ -61,7 +64,7 @@ export default function NavBar() {
                       <Link
                         href={path}
                         className={cn(
-                          "flex items-center justify-center h-full text-sm md:text-base px-2 sm:px-3 md:px-4 relative group",
+                          "flex items-center justify-center h-full text-sm md:text-base px-2 sm:px-3 md:px-4 relative group cursor-pointer",
                           "hover:text-brand-navy-blue dark:hover:text-brand-yellow transition-colors duration-300",
                           "bg-transparent backdrop-filter-none shadow-none transition-all duration-300 relative overflow-hidden",
                           "before:content-[''] before:absolute before:top-[-2px] before:left-[-100%] before:w-full before:h-[calc(100%+4px)] before:bg-gradient-to-r before:from-transparent before:via-white/40 before:to-transparent before:transition-all before:duration-600 before:ease-in-out before:pointer-events-none before:z-10",

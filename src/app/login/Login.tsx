@@ -26,7 +26,7 @@ export default function Login() {
             {/* Google Login Button */}
             <button
               type="button"
-              className="group relative w-full px-6 py-4 rounded-2xl backdrop-blur-md bg-white/10 dark:bg-gray-800/20 border border-white/20 dark:border-gray-700/30 text-gray-700 dark:text-gray-200 font-semibold transition-all duration-300 hover:bg-white/20 dark:hover:bg-gray-700/30 hover:scale-105 hover:shadow-lg active:scale-95 flex items-center justify-center space-x-3"
+              className="group relative w-full px-6 py-4 rounded-2xl backdrop-blur-md bg-white/10 dark:bg-gray-800/20 border border-white/20 dark:border-gray-700/30 text-gray-700 dark:text-gray-200 font-semibold transition-all duration-300 hover:bg-white/20 dark:hover:bg-gray-700/30 hover:scale-105 hover:shadow-lg active:scale-95 flex items-center justify-center space-x-3 cursor-pointer"
             >
               <div className="w-5 h-5 bg-gradient-to-r from-blue-500 to-red-500 rounded-full" />
               <span className="relative z-10">Continuar com Google</span>
@@ -97,7 +97,7 @@ export default function Login() {
 
               <button
                 type="button"
-                className="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-500 dark:hover:text-purple-300 transition-colors duration-200"
+                className="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-500 dark:hover:text-purple-300 transition-colors duration-200 cursor-pointer"
               >
                 Esqueceu a senha?
               </button>
@@ -106,7 +106,7 @@ export default function Login() {
             {/* Login Button */}
             <button
               type="submit"
-              className="group relative w-full px-6 py-4 rounded-2xl backdrop-blur-md bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-teal-500/20 border border-white/20 dark:border-gray-700/30 text-gray-800 dark:text-white font-semibold transition-all duration-300 hover:from-purple-500/30 hover:via-blue-500/30 hover:to-teal-500/30 hover:scale-105 hover:shadow-lg active:scale-95"
+              className="group relative w-full px-6 py-4 rounded-2xl backdrop-blur-md bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-teal-500/20 border border-white/20 dark:border-gray-700/30 text-gray-800 dark:text-white font-semibold transition-all duration-300 hover:from-purple-500/30 hover:via-blue-500/30 hover:to-teal-500/30 hover:scale-105 hover:shadow-lg active:scale-95 cursor-pointer"
             >
               <span className="relative z-10">Entrar</span>
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-500/0 via-blue-500/0 to-teal-500/0 group-hover:from-purple-500/10 group-hover:via-blue-500/10 group-hover:to-teal-500/10 transition-all duration-300" />
@@ -119,7 +119,7 @@ export default function Login() {
               Não tem uma conta?{" "}
               <a
                 href="/register"
-                className="font-medium text-purple-600 dark:text-purple-400 hover:text-purple-500 dark:hover:text-purple-300 transition-colors duration-200"
+                className="font-medium text-purple-600 dark:text-purple-400 hover:text-purple-500 dark:hover:text-purple-300 transition-colors duration-200 cursor-pointer"
               >
                 Cadastre-se gratuitamente
               </a>
@@ -133,14 +133,14 @@ export default function Login() {
             Ao entrar, você concorda com nossos{" "}
             <a
               href="#"
-              className="text-purple-600 dark:text-purple-400 hover:underline"
+              className="text-purple-600 dark:text-purple-400 hover:underline cursor-pointer"
             >
               Termos de Uso
             </a>{" "}
             e{" "}
             <a
               href="#"
-              className="text-purple-600 dark:text-purple-400 hover:underline"
+              className="text-purple-600 dark:text-purple-400 hover:underline cursor-pointer"
             >
               Política de Privacidade
             </a>

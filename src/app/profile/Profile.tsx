@@ -38,7 +38,7 @@ export default function Profile() {
                 <p className="text-gray-600 dark:text-gray-300">
                   Artista Visual
                 </p>
-                <button className="mt-3 px-4 py-2 text-sm bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-white/20 dark:border-gray-700/30 rounded-xl text-gray-700 dark:text-gray-200 hover:from-purple-500/30 hover:to-blue-500/30 transition-all duration-300">
+                <button className="mt-3 px-4 py-2 text-sm bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-white/20 dark:border-gray-700/30 rounded-xl text-gray-700 dark:text-gray-200 hover:from-purple-500/30 hover:to-blue-500/30 transition-all duration-300 cursor-pointer">
                   Alterar Foto
                 </button>
               </div>
@@ -55,7 +55,7 @@ export default function Profile() {
                 ].map((item) => (
                   <button
                     key={item.name}
-                    className={`w-full text-left px-4 py-3 rounded-2xl transition-all duration-300 ${
+                    className={`w-full text-left px-4 py-3 rounded-2xl transition-all duration-300 cursor-pointer ${
                       item.active
                         ? "bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-gray-800 dark:text-white border border-purple-500/20"
                         : "text-gray-600 dark:text-gray-300 hover:bg-white/10 dark:hover:bg-gray-700/20"
@@ -235,13 +235,13 @@ export default function Profile() {
                 <div className="flex justify-end space-x-4 pt-6">
                   <button
                     type="button"
-                    className="px-6 py-3 rounded-2xl backdrop-blur-md bg-white/10 dark:bg-gray-800/20 border border-white/20 dark:border-gray-700/30 text-gray-700 dark:text-gray-200 font-medium transition-all duration-300 hover:bg-white/20 dark:hover:bg-gray-700/30"
+                    className="px-6 py-3 rounded-2xl backdrop-blur-md bg-white/10 dark:bg-gray-800/20 border border-white/20 dark:border-gray-700/30 text-gray-700 dark:text-gray-200 font-medium transition-all duration-300 hover:bg-white/20 dark:hover:bg-gray-700/30 cursor-pointer"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
-                    className="group relative px-8 py-3 rounded-2xl backdrop-blur-md bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-teal-500/20 border border-white/20 dark:border-gray-700/30 text-gray-800 dark:text-white font-semibold transition-all duration-300 hover:from-purple-500/30 hover:via-blue-500/30 hover:to-teal-500/30 hover:scale-105 hover:shadow-lg active:scale-95"
+                    className="group relative px-8 py-3 rounded-2xl backdrop-blur-md bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-teal-500/20 border border-white/20 dark:border-gray-700/30 text-gray-800 dark:text-white font-semibold transition-all duration-300 hover:from-purple-500/30 hover:via-blue-500/30 hover:to-teal-500/30 hover:scale-105 hover:shadow-lg active:scale-95 cursor-pointer"
                   >
                     <span className="relative z-10">Salvar Alterações</span>
                     <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-500/0 via-blue-500/0 to-teal-500/0 group-hover:from-purple-500/10 group-hover:via-blue-500/10 group-hover:to-teal-500/10 transition-all duration-300" />
