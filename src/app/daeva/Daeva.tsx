@@ -23,11 +23,7 @@ export default function Daeva() {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <div className="flex justify-center mb-6">
-            <div className="relative p-4 rounded-[20px] backdrop-blur-[15px] bg-white/[0.25] dark:bg-black/25 border border-white/[0.3] dark:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.5),inset_0_-1px_0_rgba(255,255,255,0.1),inset_0_0_20px_10px_rgba(255,255,255,0.1)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-1px_0_rgba(255,255,255,0.05),inset_0_0_20px_10px_rgba(255,255,255,0.05)]">
-              <Brain className="w-8 h-8 text-brand-navy-blue dark:text-brand-yellow" />
-            </div>
-          </div>
+      
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold font-serif text-brand-black dark:text-brand-white mb-6">
             Daeva{" "}

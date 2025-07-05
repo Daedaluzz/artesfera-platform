@@ -277,26 +277,25 @@
 }
 
 @layer utilities {
-  
   .shadow-glass-light {
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 4px 32px rgba(0, 0, 0, 0.08);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6),
+      0 4px 32px rgba(0, 0, 0, 0.08);
   }
 
   .dark .shadow-glass-dark {
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 4px 32px rgba(0, 0, 0, 0.15);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7),
+      0 4px 32px rgba(0, 0, 0, 0.15);
   }
 
   .text-shadow-light {
-    text-shadow: 0 0 15px rgba(255, 255, 255, 0.4), 0 2px 6px rgba(0, 0, 0, 0.15), 0 0 30px rgba(255, 255, 255, 0.2);
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.4),
+      0 2px 6px rgba(0, 0, 0, 0.15), 0 0 30px rgba(255, 255, 255, 0.2);
   }
 
   .dark .text-shadow-dark {
-    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3), 0 2px 10px rgba(0, 0, 0, 0.6), 0 0 40px rgba(255, 255, 255, 0.15);
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3),
+      0 2px 10px rgba(0, 0, 0, 0.6), 0 0 40px rgba(255, 255, 255, 0.15);
   }
-
-  
-
-  
 
   .glass-card-light {
     backdrop-filter: blur(24px);
@@ -438,7 +437,11 @@
       inset -1px 0 0 rgba(255, 255, 255, 0.15), 0 4px 20px rgba(0, 0, 0, 0.15),
       0 0 25px rgba(255, 255, 255, 0.2);
     transform: translateY(-2px);
-    background-color: color-mix(in srgb, var(--color-brand-yellow) 80%, transparent);
+    background-color: color-mix(
+      in srgb,
+      var(--color-brand-yellow) 80%,
+      transparent
+    );
   }
 
   .dark .glass-button-brand-dark {
@@ -454,8 +457,13 @@
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5),
       inset 0 -1px 0 rgba(255, 255, 255, 0.2),
       inset 1px 0 0 rgba(255, 255, 255, 0.3),
-      inset -1px 0 0 rgba(255, 255, 255, 0.15), 0 0 30px rgba(255, 255, 255, 0.15);
-    background-color: color-mix(in srgb, var(--color-brand-navy-blue) 80%, transparent);
+      inset -1px 0 0 rgba(255, 255, 255, 0.15),
+      0 0 30px rgba(255, 255, 255, 0.15);
+    background-color: color-mix(
+      in srgb,
+      var(--color-brand-navy-blue) 80%,
+      transparent
+    );
   }
 
   .glass-button-brand-before {
@@ -518,32 +526,343 @@
     background: rgba(0, 0, 0, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.25);
     box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.15),
-      inset 0 0 40px rgba(255, 255, 255, 0.08), 0 0 20px rgba(255, 255, 255, 0.08);
+      inset 0 0 40px rgba(255, 255, 255, 0.08),
+      0 0 20px rgba(255, 255, 255, 0.08);
   }
 
   .dark .focus-ring-blue {
     --tw-ring-color: rgb(252 201 49 / 0.5);
   }
 
-  
+  /* ==================================
+     GLASSMORPHISM SHADOW UTILITIES
+     ================================== */
 
-  
+  .shadow-primary-glass {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 0 -1px 0 rgba(0, 0, 0, 0.05),
+      inset 0 0 20px 10px rgba(255, 255, 255, 0.06);
+  }
 
-  
+  .shadow-primary-glass-hover {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), 0 4px 16px rgba(0, 0, 0, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -1px 0 rgba(0, 0, 0, 0.08),
+      inset 0 0 20px 10px rgba(255, 255, 255, 0.12);
+  }
 
-  
+  .shadow-primary-glass-dark {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.15),
+      inset 0 0 20px 10px rgba(255, 255, 255, 0.05);
+  }
 
-  
+  .shadow-primary-glass-hover-dark {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.24),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.2),
+      inset 0 0 20px 10px rgba(255, 255, 255, 0.08);
+  }
 
-  
+  .shadow-secondary-glass {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.1),
+      inset 0 0 20px 10px rgba(255, 255, 255, 0.05);
+  }
 
-  
+  .shadow-secondary-glass-hover {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.15),
+      inset 0 0 20px 10px rgba(255, 255, 255, 0.08);
+  }
+
+  .shadow-secondary-glass-dark {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.08),
+      inset 0 0 20px 10px rgba(255, 255, 255, 0.03);
+  }
+
+  .shadow-secondary-glass-hover-dark {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.12),
+      inset 0 0 20px 10px rgba(255, 255, 255, 0.05);
+  }
+
+  /* ==================================
+     END GLASSMORPHISM UTILITIES
+     ================================== */
+
+  /* ==================================
+     GLASSMORPHISM BUTTON UTILITIES
+     ================================== */
+
+  /* Primary Button Glassmorphism Base */
+  .glass-primary-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    backdrop-filter: blur(15px);
+    border: 2px solid transparent;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.08),
+      rgba(255, 255, 255, 0.05)
+    );
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 0 -1px 0 rgba(0, 0, 0, 0.05),
+      inset 0 0 20px 10px rgba(255, 255, 255, 0.06);
+  }
+
+  /* Primary Button Dark Mode */
+  .dark .glass-primary-btn {
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.15),
+      inset 0 0 20px 10px rgba(255, 255, 255, 0.05);
+  }
+
+  /* Primary Button Hover States */
+  .glass-primary-btn:hover {
+    backdrop-filter: blur(24px);
+    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), 0 4px 16px rgba(0, 0, 0, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -1px 0 rgba(0, 0, 0, 0.08),
+      inset 0 0 20px 10px rgba(255, 255, 255, 0.12);
+  }
+
+  .dark .glass-primary-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.24),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.2),
+      inset 0 0 20px 10px rgba(255, 255, 255, 0.08);
+  }
+
+  /* Primary Button Gradient Border */
+  .glass-primary-btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 0.75rem;
+    padding: 2px;
+    margin: -2px;
+    z-index: -10;
+    background: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0.4),
+      rgba(255, 255, 255, 0.6),
+      rgba(255, 255, 255, 0.4)
+    );
+  }
+
+  /* Primary Button Sliding Reflection */
+  .glass-primary-btn::after {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: -100%;
+    width: 100%;
+    height: calc(100% + 4px);
+    pointer-events: none;
+    z-index: 10;
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(
+      to right,
+      transparent,
+      rgba(255, 255, 255, 0.5),
+      transparent
+    );
+  }
+
+  .glass-primary-btn:hover::after {
+    left: 100%;
+  }
+
+  /* Primary Button Disabled States */
+  .glass-primary-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+
+  .glass-primary-btn:disabled::after {
+    display: none;
+  }
+
+  /* Secondary Button Glassmorphism Base */
+  .glass-secondary-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    backdrop-filter: blur(15px);
+    border: 1px solid;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.1),
+      inset 0 0 20px 10px rgba(255, 255, 255, 0.05);
+  }
+
+  /* Secondary Button Dark Mode */
+  .dark .glass-secondary-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.08),
+      inset 0 0 20px 10px rgba(255, 255, 255, 0.03);
+  }
+
+  /* Secondary Button Hover States */
+  .glass-secondary-btn:hover {
+    backdrop-filter: blur(24px);
+    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.15),
+      inset 0 0 20px 10px rgba(255, 255, 255, 0.08);
+  }
+
+  .dark .glass-secondary-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.12),
+      inset 0 0 20px 10px rgba(255, 255, 255, 0.05);
+  }
+
+  /* Secondary Button Sliding Reflection */
+  .glass-secondary-btn::before {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: -100%;
+    width: 100%;
+    height: calc(100% + 4px);
+    pointer-events: none;
+    z-index: 10;
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(
+      to right,
+      transparent,
+      rgba(255, 255, 255, 0.4),
+      transparent
+    );
+  }
+
+  .glass-secondary-btn:hover::before {
+    left: 100%;
+  }
+
+  /* Secondary Button Top Edge Highlight */
+  .glass-secondary-btn::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      rgba(255, 255, 255, 0.6),
+      transparent
+    );
+  }
+
+  /* Secondary Button Disabled States */
+  .glass-secondary-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+
+  .glass-secondary-btn:disabled::before {
+    display: none;
+  }
+
+  /* ==================================
+     ADDITIONAL GLASSMORPHISM UTILITIES
+     ================================== */
+
+  /* Glass Container for forms, dropdowns, etc. */
+  .glass-container {
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    border: 1px solid;
+    position: relative;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.1),
+      inset 0 0 20px 10px rgba(255, 255, 255, 0.08);
+  }
+
+  .dark .glass-container {
+    background: rgba(0, 0, 0, 0.15);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.25),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.05),
+      inset 0 0 20px 10px rgba(255, 255, 255, 0.04);
+  }
+
+  /* Reflexive hover animation for links */
+  .glass-link {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .glass-link::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(
+      to right,
+      transparent,
+      rgba(255, 255, 255, 0.3),
+      transparent
+    );
+  }
+
+  .glass-link:hover::after {
+    left: 100%;
+  }
+
+  .glass-link:hover {
+    backdrop-filter: blur(24px);
+    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .dark .glass-link:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  /* ==================================
+     END GLASSMORPHISM UTILITIES
+     ================================== */
 }
-
-
-
-
-
-
-
-
