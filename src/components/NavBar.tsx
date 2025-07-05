@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { navLinks, authLinks } from "@/lib/links";
+import { navLinks, } from "@/lib/links";
 import { ThemeToggle } from "./ThemeToggle";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";

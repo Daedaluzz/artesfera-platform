@@ -54,3 +54,4 @@ Coding standards, domain knowledge, and preferences that AI should follow.
 - Secondary CTAs use standard glassmorphic borders without gradient enhancement.
 - Button backgrounds should always be transparent with backdrop-blur effects.
 - Use color gradients only in borders, glows, and hover states, never as solid backgrounds.
+- All buttons and clickable elements MUST use the same reflexive hover animation as NavBar links, including: sliding white gradient reflection (before:left-[-100%] hover:before:left-full), color transitions (hover:text-brand-navy-blue dark:hover:text-brand-yellow), backdrop blur enhancement (hover:backdrop-blur-xl hover:bg-white/20), and subtle upward translation (hover:translate-y-[-1px]).
