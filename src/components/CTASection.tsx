@@ -2,6 +2,8 @@
 
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import { PrimaryButton } from "@/components/ui/primary-button";
+import { SecondaryButton } from "@/components/ui/secondary-button";
 
 export default function CTASection() {
   return (
@@ -32,32 +34,19 @@ export default function CTASection() {
               </p>
               {/* CTA Buttons - Stacked vertically */}
               <div className="flex flex-col gap-3 justify-center items-center max-w-sm mx-auto">
-                {/* Primary CTA with enhanced glassmorphism and gradient borders */}
-                <motion.button
-                  whileHover={{ scale: 1.01, y: -0.5 }}
-                  whileTap={{ scale: 0.99 }}
-                  className="group w-full px-6 py-3 rounded-xl backdrop-blur-[15px] bg-white/[0.15] dark:bg-white/[0.12] border-2 border-transparent shadow-[0_4px_20px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.6),inset_0_-1px_0_rgba(255,255,255,0.2),inset_0_0_20px_10px_rgba(255,255,255,0.1)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.15),inset_0_0_20px_10px_rgba(255,255,255,0.05)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.8),inset_0_-1px_0_rgba(255,255,255,0.3),inset_0_0_20px_10px_rgba(255,255,255,0.15)] dark:hover:shadow-[0_8px_32px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.6),inset_0_-1px_0_rgba(255,255,255,0.2),inset_0_0_20px_10px_rgba(255,255,255,0.08)] transition-all duration-300 relative overflow-hidden cursor-pointer before:content-[''] before:absolute before:inset-0 before:rounded-xl before:p-[2px] before:bg-gradient-to-r before:from-white/60 before:via-white/80 before:to-white/60 before:-m-[2px] before:-z-10 after:content-[''] after:absolute after:top-[-2px] after:left-[-100%] after:w-full after:h-[calc(100%+4px)] after:bg-gradient-to-r after:from-transparent after:via-white/40 after:to-transparent after:transition-all after:duration-600 after:ease-in-out after:pointer-events-none after:z-10 hover:after:left-full hover:backdrop-blur-xl hover:bg-white/20 hover:translate-y-[-1px] dark:hover:bg-white/8"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.12))",
-                  }}
-                >
-                  <span className="relative z-20 flex items-center justify-center text-base font-medium text-brand-black dark:text-brand-black group-hover:text-brand-navy-blue transition-colors duration-300">
-                    Comece Gratuitamente
+                {/* Primary CTA */}
+                <PrimaryButton
+                  fullWidth
+                  showArrow
+                  arrowIcon={
                     <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-300" />
-                  </span>
-                </motion.button>
-
-                {/* Secondary CTA with enhanced glassmorphism */}
-                <motion.button
-                  whileHover={{ scale: 1.01, y: -0.5 }}
-                  whileTap={{ scale: 0.99 }}
-                  className="w-full px-6 py-3 rounded-xl backdrop-blur-[15px] bg-white/[0.08] dark:bg-white/[0.06] border border-white/[0.15] dark:border-white/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1),inset_0_0_20px_10px_rgba(255,255,255,0.05)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-1px_0_rgba(255,255,255,0.08),inset_0_0_20px_10px_rgba(255,255,255,0.03)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.6),inset_0_-1px_0_rgba(255,255,255,0.15),inset_0_0_20px_10px_rgba(255,255,255,0.08)] dark:hover:shadow-[0_8px_32px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.12),inset_0_0_20px_10px_rgba(255,255,255,0.05)] transition-all duration-300 relative overflow-hidden cursor-pointer before:content-[''] before:absolute before:top-[-2px] before:left-[-100%] before:w-full before:h-[calc(100%+4px)] before:bg-gradient-to-r before:from-transparent before:via-white/40 before:to-transparent before:transition-all before:duration-600 before:ease-in-out before:pointer-events-none before:z-10 hover:before:left-full hover:backdrop-blur-xl hover:bg-white/20 hover:translate-y-[-1px] dark:hover:bg-white/8 after:content-[''] after:absolute after:top-0 after:left-0 after:right-0 after:h-px after:bg-gradient-to-r after:from-transparent after:via-white/60 after:to-transparent"
+                  }
                 >
-                  <span className="relative z-20 text-base font-medium text-brand-black dark:text-brand-white hover:text-brand-navy-blue dark:hover:text-brand-yellow transition-colors duration-300">
-                    Saiba Mais
-                  </span>
-                </motion.button>
+                  Comece Gratuitamente
+                </PrimaryButton>
+
+                {/* Secondary CTA */}
+                <SecondaryButton fullWidth>Saiba Mais</SecondaryButton>
               </div>
 
               {/* Trust Indicators */}

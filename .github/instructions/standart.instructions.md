@@ -47,6 +47,11 @@ Coding standards, domain knowledge, and preferences that AI should follow.
 - Use `useContext` for accessing context values.
 - Use `brand-yellow`for text and UI accents on light-theme.
 - Use `brand-navy-blue` for text and UI accents on dark-theme.
+- Primary CTA button text should be `brand-black` in dark mode for better readability against glassmorphic backgrounds and should not change color on hover.
+- Secondary CTA button text should be `brand-white` in dark mode.
+- Use standardized shadcn PrimaryButton and SecondaryButton components for all buttons and CTAs across the platform, with all styling and animation logic contained within the components.
+- PrimaryButton and SecondaryButton components should receive all needed parameters (text, icons, onClick handlers, etc.) via props for maximum reusability.
+- All button styling should follow the established glassmorphism and brand design patterns from CTASection.tsx.
 - Never use solid color backgrounds on buttons or clickable elements.
 - All clickable elements must follow glassmorphism principles with blur, transparency, and shining edges.
 - Use colors only for hovers, accents, glows, and drop shadows.
@@ -55,6 +60,7 @@ Coding standards, domain knowledge, and preferences that AI should follow.
 - Button backgrounds should always be transparent with backdrop-blur effects.
 - Use color gradients only in borders, glows, and hover states, never as solid backgrounds.
 - All buttons and clickable elements MUST use the same reflexive hover animation as NavBar links, including: sliding white gradient reflection (before:left-[-100%] hover:before:left-full), color transitions (hover:text-brand-navy-blue dark:hover:text-brand-yellow), backdrop blur enhancement (hover:backdrop-blur-xl hover:bg-white/20), and subtle upward translation (hover:translate-y-[-1px]).
+- Small text links (like terms of use, privacy policy, register links) should use simple hover color transitions without the full reflexive animation effects.
 - All colors must be used in gradients, glows, and shadows, never as solid backgrounds.
 - All colors used must be brand colors, never custom colors.
 - All the brand colors custom tailwind classes can be found in the `global.css` file, under the comentary

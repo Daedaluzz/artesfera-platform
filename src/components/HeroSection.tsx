@@ -2,6 +2,8 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { PrimaryButton } from "@/components/ui/primary-button";
+import { SecondaryButton } from "@/components/ui/secondary-button";
 
 export default function HeroSection() {
   return (
@@ -72,17 +74,10 @@ export default function HeroSection() {
               className="flex flex-col gap-3 max-w-sm"
             >
               {/* Primary CTA - Google Sign-up */}
-              <motion.button
-                whileHover={{ scale: 1.01, y: -0.5 }}
-                whileTap={{ scale: 0.99 }}
-                className="group w-full px-6 py-3 rounded-xl backdrop-blur-[15px] bg-white/[0.15] dark:bg-white/[0.12] border-2 border-transparent shadow-[0_4px_20px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.6),inset_0_-1px_0_rgba(255,255,255,0.2),inset_0_0_20px_10px_rgba(255,255,255,0.1)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.15),inset_0_0_20px_10px_rgba(255,255,255,0.05)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.8),inset_0_-1px_0_rgba(255,255,255,0.3),inset_0_0_20px_10px_rgba(255,255,255,0.15)] dark:hover:shadow-[0_8px_32px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.6),inset_0_-1px_0_rgba(255,255,255,0.2),inset_0_0_20px_10px_rgba(255,255,255,0.08)] transition-all duration-300 relative overflow-hidden cursor-pointer before:content-[''] before:absolute before:inset-0 before:rounded-xl before:p-[2px] before:bg-gradient-to-r before:from-white/60 before:via-white/80 before:to-white/60 before:-m-[2px] before:-z-10 after:content-[''] after:absolute after:top-[-2px] after:left-[-100%] after:w-full after:h-[calc(100%+4px)] after:bg-gradient-to-r after:from-transparent after:via-white/40 after:to-transparent after:transition-all after:duration-600 after:ease-in-out after:pointer-events-none after:z-10 hover:after:left-full hover:backdrop-blur-xl hover:bg-white/20 hover:translate-y-[-1px] dark:hover:bg-white/8"
-                style={{
-                  background:
-                    "linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.12))",
-                }}
-              >
-                <span className="relative z-20 flex items-center justify-center text-sm font-medium text-brand-black dark:text-brand-black group-hover:text-brand-navy-blue transition-colors duration-300">
-                  <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
+              <PrimaryButton
+                fullWidth
+                leftIcon={
+                  <svg className="w-4 h-4" viewBox="0 0 24 24">
                     <path
                       fill="currentColor"
                       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -100,19 +95,17 @@ export default function HeroSection() {
                       d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                     />
                   </svg>
-                  Continuar com o Google
-                </span>
-              </motion.button>
+                }
+              >
+                Continuar com o Google
+              </PrimaryButton>
 
               {/* Secondary CTA - Email Sign-up */}
-              <motion.button
-                whileHover={{ scale: 1.01, y: -0.5 }}
-                whileTap={{ scale: 0.99 }}
-                className="w-full px-6 py-3 rounded-xl backdrop-blur-[15px] bg-white/[0.08] dark:bg-white/[0.06] border border-white/[0.15] dark:border-white/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1),inset_0_0_20px_10px_rgba(255,255,255,0.05)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-1px_0_rgba(255,255,255,0.08),inset_0_0_20px_10px_rgba(255,255,255,0.03)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.6),inset_0_-1px_0_rgba(255,255,255,0.15),inset_0_0_20px_10px_rgba(255,255,255,0.08)] dark:hover:shadow-[0_8px_32px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.12),inset_0_0_20px_10px_rgba(255,255,255,0.05)] transition-all duration-300 relative overflow-hidden cursor-pointer before:content-[''] before:absolute before:top-[-2px] before:left-[-100%] before:w-full before:h-[calc(100%+4px)] before:bg-gradient-to-r before:from-transparent before:via-white/40 before:to-transparent before:transition-all before:duration-600 before:ease-in-out before:pointer-events-none before:z-10 hover:before:left-full hover:backdrop-blur-xl hover:bg-white/20 hover:translate-y-[-1px] dark:hover:bg-white/8 after:content-[''] after:absolute after:top-0 after:left-0 after:right-0 after:h-px after:bg-gradient-to-r after:from-transparent after:via-white/60 after:to-transparent"
-              >
-                <span className="relative z-20 flex items-center justify-center text-sm font-medium text-brand-black dark:text-brand-white hover:text-brand-navy-blue dark:hover:text-brand-yellow transition-colors duration-300">
+              <SecondaryButton
+                fullWidth
+                leftIcon={
                   <svg
-                    className="w-4 h-4 mr-2"
+                    className="w-4 h-4"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -124,9 +117,10 @@ export default function HeroSection() {
                       d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                     />
                   </svg>
-                  Entrar com Email
-                </span>
-              </motion.button>
+                }
+              >
+                Entrar com Email
+              </SecondaryButton>
             </motion.div>
           </motion.div>
 
