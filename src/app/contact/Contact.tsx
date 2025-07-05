@@ -114,14 +114,44 @@ export default function Contact() {
               </label>
               <select
                 id="subject"
-                className="w-full px-4 py-3 rounded-[12px] backdrop-blur-[10px] bg-white/[0.1] dark:bg-white/[0.05] border border-white/[0.2] dark:border-white/[0.1] shadow-[0_4px_16px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-1px_0_rgba(255,255,255,0.05)] text-brand-black dark:text-brand-white focus:outline-none focus:ring-2 focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30 focus:border-brand-navy-blue/30 dark:focus:border-brand-yellow/30 transition-all duration-300"
+                className="w-full px-4 py-3 rounded-[12px] backdrop-blur-[10px] bg-white/[0.1] dark:bg-white/[0.05] border border-white/[0.2] dark:border-white/[0.1] shadow-[0_4px_16px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-1px_0_rgba(255,255,255,0.05)] text-brand-black dark:text-brand-white focus:outline-none focus:ring-2 focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30 focus:border-brand-navy-blue/30 dark:focus:border-brand-yellow/30 transition-all duration-300 [&>option]:bg-white [&>option]:text-black dark:[&>option]:bg-brand-black dark:[&>option]:text-white"
               >
-                <option value="">Selecione um assunto</option>
-                <option value="partnership">Parceria</option>
-                <option value="support">Suporte</option>
-                <option value="feedback">Feedback</option>
-                <option value="press">Imprensa</option>
-                <option value="other">Outro</option>
+                <option
+                  value=""
+                  className="bg-white text-black dark:bg-brand-black dark:text-white"
+                >
+                  Selecione um assunto
+                </option>
+                <option
+                  value="partnership"
+                  className="bg-white text-black dark:bg-brand-black dark:text-white"
+                >
+                  Parceria
+                </option>
+                <option
+                  value="support"
+                  className="bg-white text-black dark:bg-brand-black dark:text-white"
+                >
+                  Suporte
+                </option>
+                <option
+                  value="feedback"
+                  className="bg-white text-black dark:bg-brand-black dark:text-white"
+                >
+                  Feedback
+                </option>
+                <option
+                  value="press"
+                  className="bg-white text-black dark:bg-brand-black dark:text-white"
+                >
+                  Imprensa
+                </option>
+                <option
+                  value="other"
+                  className="bg-white text-black dark:bg-brand-black dark:text-white"
+                >
+                  Outro
+                </option>
               </select>
             </div>
 

@@ -55,3 +55,7 @@ Coding standards, domain knowledge, and preferences that AI should follow.
 - Button backgrounds should always be transparent with backdrop-blur effects.
 - Use color gradients only in borders, glows, and hover states, never as solid backgrounds.
 - All buttons and clickable elements MUST use the same reflexive hover animation as NavBar links, including: sliding white gradient reflection (before:left-[-100%] hover:before:left-full), color transitions (hover:text-brand-navy-blue dark:hover:text-brand-yellow), backdrop blur enhancement (hover:backdrop-blur-xl hover:bg-white/20), and subtle upward translation (hover:translate-y-[-1px]).
+- All colors must be used in gradients, glows, and shadows, never as solid backgrounds.
+- All colors used must be brand colors, never custom colors.
+- All the brand colors custom tailwind classes can be found in the `global.css` file, under the comentary
+  `/* ArtEsfera Brand Colors */`.
