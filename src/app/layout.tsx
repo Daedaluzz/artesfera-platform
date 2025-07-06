@@ -132,7 +132,7 @@ export default function RootLayout({
       <body className="antialiased">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <NavBar />
-          <main className="min-h-screen flex flex-col">
+          <main className=" flex flex-col">
             <div className="flex-grow">{children}</div>
             <Footer />
           </main>

@@ -5,7 +5,6 @@ import { useState, useRef, useEffect } from "react";
 import {
   Brain,
   MessageCircle,
-  Send,
   ArrowUp,
   Sparkles,
   FileText,
@@ -13,6 +12,7 @@ import {
   Lightbulb,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import DaevaSidebar from "@/components/DaevaSidebar";
 
 interface Message {
   id: string;
@@ -29,6 +29,15 @@ export default function Daeva() {
   const [hasInteracted, setHasInteracted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Reset chat function
+  const resetChat = () => {
+    setMessages([]);
+    setInputValue("");
+    setIsLoading(false);
+    setShowTitle(true);
+    setHasInteracted(false);
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -98,9 +107,12 @@ export default function Daeva() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col relative pt-16">
-      {/* Main Chat Container */}
-      <div className="flex-1 flex flex-col max-w-3xl mx-auto w-full">
+    <div className="h-full overflow-hidden flex">
+      {/* Sidebar */}
+      <DaevaSidebar onResetChat={resetChat} />
+
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col ">
         {/* Header with animated title */}
         <AnimatePresence>
           {showTitle && (
@@ -108,13 +120,13 @@ export default function Daeva() {
               initial={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15, scale: 0.98 }}
               transition={{ duration: 0.4, ease: "easeInOut" }}
-              className="flex flex-col items-center justify-center min-h-[calc(50vh-4rem)] px-4"
+              className="flex flex-col items-center justify-center flex-1 px-4"
             >
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.1 }}
-                className="text-center mb-8"
+                className="text-center"
               >
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-serif text-brand-black dark:text-brand-white mb-3">
                   Daeva{" "}
@@ -164,9 +176,9 @@ export default function Daeva() {
         </AnimatePresence>
 
         {/* Messages Container */}
-        <div className="flex-1 overflow-hidden">
-          <div className="h-full overflow-y-auto px-4 pb-4 pt-4">
-            <div className="space-y-4">
+        {messages.length > 0 && (
+          <div className="flex-1 overflow-y-auto px-4 py-4">
+            <div className="max-w-3xl mx-auto space-y-4">
               {messages.map((message) => (
                 <motion.div
                   key={message.id}
@@ -235,11 +247,11 @@ export default function Daeva() {
             </div>
             <div ref={messagesEndRef} />
           </div>
-        </div>
+        )}
 
         {/* Input Area */}
-        <div className="sticky bottom-0 p-4">
-          <div className="max-w-2xl mx-auto relative">
+        <div className="flex-shrink-0 p-4">
+          <div className="max-w-3xl mx-auto relative">
             <div className="relative rounded-[18px] backdrop-blur-[12px] bg-white/[0.2] dark:bg-white/[0.1] border border-white/[0.25] dark:border-white/[0.15] shadow-[0_6px_25px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1),inset_0_0_15px_8px_rgba(255,255,255,0.08)] dark:shadow-[0_6px_25px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.25),inset_0_-1px_0_rgba(255,255,255,0.04),inset_0_0_15px_8px_rgba(255,255,255,0.04)]">
               <textarea
                 ref={textareaRef}
