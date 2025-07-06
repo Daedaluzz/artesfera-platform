@@ -1,10 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Link from "next/link";
 import * as Icons from "lucide-react";
 import { socialLinks } from "@/lib/socialLinks";
-import { Button } from "@/components/ui/button";
 
 export default function Footer() {
   return (
@@ -32,28 +30,18 @@ export default function Footer() {
               link.icon as keyof typeof Icons
             ] as React.ComponentType<{ className?: string }>;
             return (
-              <motion.div
+              <motion.button
                 key={link.name}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
+                className="w-12 h-12 rounded-full flex items-center justify-center group focus:outline-none focus:ring-2 focus:ring-white/50 bg-transparent backdrop-filter-none shadow-none transition-all duration-300 relative overflow-hidden cursor-pointer before:content-[''] before:absolute before:top-[-2px] before:left-[-100%] before:w-full before:h-[calc(100%+4px)] before:bg-gradient-to-r before:from-transparent before:via-white/40 before:to-transparent before:transition-all before:duration-600 before:ease-in-out before:pointer-events-none before:z-10 hover:before:left-full hover:backdrop-blur-xl hover:bg-white/20 hover:shadow-none hover:-translate-y-0.5 dark:hover:bg-white/8"
+                onClick={() =>
+                  window.open(link.url, "_blank", "noopener,noreferrer")
+                }
+                aria-label={`Visit ${link.name}`}
               >
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  asChild
-                  className="p-2 rounded-full group focus:outline-none focus:ring-2 focus:ring-white/50 bg-transparent backdrop-filter-none shadow-none transition-all duration-300 relative overflow-hidden before:content-[''] before:absolute before:top-[-2px] before:left-[-100%] before:w-full before:h-[calc(100%+4px)] before:bg-gradient-to-r before:from-transparent before:via-white/40 before:to-transparent before:transition-all before:duration-600 before:ease-in-out before:pointer-events-none before:z-10 hover:before:left-full hover:backdrop-blur-xl hover:bg-white/20 hover:shadow-none hover:-translate-y-0.5 dark:hover:bg-white/8"
-                >
-                  <Link
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="relative z-[2] flex items-center justify-center w-full h-full"
-                  >
-                    <LucideIcon className="w-10 h-10 text-brand-black dark:text-brand-white transition-colors duration-300 group-hover:text-brand-navy-blue dark:group-hover:text-brand-yellow [text-shadow:0_0_15px_rgba(255,255,255,0.4),0_2px_6px_rgba(0,0,0,0.15),0_0_30px_rgba(255,255,255,0.2)] dark:[text-shadow:0_0_20px_rgba(255,255,255,0.3),0_2px_10px_rgba(0,0,0,0.6),0_0_40px_rgba(255,255,255,0.15)]" />
-                    <span className="sr-only">{link.name}</span>
-                  </Link>
-                </Button>
-              </motion.div>
+                <LucideIcon className="relative z-[2] w-6 h-6 text-brand-black dark:text-brand-white transition-colors duration-300 group-hover:text-brand-navy-blue dark:group-hover:text-brand-yellow [text-shadow:0_0_15px_rgba(255,255,255,0.4),0_2px_6px_rgba(0,0,0,0.15),0_0_30px_rgba(255,255,255,0.2)] dark:[text-shadow:0_0_20px_rgba(255,255,255,0.3),0_2px_10px_rgba(0,0,0,0.6),0_0_40px_rgba(255,255,255,0.15)]" />
+              </motion.button>
             );
           })}
         </div>

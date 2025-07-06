@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://artesfera.tech/sitemap.xml
+Sitemap: https://app.artesfera.tech/sitemap.xml
