@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Brain,
   MessageCircle,
@@ -10,6 +11,10 @@ import {
   FileText,
   Handshake,
   Lightbulb,
+  Search,
+  DollarSign,
+  Calendar,
+  Presentation,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import DaevaSidebar from "@/components/DaevaSidebar";
@@ -21,7 +26,136 @@ interface Message {
   timestamp: Date;
 }
 
+type SpecializationType = "general" | "editais" | "contratos" | "apresentacoes";
+
+interface SpecializationConfig {
+  title: string;
+  subtitle: string;
+  icon: React.ComponentType<any>;
+  placeholder: string;
+  suggestions: Array<{
+    icon: React.ComponentType<any>;
+    text: string;
+  }>;
+  apiEndpoint: string;
+  welcomeMessage: string;
+}
+
+const specializationConfigs: Record<SpecializationType, SpecializationConfig> =
+  {
+    general: {
+      title: "Daeva AI",
+      subtitle: "Sua assistente especializada no mercado cultural brasileiro",
+      icon: Sparkles,
+      placeholder: "Digite sua mensagem para a Daeva...",
+      apiEndpoint: "/api/daeva/general",
+      welcomeMessage:
+        "Olá! Sou a Daeva, sua assistente especializada no mercado cultural brasileiro. Como posso ajudá-lo hoje?",
+      suggestions: [
+        { icon: Brain, text: "Como posso me candidatar a editais culturais?" },
+        { icon: FileText, text: "Ajude-me a criar um projeto cultural" },
+        {
+          icon: Handshake,
+          text: "Preciso de um contrato para colaboração artística",
+        },
+        {
+          icon: Lightbulb,
+          text: "Quais são as tendências do mercado cultural atual?",
+        },
+      ],
+    },
+    editais: {
+      title: "Daeva Editais",
+      subtitle:
+        "Especialista em editais culturais, captação de recursos e elaboração de projetos",
+      icon: FileText,
+      placeholder: "Pergunte sobre editais culturais, captação de recursos...",
+      apiEndpoint: "/api/daeva/editais",
+      welcomeMessage:
+        "Olá! Sou a Daeva especializada em editais culturais. Posso ajudá-lo com orientações sobre captação de recursos, elaboração de projetos, cronogramas, orçamentos e muito mais. Como posso ajudá-lo hoje?",
+      suggestions: [
+        {
+          icon: Search,
+          text: "Como encontrar editais adequados para meu projeto cultural?",
+        },
+        {
+          icon: FileText,
+          text: "Ajude-me a estruturar um projeto para edital de cultura",
+        },
+        {
+          icon: DollarSign,
+          text: "Como elaborar um orçamento detalhado para edital?",
+        },
+        {
+          icon: Calendar,
+          text: "Quais são os prazos típicos de editais culturais?",
+        },
+      ],
+    },
+    contratos: {
+      title: "Daeva Contratos",
+      subtitle:
+        "Especialista em elaboração e revisão de contratos artísticos e culturais",
+      icon: MessageCircle,
+      placeholder: "Pergunte sobre contratos artísticos, acordos culturais...",
+      apiEndpoint: "/api/daeva/contratos",
+      welcomeMessage:
+        "Olá! Sou a Daeva especializada em contratos artísticos. Posso ajudá-lo com elaboração, revisão e orientações sobre contratos culturais, acordos de colaboração e questões jurídicas do setor. Como posso ajudá-lo hoje?",
+      suggestions: [
+        {
+          icon: FileText,
+          text: "Como elaborar um contrato de prestação de serviços artísticos?",
+        },
+        {
+          icon: Handshake,
+          text: "Quais cláusulas são essenciais em contratos culturais?",
+        },
+        {
+          icon: DollarSign,
+          text: "Como definir valores e formas de pagamento em contratos?",
+        },
+        {
+          icon: Calendar,
+          text: "Como estabelecer prazos e cronogramas contratuais?",
+        },
+      ],
+    },
+    apresentacoes: {
+      title: "Daeva Apresentações",
+      subtitle:
+        "Especialista em planejamento e estruturação de apresentações culturais",
+      icon: Presentation,
+      placeholder:
+        "Pergunte sobre apresentações culturais, planejamento de eventos...",
+      apiEndpoint: "/api/daeva/apresentacoes",
+      welcomeMessage:
+        "Olá! Sou a Daeva especializada em apresentações culturais. Posso ajudá-lo com planejamento de eventos, estruturação de apresentações, produção cultural e organização de atividades artísticas. Como posso ajudá-lo hoje?",
+      suggestions: [
+        {
+          icon: Presentation,
+          text: "Como planejar uma apresentação cultural impactante?",
+        },
+        {
+          icon: Calendar,
+          text: "Quais são as etapas de produção de um evento cultural?",
+        },
+        {
+          icon: DollarSign,
+          text: "Como calcular custos de produção de apresentações?",
+        },
+        {
+          icon: Brain,
+          text: "Como engajar o público em apresentações culturais?",
+        },
+      ],
+    },
+  };
+
 export default function Daeva() {
+  const searchParams = useSearchParams();
+  const [specialization, setSpecialization] = useState<SpecializationType>(
+    (searchParams.get("spec") as SpecializationType) || "general"
+  );
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -30,6 +164,8 @@ export default function Daeva() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  const currentConfig = specializationConfigs[specialization];
+
   // Reset chat function
   const resetChat = () => {
     setMessages([]);
@@ -37,6 +173,20 @@ export default function Daeva() {
     setIsLoading(false);
     setShowTitle(true);
     setHasInteracted(false);
+  };
+
+  // Handle specialization change
+  const handleSpecializationChange = (newSpec: SpecializationType) => {
+    setSpecialization(newSpec);
+    resetChat(); // Reset chat when changing specialization
+    // Update URL without page reload
+    const url = new URL(window.location.href);
+    if (newSpec === "general") {
+      url.searchParams.delete("spec");
+    } else {
+      url.searchParams.set("spec", newSpec);
+    }
+    window.history.pushState({}, "", url.toString());
   };
 
   const scrollToBottom = () => {
@@ -49,6 +199,37 @@ export default function Daeva() {
       scrollToBottom();
     }
   }, [messages, hasInteracted]);
+
+  // Dynamic API call based on specialization
+  const sendMessageToAPI = async (
+    message: string,
+    specialization: SpecializationType
+  ) => {
+    try {
+      const response = await fetch(currentConfig.apiEndpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message,
+          specialization,
+          // Add any additional context or parameters here
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to get response from API");
+      }
+
+      const data = await response.json();
+      return data.content || "Desculpe, ocorreu um erro. Tente novamente.";
+    } catch (error) {
+      console.error("API Error:", error);
+      // Fallback to simulated response for now
+      return currentConfig.welcomeMessage;
+    }
+  };
 
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
@@ -69,21 +250,37 @@ export default function Daeva() {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    const messageContent = inputValue.trim();
     setInputValue("");
     setIsLoading(true);
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      // Call the appropriate API based on current specialization
+      const assistantContent = await sendMessageToAPI(
+        messageContent,
+        specialization
+      );
+
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: "assistant",
-        content:
-          "Olá! Sou a Daeva, sua assistente especializada no mercado cultural brasileiro. Como posso ajudá-lo hoje?",
+        content: assistantContent,
         timestamp: new Date(),
       };
+
       setMessages((prev) => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error("Error sending message:", error);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        type: "assistant",
+        content: "Desculpe, ocorreu um erro. Tente novamente.",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -93,26 +290,17 @@ export default function Daeva() {
     }
   };
 
-  const suggestions = [
-    { icon: Brain, text: "Como posso me candidatar a editais culturais?" },
-    { icon: FileText, text: "Ajude-me a criar um projeto cultural" },
-    {
-      icon: Handshake,
-      text: "Preciso de um contrato para colaboração artística",
-    },
-    {
-      icon: Lightbulb,
-      text: "Quais são as tendências do mercado cultural atual?",
-    },
-  ];
-
   return (
-    <div className="h-full overflow-hidden flex">
+    <div className="h-[calc(100vh-4rem)] overflow-hidden flex">
       {/* Sidebar */}
-      <DaevaSidebar onResetChat={resetChat} />
+      <DaevaSidebar
+        onResetChat={resetChat}
+        onSpecializationChange={handleSpecializationChange}
+        currentSpecialization={specialization}
+      />
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col ">
+      <div className="flex-1 flex flex-col">
         {/* Header with animated title */}
         <AnimatePresence>
           {showTitle && (
@@ -128,25 +316,46 @@ export default function Daeva() {
                 transition={{ duration: 0.6, delay: 0.1 }}
                 className="text-center"
               >
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-serif text-brand-black dark:text-brand-white mb-3">
-                  Daeva{" "}
-                  <span className="text-brand-navy-blue dark:text-brand-yellow">
-                    AI
-                  </span>
-                </h1>
+                <div className="flex items-center justify-center gap-3 mb-4">
+                  {specialization !== "general" && (
+                    <div className="w-12 h-12 rounded-xl bg-brand-navy-blue/20 dark:bg-brand-yellow/20 backdrop-blur-lg flex items-center justify-center">
+                      <currentConfig.icon className="w-6 h-6 text-brand-navy-blue dark:text-brand-yellow" />
+                    </div>
+                  )}
+                  <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-serif text-brand-black dark:text-brand-white">
+                    {specialization === "general" ? (
+                      <>
+                        Daeva{" "}
+                        <span className="text-brand-navy-blue dark:text-brand-yellow">
+                          AI
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        Daeva{" "}
+                        <span className="text-brand-navy-blue dark:text-brand-yellow">
+                          {specialization === "editais" && "Editais"}
+                          {specialization === "contratos" && "Contratos"}
+                          {specialization === "apresentacoes" &&
+                            "Apresentações"}
+                        </span>
+                      </>
+                    )}
+                  </h1>
+                </div>
                 <p className="text-sm sm:text-base text-brand-black/70 dark:text-brand-white/70 max-w-xl mx-auto leading-relaxed">
-                  Sua assistente especializada no mercado cultural brasileiro
+                  {currentConfig.subtitle}
                 </p>
               </motion.div>
 
-              {/* Suggestion Cards */}
+              {/* Dynamic Suggestion Cards */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
                 className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-lg mb-6"
               >
-                {suggestions.map((suggestion, index) => {
+                {currentConfig.suggestions.map((suggestion, index) => {
                   const IconComponent = suggestion.icon;
                   return (
                     <motion.button
@@ -272,6 +481,12 @@ export default function Daeva() {
                 <ArrowUp className="w-4 h-4" />
               </Button>
             </div>
+
+            {/* Disclaimer Text */}
+            <p className="text-xs text-brand-black/80 dark:text-brand-white/80 text-center mt-2">
+              A Daeva pode cometer erros. Considere verificar informações
+              importantes.
+            </p>
           </div>
         </div>
       </div>

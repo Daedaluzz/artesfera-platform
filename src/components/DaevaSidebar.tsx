@@ -33,12 +33,16 @@ interface SpecializationItemProps {
   icon: React.ComponentType<any>;
   label: string;
   description: string;
-  href: string;
+  onClick?: () => void;
   isActive?: boolean;
 }
 
 interface DaevaSidebarProps {
   onResetChat?: () => void;
+  onSpecializationChange?: (
+    specialization: "general" | "editais" | "contratos" | "apresentacoes"
+  ) => void;
+  currentSpecialization?: "general" | "editais" | "contratos" | "apresentacoes";
 }
 
 const SidebarItem: React.FC<SidebarItemProps> = ({
@@ -135,50 +139,53 @@ const SpecializationItem: React.FC<SpecializationItemProps> = ({
   icon: Icon,
   label,
   description,
-  href,
+  onClick,
   isActive = false,
 }) => {
   return (
-    <Link href={href} className="block">
-      <div
-        className={`
-          relative p-3 rounded-lg transition-all duration-300 group cursor-pointer overflow-hidden
-          before:content-[''] before:absolute before:top-[-2px] before:left-[-100%] before:w-full before:h-[calc(100%+4px)] 
-          before:bg-gradient-to-r before:from-transparent before:via-white/30 before:to-transparent 
-          before:transition-all before:duration-500 before:ease-in-out before:pointer-events-none before:z-10
-          hover:before:left-full hover:backdrop-blur-lg hover:bg-white/15 hover:translate-y-[-1px]
-          dark:hover:bg-white/8
-          ${
-            isActive
-              ? "text-brand-navy-blue dark:text-brand-yellow backdrop-blur-lg bg-white/20 translate-y-[-1px] dark:bg-white/10 font-medium"
-              : "text-brand-black dark:text-brand-white hover:text-brand-navy-blue dark:hover:text-brand-yellow"
-          }
-        `}
-      >
-        <div className="flex items-start gap-2.5 relative z-10">
-          <div
-            className={`
-              w-6 h-6 rounded-md backdrop-blur-lg flex items-center justify-center flex-shrink-0 transition-colors duration-300
-              ${
-                isActive
-                  ? "bg-brand-navy-blue/20 dark:bg-brand-yellow/20"
-                  : "bg-white/15 dark:bg-white/8 group-hover:bg-brand-navy-blue/15 dark:group-hover:bg-brand-yellow/15"
-              }
-            `}
-          >
-            <Icon className="w-3.5 h-3.5" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium mb-0.5">{label}</p>
-            <p className="text-xs opacity-70 leading-relaxed">{description}</p>
-          </div>
+    <div
+      onClick={onClick}
+      className={`
+        relative p-3 rounded-lg transition-all duration-300 group cursor-pointer overflow-hidden
+        before:content-[''] before:absolute before:top-[-2px] before:left-[-100%] before:w-full before:h-[calc(100%+4px)] 
+        before:bg-gradient-to-r before:from-transparent before:via-white/30 before:to-transparent 
+        before:transition-all before:duration-500 before:ease-in-out before:pointer-events-none before:z-10
+        hover:before:left-full hover:backdrop-blur-lg hover:bg-white/15 hover:translate-y-[-1px]
+        dark:hover:bg-white/8
+        ${
+          isActive
+            ? "text-brand-navy-blue dark:text-brand-yellow backdrop-blur-lg bg-white/20 translate-y-[-1px] dark:bg-white/10 font-medium"
+            : "text-brand-black dark:text-brand-white hover:text-brand-navy-blue dark:hover:text-brand-yellow"
+        }
+      `}
+    >
+      <div className="flex items-start gap-2.5 relative z-10">
+        <div
+          className={`
+            w-6 h-6 rounded-md backdrop-blur-lg flex items-center justify-center flex-shrink-0 transition-colors duration-300
+            ${
+              isActive
+                ? "bg-brand-navy-blue/20 dark:bg-brand-yellow/20"
+                : "bg-white/15 dark:bg-white/8 group-hover:bg-brand-navy-blue/15 dark:group-hover:bg-brand-yellow/15"
+            }
+          `}
+        >
+          <Icon className="w-3.5 h-3.5" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-medium mb-0.5">{label}</p>
+          <p className="text-xs opacity-70 leading-relaxed">{description}</p>
         </div>
       </div>
-    </Link>
+    </div>
   );
 };
 
-export default function DaevaSidebar({ onResetChat }: DaevaSidebarProps) {
+export default function DaevaSidebar({
+  onResetChat,
+  onSpecializationChange,
+  currentSpecialization = "general",
+}: DaevaSidebarProps) {
   const [isSpecializationsHovered, setIsSpecializationsHovered] =
     useState(false);
   const [isMobileSpecializationsExpanded, setIsMobileSpecializationsExpanded] =
@@ -186,7 +193,20 @@ export default function DaevaSidebar({ onResetChat }: DaevaSidebarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
-  const isSpecializationActive = (path: string) => pathname === path;
+  const isSpecializationActive = (spec: string) => {
+    if (spec === "general") return currentSpecialization === "general";
+    return currentSpecialization === spec;
+  };
+
+  const handleSpecializationClick = (
+    specialization: "general" | "editais" | "contratos" | "apresentacoes"
+  ) => {
+    if (onSpecializationChange) {
+      onSpecializationChange(specialization);
+    }
+    setIsMobileMenuOpen(false);
+    setIsSpecializationsHovered(false);
+  };
 
   const toggleMobileSpecializations = () => {
     setIsMobileSpecializationsExpanded(!isMobileSpecializationsExpanded);
@@ -240,10 +260,10 @@ export default function DaevaSidebar({ onResetChat }: DaevaSidebarProps) {
             <SidebarItem
               icon={Plus}
               label="Novo Chat"
-              href="/daeva"
-              isActive={pathname === "/daeva"}
+              isActive={currentSpecialization === "general"}
               onClick={() => {
-                if (pathname === "/daeva" && onResetChat) {
+                handleSpecializationClick("general");
+                if (onResetChat) {
                   onResetChat();
                 }
               }}
@@ -312,22 +332,22 @@ export default function DaevaSidebar({ onResetChat }: DaevaSidebarProps) {
                     icon={FileText}
                     label="Editais"
                     description="Orientação para editais culturais e captação de recursos"
-                    href="/daeva/editais"
-                    isActive={isSpecializationActive("/daeva/editais")}
+                    onClick={() => handleSpecializationClick("editais")}
+                    isActive={isSpecializationActive("editais")}
                   />
                   <SpecializationItem
                     icon={MessageSquare}
                     label="Contratos"
                     description="Elaboração e revisão de contratos artísticos"
-                    href="/daeva/contratos"
-                    isActive={isSpecializationActive("/daeva/contratos")}
+                    onClick={() => handleSpecializationClick("contratos")}
+                    isActive={isSpecializationActive("contratos")}
                   />
                   <SpecializationItem
                     icon={Presentation}
                     label="Apresentações"
                     description="Planejamento e estruturação de apresentações culturais"
-                    href="/daeva/apresentacoes"
-                    isActive={isSpecializationActive("/daeva/apresentacoes")}
+                    onClick={() => handleSpecializationClick("apresentacoes")}
+                    isActive={isSpecializationActive("apresentacoes")}
                   />
                 </div>
               </div>
@@ -385,10 +405,10 @@ export default function DaevaSidebar({ onResetChat }: DaevaSidebarProps) {
                 <SidebarItem
                   icon={Plus}
                   label="Novo Chat"
-                  href="/daeva"
-                  isActive={pathname === "/daeva"}
+                  isActive={currentSpecialization === "general"}
                   onClick={() => {
-                    if (pathname === "/daeva" && onResetChat) {
+                    handleSpecializationClick("general");
+                    if (onResetChat) {
                       onResetChat();
                     }
                   }}
@@ -411,31 +431,31 @@ export default function DaevaSidebar({ onResetChat }: DaevaSidebarProps) {
                 isExpanded={isMobileSpecializationsExpanded}
                 onClick={toggleMobileSpecializations}
               >
-                <div onClick={closeMobileMenu}>
+                <div>
                   <SpecializationItem
                     icon={FileText}
                     label="Editais"
                     description="Orientação para editais culturais e captação de recursos"
-                    href="/daeva/editais"
-                    isActive={isSpecializationActive("/daeva/editais")}
+                    onClick={() => handleSpecializationClick("editais")}
+                    isActive={isSpecializationActive("editais")}
                   />
                 </div>
-                <div onClick={closeMobileMenu}>
+                <div>
                   <SpecializationItem
                     icon={MessageSquare}
                     label="Contratos"
                     description="Elaboração e revisão de contratos artísticos"
-                    href="/daeva/contratos"
-                    isActive={isSpecializationActive("/daeva/contratos")}
+                    onClick={() => handleSpecializationClick("contratos")}
+                    isActive={isSpecializationActive("contratos")}
                   />
                 </div>
-                <div onClick={closeMobileMenu}>
+                <div>
                   <SpecializationItem
                     icon={Presentation}
                     label="Apresentações"
                     description="Planejamento e estruturação de apresentações culturais"
-                    href="/daeva/apresentacoes"
-                    isActive={isSpecializationActive("/daeva/apresentacoes")}
+                    onClick={() => handleSpecializationClick("apresentacoes")}
+                    isActive={isSpecializationActive("apresentacoes")}
                   />
                 </div>
               </SidebarItem>

@@ -8,8 +8,8 @@ import { socialLinks } from "@/lib/socialLinks";
 export default function Footer() {
   const pathname = usePathname();
 
-  // Don't render footer on Daeva page
-  if (pathname === "/daeva") {
+  // Don't render footer on Daeva pages (including subpages)
+  if (pathname.startsWith("/daeva")) {
     return null;
   }
   return (
