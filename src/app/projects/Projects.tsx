@@ -1,18 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
-import {
-  Search,
-  Filter,
-  Calendar,
-  MapPin,
-  DollarSign,
-} from "lucide-react";
+import { Search, Filter, Calendar, MapPin, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Projects() {
   return (
-    <main className="min-h-screen py-20 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <motion.div
@@ -126,6 +120,6 @@ export default function Projects() {
           </Button>
         </motion.div>
       </div>
-    </main>
+    </div>
   );
 }

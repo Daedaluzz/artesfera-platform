@@ -7,36 +7,36 @@ import { SecondaryButton } from "@/components/ui/secondary-button";
 
 export default function HeroSection() {
   return (
-    <section className="relative overflow-hidden flex items-center justify-center min-h-screen px-4 py-8 -mx-4 sm:-mx-6 lg:-mx-8 -my-4 sm:-my-6 lg:-my-8 rounded-[20px] backdrop-blur-[15px] bg-white/[0.37] dark:bg-black/30 border border-white/15 dark:border-black/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.15),inset_1px_0_0_rgba(255,255,255,0.2),inset_-1px_0_0_rgba(255,255,255,0.1),0_8px_64px_rgba(0,0,0,0.08)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.5),inset_0_-1px_0_rgba(255,255,255,0.2),inset_1px_0_0_rgba(255,255,255,0.3),inset_-1px_0_0_rgba(255,255,255,0.15),0_8px_64px_rgba(0,0,0,0.12)]">
-      {/* Simplified Background Elements */}
+    <section className="relative overflow-hidden min-h-screen flex items-center justify-center py-20">
+      {/* Subtle floating elements */}
       <div className="absolute inset-0 pointer-events-none">
         <motion.div
-          className="absolute top-20 right-16 w-3 h-3 bg-brand-yellow/60 rounded-full"
-          animate={{ y: [0, -15, 0], opacity: [0.4, 0.8, 0.4] }}
+          className="absolute top-1/4 right-1/4 w-2 h-2 bg-brand-navy-blue/30 dark:bg-brand-yellow/30 rounded-full"
+          animate={{ y: [0, -10, 0], opacity: [0.3, 0.6, 0.3] }}
           transition={{ duration: 4, repeat: Infinity }}
         />
         <motion.div
-          className="absolute bottom-24 left-20 w-2 h-2 bg-brand-orange/50 rounded-full"
-          animate={{ y: [0, -12, 0], opacity: [0.3, 0.7, 0.3] }}
+          className="absolute bottom-1/3 left-1/4 w-1.5 h-1.5 bg-brand-orange/25 rounded-full"
+          animate={{ y: [0, -8, 0], opacity: [0.2, 0.5, 0.2] }}
           transition={{ duration: 3.5, repeat: Infinity, delay: 1.5 }}
         />
       </div>
 
-      <div className="max-w-7xl mx-auto w-full relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-[80vh]">
+      <div className="max-w-7xl mx-auto w-full relative z-10 px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Left Content */}
           <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="space-y-8"
           >
             <div className="space-y-6">
               <motion.h1
-                initial={{ opacity: 0, y: -20 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
-                className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold font-serif text-brand-black dark:text-brand-white leading-tight"
+                className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold font-serif text-brand-black dark:text-brand-white leading-[1.1]"
               >
                 Transforme sua{" "}
                 <span className="text-brand-navy-blue dark:text-brand-yellow">
@@ -53,7 +53,7 @@ export default function HeroSection() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: "easeOut", delay: 0.4 }}
-                className="text-lg sm:text-xl lg:text-2xl text-brand-black/80 dark:text-brand-white/80 leading-relaxed max-w-2xl"
+                className="text-lg sm:text-xl text-brand-black/70 dark:text-brand-white/70 leading-relaxed max-w-xl"
               >
                 Cadastre-se agora e descubra{" "}
                 <span className="font-medium text-brand-navy-blue dark:text-brand-yellow">
@@ -71,7 +71,7 @@ export default function HeroSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: "easeOut", delay: 0.6 }}
-              className="flex flex-col gap-3 max-w-sm"
+              className="flex flex-col gap-4 max-w-sm"
             >
               {/* Primary CTA - Google Sign-up */}
               <PrimaryButton
@@ -126,37 +126,42 @@ export default function HeroSection() {
 
           {/* Right Image */}
           <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
-            className="relative"
+            className="relative flex items-center justify-center"
           >
-            <div className="relative w-full aspect-square max-w-lg mx-auto">
-              {/* Glassmorphic frame */}
-              <div className="absolute inset-0 rounded-[30px] backdrop-blur-[15px] bg-white/20 dark:bg-black/20 border border-white/30 dark:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.5),inset_0_-1px_0_rgba(255,255,255,0.1)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-1px_0_rgba(255,255,255,0.05)] overflow-hidden before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/60 before:to-transparent after:content-[''] after:absolute after:top-0 after:left-0 after:w-px after:h-full after:bg-gradient-to-b after:from-white/60 after:via-transparent after:to-white/20 p-6">
-                <div className="relative w-full h-full rounded-[20px] overflow-hidden">
-                  <Image
-                    src="/images/placeholder.webp"
-                    alt="ArtEsfera: Onde a arte encontra oportunidades - Plataforma que conecta artistas e empresas culturais"
-                    fill
-                    className="object-cover"
-                    priority
-                  />
+            <div className="relative w-full max-w-md aspect-square">
+              {/* Elegant glassmorphic container */}
+              <div className="relative w-full h-full rounded-[24px] backdrop-blur-[12px] bg-white/10 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-1px_0_rgba(255,255,255,0.1)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_-1px_0_rgba(255,255,255,0.05)] overflow-hidden">
+                {/* Subtle top highlight */}
+                <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
 
-                  {/* Overlay for better integration */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-brand-navy-blue/20 dark:from-brand-yellow/20 via-transparent to-transparent" />
+                <div className="relative w-full h-full p-6">
+                  <div className="relative w-full h-full rounded-[16px] overflow-hidden">
+                    <Image
+                      src="/images/placeholder.webp"
+                      alt="ArtEsfera: Onde a arte encontra oportunidades"
+                      fill
+                      className="object-cover"
+                      priority
+                    />
+
+                    {/* Subtle overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-brand-navy-blue/10 dark:from-brand-yellow/10 via-transparent to-transparent" />
+                  </div>
                 </div>
               </div>
 
-              {/* Floating elements around the image */}
+              {/* Minimal floating accents */}
               <motion.div
-                className="absolute -top-4 -right-4 w-8 h-8 bg-brand-navy-blue/20 dark:bg-brand-yellow/20 rounded-full backdrop-blur-sm border border-brand-navy-blue/30 dark:border-brand-yellow/30"
-                animate={{ scale: [1, 1.2, 1], opacity: [0.7, 1, 0.7] }}
+                className="absolute -top-2 -right-2 w-4 h-4 bg-brand-navy-blue/20 dark:bg-brand-yellow/20 rounded-full backdrop-blur-sm"
+                animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
                 transition={{ duration: 3, repeat: Infinity }}
               />
               <motion.div
-                className="absolute -bottom-6 -left-6 w-6 h-6 bg-brand-orange/20 rounded-full backdrop-blur-sm"
-                animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
+                className="absolute -bottom-3 -left-3 w-3 h-3 bg-brand-orange/15 rounded-full backdrop-blur-sm"
+                animate={{ scale: [1, 1.05, 1], opacity: [0.4, 0.6, 0.4] }}
                 transition={{ duration: 4, repeat: Infinity, delay: 1 }}
               />
             </div>

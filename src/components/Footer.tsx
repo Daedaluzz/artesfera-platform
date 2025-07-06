@@ -1,16 +1,23 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { usePathname } from "next/navigation";
 import * as Icons from "lucide-react";
 import { socialLinks } from "@/lib/socialLinks";
 
 export default function Footer() {
+  const pathname = usePathname();
+
+  // Don't render footer on Daeva page
+  if (pathname === "/daeva") {
+    return null;
+  }
   return (
     <motion.footer
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, ease: "easeOut", delay: 0.6 }}
-      className="relative w-full py-4 px-8 text-sm mt-8 rounded-xl overflow-hidden backdrop-blur-[8px] bg-white/[0.02] dark:bg-black/[0.02] border border-white/30 dark:border-white/25 shadow-[inset_0_0_20px_rgba(255,255,255,0.2),inset_0_0_40px_rgba(255,255,255,0.1),0_0_20px_rgba(255,255,255,0.1)] dark:shadow-[inset_0_0_20px_rgba(255,255,255,0.15),inset_0_0_40px_rgba(255,255,255,0.08),0_0_20px_rgba(255,255,255,0.08)] transition-all duration-300"
+      className="relative w-full py-4 px-8 text-sm mt-8 overflow-hidden backdrop-blur-[8px] bg-white/[0.02] dark:bg-black/[0.02] border border-white/30 dark:border-white/25 shadow-[inset_0_0_20px_rgba(255,255,255,0.2),inset_0_0_40px_rgba(255,255,255,0.1),0_0_20px_rgba(255,255,255,0.1)] dark:shadow-[inset_0_0_20px_rgba(255,255,255,0.15),inset_0_0_40px_rgba(255,255,255,0.08),0_0_20px_rgba(255,255,255,0.08)] transition-all duration-300"
     >
       {/* Simplified Background Elements */}
       <div className="absolute inset-0 pointer-events-none">

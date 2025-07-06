@@ -1,185 +1,258 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState, useRef, useEffect } from "react";
 import {
   Brain,
   MessageCircle,
+  Send,
+  ArrowUp,
+  Sparkles,
   FileText,
   Handshake,
   Lightbulb,
-  Send,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
+
+interface Message {
+  id: string;
+  type: "user" | "assistant";
+  content: string;
+  timestamp: Date;
+}
 
 export default function Daeva() {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [inputValue, setInputValue] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [showTitle, setShowTitle] = useState(true);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const handleSendMessage = async () => {
+    if (!inputValue.trim()) return;
+
+    // Hide title on first message
+    if (messages.length === 0) {
+      setShowTitle(false);
+    }
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      type: "user",
+      content: inputValue.trim(),
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setInputValue("");
+    setIsLoading(true);
+
+    // Simulate AI response
+    setTimeout(() => {
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        type: "assistant",
+        content:
+          "Olá! Sou a Daeva, sua assistente especializada no mercado cultural brasileiro. Como posso ajudá-lo hoje?",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, assistantMessage]);
+      setIsLoading(false);
+    }, 1000);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  const suggestions = [
+    { icon: Brain, text: "Como posso me candidatar a editais culturais?" },
+    { icon: FileText, text: "Ajude-me a criar um projeto cultural" },
+    {
+      icon: Handshake,
+      text: "Preciso de um contrato para colaboração artística",
+    },
+    {
+      icon: Lightbulb,
+      text: "Quais são as tendências do mercado cultural atual?",
+    },
+  ];
+
   return (
-    <main className="min-h-screen py-20 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-16"
-        >
-      
+    <div className="min-h-screen flex flex-col relative">
+      {/* Main Chat Container */}
+      <div className="flex-1 flex flex-col max-w-3xl mx-auto w-full">
+        {/* Header with animated title */}
+        <AnimatePresence>
+          {showTitle && (
+            <motion.div
+              initial={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15, scale: 0.98 }}
+              transition={{ duration: 0.4, ease: "easeInOut" }}
+              className="flex flex-col items-center justify-center min-h-[50vh] px-4"
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+                className="text-center mb-8"
+              >
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-serif text-brand-black dark:text-brand-white mb-3">
+                  Daeva{" "}
+                  <span className="text-brand-navy-blue dark:text-brand-yellow">
+                    AI
+                  </span>
+                </h1>
+                <p className="text-sm sm:text-base text-brand-black/70 dark:text-brand-white/70 max-w-xl mx-auto leading-relaxed">
+                  Sua assistente especializada no mercado cultural brasileiro
+                </p>
+              </motion.div>
 
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold font-serif text-brand-black dark:text-brand-white mb-6">
-            Daeva{" "}
-            <span className="text-brand-navy-blue dark:text-brand-yellow">
-              AI
-            </span>
-          </h1>
-
-          <p className="text-lg sm:text-xl text-brand-black/80 dark:text-brand-white/80 max-w-3xl mx-auto leading-relaxed">
-            Sua assistente de IA especializada no mercado cultural brasileiro.
-            Criada para conectar artistas e oportunidades de forma inteligente.
-          </p>
-        </motion.div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-          {/* Chat Interface */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="space-y-6"
-          >
-            <div className="relative p-6 rounded-[20px] backdrop-blur-[15px] bg-white/[0.25] dark:bg-black/25 border border-white/[0.3] dark:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.5),inset_0_-1px_0_rgba(255,255,255,0.1),inset_0_0_20px_10px_rgba(255,255,255,0.1)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-1px_0_rgba(255,255,255,0.05),inset_0_0_20px_10px_rgba(255,255,255,0.05)]">
-              <h2 className="text-2xl font-bold font-serif text-brand-black dark:text-brand-white mb-6">
-                Converse com a Daeva
-              </h2>
-
-              {/* Chat Messages */}
-              <div className="space-y-4 mb-6 h-96 overflow-y-auto">
-                {/* Daeva Message */}
-                <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 rounded-full bg-brand-navy-blue/20 dark:bg-brand-yellow/20 flex items-center justify-center">
-                    <Brain className="w-4 h-4 text-brand-navy-blue dark:text-brand-yellow" />
-                  </div>
-                  <div className="flex-1 p-3 rounded-xl backdrop-blur-lg bg-white/[0.1] dark:bg-white/[0.05] border border-white/[0.2] dark:border-white/[0.1]">
-                    <p className="text-brand-black dark:text-brand-white text-sm">
-                      Olá! Sou a Daeva, sua assistente especializada em cultura.
-                      Como posso ajudá-lo hoje?
-                    </p>
-                  </div>
-                </div>
-
-                {/* User Message */}
-                <div className="flex items-start space-x-3 flex-row-reverse">
-                  <div className="w-8 h-8 rounded-full bg-brand-blue/20 flex items-center justify-center">
-                    <MessageCircle className="w-4 h-4 text-brand-blue" />
-                  </div>
-                  <div className="flex-1 p-3 rounded-xl backdrop-blur-lg bg-brand-navy-blue/10 dark:bg-brand-yellow/10 border border-brand-navy-blue/20 dark:border-brand-yellow/20">
-                    <p className="text-brand-black dark:text-brand-white text-sm">
-                      Estou procurando projetos de música clássica em São Paulo.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Daeva Response */}
-                <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 rounded-full bg-brand-navy-blue/20 dark:bg-brand-yellow/20 flex items-center justify-center">
-                    <Brain className="w-4 h-4 text-brand-navy-blue dark:text-brand-yellow" />
-                  </div>
-                  <div className="flex-1 p-3 rounded-xl backdrop-blur-lg bg-white/[0.1] dark:bg-white/[0.05] border border-white/[0.2] dark:border-white/[0.1]">
-                    <p className="text-brand-black dark:text-brand-white text-sm">
-                      Ótimo! Encontrei 3 projetos de música clássica em São
-                      Paulo para você:
-                      <br />• Orquestra Sinfônica Municipal - Solista
-                      <br />• Festival de Inverno de Campos do Jordão
-                      <br />• Concerto de Gala no Teatro Municipal
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Chat Input */}
-              <div className="flex gap-3">
-                <input
-                  type="text"
-                  placeholder="Digite sua mensagem..."
-                  className="flex-1 px-4 py-3 rounded-xl backdrop-blur-lg bg-white/[0.1] dark:bg-white/[0.05] border border-white/[0.2] dark:border-white/[0.1] text-brand-black dark:text-brand-white placeholder:text-brand-black/60 dark:placeholder:text-brand-white/60 focus:outline-none focus:ring-2 focus:ring-brand-navy-blue/50 dark:focus:ring-brand-yellow/50"
-                />
-                <Button variant="default" size="default">
-                  <Send className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Features & Image */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="space-y-8"
-          >
-            {/* Daeva Image */}
-            <div className="relative w-full aspect-square max-w-md mx-auto">
-              <div className="absolute inset-0 rounded-[30px] backdrop-blur-[15px] bg-white/20 dark:bg-black/20 border border-white/30 dark:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.5),inset_0_-1px_0_rgba(255,255,255,0.1),inset_0_0_20px_10px_rgba(255,255,255,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-1px_0_rgba(255,255,255,0.05),inset_0_0_20px_10px_rgba(255,255,255,0.04)] overflow-hidden p-6">
-                <div className="relative w-full h-full rounded-[20px] overflow-hidden">
-                  <Image
-                    src="/images/daeva.webp"
-                    alt="Daeva AI - Assistente especializada em cultura"
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Features Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {[
-                {
-                  icon: Brain,
-                  title: "Match Inteligente",
-                  description:
-                    "Conecta artistas e projetos com IA especializada",
-                },
-                {
-                  icon: FileText,
-                  title: "Análise de Editais",
-                  description: "Interpreta editais públicos e privados",
-                },
-                {
-                  icon: Handshake,
-                  title: "Contratos",
-                  description: "Gera e revisa contratos personalizados",
-                },
-                {
-                  icon: Lightbulb,
-                  title: "Apresentações",
-                  description: "Cria apresentações profissionais",
-                },
-              ].map((feature, index) => {
-                const IconComponent = feature.icon;
-                return (
-                  <div
-                    key={index}
-                    className="relative p-4 rounded-[15px] backdrop-blur-[15px] bg-white/[0.15] dark:bg-black/15 border border-white/[0.25] dark:border-white/20 shadow-[0_4px_20px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1),inset_0_0_20px_10px_rgba(255,255,255,0.06)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.25),inset_0_-1px_0_rgba(255,255,255,0.08),inset_0_0_20px_10px_rgba(255,255,255,0.03)] transition-all duration-300 hover:-translate-y-1"
-                  >
-                    <div className="w-8 h-8 mb-3 relative">
-                      <div className="absolute inset-0 bg-brand-navy-blue/20 dark:bg-brand-yellow/20 rounded-lg backdrop-blur-sm" />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <IconComponent className="w-4 h-4 text-brand-navy-blue dark:text-brand-yellow" />
+              {/* Suggestion Cards */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-lg mb-6"
+              >
+                {suggestions.map((suggestion, index) => {
+                  const IconComponent = suggestion.icon;
+                  return (
+                    <motion.button
+                      key={index}
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
+                      onClick={() => setInputValue(suggestion.text)}
+                      className="relative p-3 rounded-[16px] backdrop-blur-[12px] bg-white/[0.12] dark:bg-white/[0.06] border border-white/[0.2] dark:border-white/[0.12] shadow-[0_4px_20px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-1px_0_rgba(255,255,255,0.08),inset_0_0_15px_8px_rgba(255,255,255,0.04)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-1px_0_rgba(255,255,255,0.06),inset_0_0_15px_8px_rgba(255,255,255,0.02)] transition-all duration-200 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.12),inset_0_0_20px_10px_rgba(255,255,255,0.06)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.16),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-1px_0_rgba(255,255,255,0.08),inset_0_0_20px_10px_rgba(255,255,255,0.04)] text-left group"
+                    >
+                      <div className="flex items-start gap-2.5">
+                        <div className="w-6 h-6 rounded-lg bg-brand-navy-blue/15 dark:bg-brand-yellow/15 flex items-center justify-center flex-shrink-0 transition-colors duration-200 group-hover:bg-brand-navy-blue/25 dark:group-hover:bg-brand-yellow/25">
+                          <IconComponent className="w-3.5 h-3.5 text-brand-navy-blue dark:text-brand-yellow" />
+                        </div>
+                        <p className="text-xs text-brand-black dark:text-brand-white leading-relaxed font-medium">
+                          {suggestion.text}
+                        </p>
                       </div>
-                    </div>
-                    <h3 className="text-sm font-semibold text-brand-black dark:text-brand-white mb-2 font-serif">
-                      {feature.title}
-                    </h3>
-                    <p className="text-xs text-brand-black/70 dark:text-brand-white/70 leading-relaxed">
-                      {feature.description}
+                    </motion.button>
+                  );
+                })}
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Messages Container */}
+        <div className="flex-1 overflow-hidden">
+          <div className="h-full overflow-y-auto px-4 pb-4">
+            <div className="space-y-4">
+              {messages.map((message) => (
+                <motion.div
+                  key={message.id}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className={`flex items-start gap-3 ${
+                    message.type === "user" ? "flex-row-reverse" : ""
+                  }`}
+                >
+                  {/* Avatar */}
+                  <div
+                    className={`w-7 h-7 rounded-full flex items-center justify-center backdrop-blur-lg ${
+                      message.type === "assistant"
+                        ? "bg-brand-navy-blue/15 dark:bg-brand-yellow/15"
+                        : "bg-brand-blue/15"
+                    }`}
+                  >
+                    {message.type === "assistant" ? (
+                      <Sparkles className="w-3.5 h-3.5 text-brand-navy-blue dark:text-brand-yellow" />
+                    ) : (
+                      <MessageCircle className="w-3.5 h-3.5 text-brand-blue" />
+                    )}
+                  </div>
+
+                  {/* Message Bubble */}
+                  <div
+                    className={`flex-1 max-w-2xl p-3 rounded-[16px] backdrop-blur-[12px] border ${
+                      message.type === "assistant"
+                        ? "bg-white/[0.12] dark:bg-white/[0.06] border-white/[0.2] dark:border-white/[0.12] shadow-[0_4px_20px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-1px_0_rgba(255,255,255,0.08),inset_0_0_15px_8px_rgba(255,255,255,0.04)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-1px_0_rgba(255,255,255,0.06),inset_0_0_15px_8px_rgba(255,255,255,0.02)]"
+                        : "bg-brand-navy-blue/8 dark:bg-brand-yellow/8 border-brand-navy-blue/15 dark:border-brand-yellow/15 shadow-[0_4px_20px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-1px_0_rgba(255,255,255,0.08),inset_0_0_15px_8px_rgba(255,255,255,0.03)]"
+                    }`}
+                  >
+                    <p className="text-sm text-brand-black dark:text-brand-white leading-relaxed whitespace-pre-wrap">
+                      {message.content}
                     </p>
                   </div>
-                );
-              })}
+                </motion.div>
+              ))}
+
+              {/* Loading indicator */}
+              {isLoading && (
+                <motion.div
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-start gap-3"
+                >
+                  <div className="w-7 h-7 rounded-full bg-brand-navy-blue/15 dark:bg-brand-yellow/15 flex items-center justify-center backdrop-blur-lg">
+                    <Sparkles className="w-3.5 h-3.5 text-brand-navy-blue dark:text-brand-yellow animate-pulse" />
+                  </div>
+                  <div className="flex-1 max-w-2xl p-3 rounded-[16px] backdrop-blur-[12px] bg-white/[0.12] dark:bg-white/[0.06] border border-white/[0.2] dark:border-white/[0.12]">
+                    <div className="flex space-x-1.5">
+                      <div className="w-1.5 h-1.5 bg-brand-navy-blue/40 dark:bg-brand-yellow/40 rounded-full animate-bounce" />
+                      <div
+                        className="w-1.5 h-1.5 bg-brand-navy-blue/40 dark:bg-brand-yellow/40 rounded-full animate-bounce"
+                        style={{ animationDelay: "0.1s" }}
+                      />
+                      <div
+                        className="w-1.5 h-1.5 bg-brand-navy-blue/40 dark:bg-brand-yellow/40 rounded-full animate-bounce"
+                        style={{ animationDelay: "0.2s" }}
+                      />
+                    </div>
+                  </div>
+                </motion.div>
+              )}
             </div>
-          </motion.div>
+            <div ref={messagesEndRef} />
+          </div>
+        </div>
+
+        {/* Input Area */}
+        <div className="sticky bottom-0 p-4">
+          <div className="max-w-2xl mx-auto relative">
+            <div className="relative rounded-[18px] backdrop-blur-[12px] bg-white/[0.2] dark:bg-white/[0.1] border border-white/[0.25] dark:border-white/[0.15] shadow-[0_6px_25px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1),inset_0_0_15px_8px_rgba(255,255,255,0.08)] dark:shadow-[0_6px_25px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.25),inset_0_-1px_0_rgba(255,255,255,0.04),inset_0_0_15px_8px_rgba(255,255,255,0.04)]">
+              <textarea
+                ref={textareaRef}
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={handleKeyPress}
+                placeholder="Digite sua mensagem para a Daeva..."
+                rows={1}
+                className="w-full px-4 py-3 pr-12 bg-transparent border-none outline-none resize-none text-brand-black dark:text-brand-white placeholder:text-brand-black/50 dark:placeholder:text-brand-white/50 text-sm leading-relaxed max-h-28 overflow-y-auto"
+                style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+              />
+              <Button
+                onClick={handleSendMessage}
+                disabled={!inputValue.trim() || isLoading}
+                size="icon"
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full"
+              >
+                <ArrowUp className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

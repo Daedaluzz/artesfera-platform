@@ -9,7 +9,7 @@ import CTASection from "@/components/CTASection";
 
 export default function Home() {
   return (
-    <main className="min-h-screen">
+    <div className="min-h-screen px-4 sm:px-6 lg:px-8">
       <HeroSection />
       <AboutSection />
       <FeaturesSection />
@@ -18,6 +18,6 @@ export default function Home() {
       <CommunityImpactSection />
       <TestimonialsSection />
       <CTASection />
-    </main>
+    </div>
   );
 }

@@ -132,10 +132,8 @@ export default function RootLayout({
       <body className="antialiased">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <NavBar />
-          <main className="min-h-screen flex flex-col p-4 sm:p-6 lg:p-8">
-            <div className="relative flex-grow p-4 sm:p-6 lg:p-8 rounded-xl backdrop-blur-xl bg-white/15 dark:bg-white/8 border border-white/30 dark:border-white/15 before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/60 before:to-transparent before:pointer-events-none before:z-[1]">
-              {children}
-            </div>
+          <main className="min-h-screen flex flex-col">
+            <div className="flex-grow">{children}</div>
             <Footer />
           </main>
         </ThemeProvider>
