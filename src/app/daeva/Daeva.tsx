@@ -31,10 +31,10 @@ type SpecializationType = "general" | "editais" | "contratos" | "apresentacoes";
 interface SpecializationConfig {
   title: string;
   subtitle: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   placeholder: string;
   suggestions: Array<{
-    icon: React.ComponentType<any>;
+    icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
     text: string;
   }>;
   apiEndpoint: string;

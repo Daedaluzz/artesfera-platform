@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, specialization } = await request.json();
+    const { message: _message, specialization: _specialization } =
+      await request.json();
 
     // TODO: Replace with actual LLM API call with contratos-specific prompts
     // Example API call structure:

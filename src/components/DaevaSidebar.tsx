@@ -19,7 +19,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 interface SidebarItemProps {
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   label: string;
   href?: string;
   onClick?: () => void;
@@ -30,7 +30,7 @@ interface SidebarItemProps {
 }
 
 interface SpecializationItemProps {
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   label: string;
   description: string;
   onClick?: () => void;
@@ -55,12 +55,10 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   isExpanded = false,
   children,
 }) => {
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = () => {
     if (onClick) {
       onClick();
     }
-    // If there's an href and we want to prevent navigation in some cases
-    // we can add logic here
   };
 
   const content = (
