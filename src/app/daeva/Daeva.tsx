@@ -26,6 +26,7 @@ export default function Daeva() {
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showTitle, setShowTitle] = useState(true);
+  const [hasInteracted, setHasInteracted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -34,11 +35,17 @@ export default function Daeva() {
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    // Only scroll to bottom if there are messages and user has interacted
+    if (messages.length > 0 && hasInteracted) {
+      scrollToBottom();
+    }
+  }, [messages, hasInteracted]);
 
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
+
+    // Mark that user has interacted
+    setHasInteracted(true);
 
     // Hide title on first message
     if (messages.length === 0) {
@@ -91,7 +98,7 @@ export default function Daeva() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col relative">
+    <div className="min-h-screen flex flex-col relative pt-16">
       {/* Main Chat Container */}
       <div className="flex-1 flex flex-col max-w-3xl mx-auto w-full">
         {/* Header with animated title */}
@@ -101,7 +108,7 @@ export default function Daeva() {
               initial={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15, scale: 0.98 }}
               transition={{ duration: 0.4, ease: "easeInOut" }}
-              className="flex flex-col items-center justify-center min-h-[50vh] px-4"
+              className="flex flex-col items-center justify-center min-h-[calc(50vh-4rem)] px-4"
             >
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
@@ -134,7 +141,10 @@ export default function Daeva() {
                       key={index}
                       whileHover={{ scale: 1.01 }}
                       whileTap={{ scale: 0.99 }}
-                      onClick={() => setInputValue(suggestion.text)}
+                      onClick={() => {
+                        setInputValue(suggestion.text);
+                        setHasInteracted(true);
+                      }}
                       className="relative p-3 rounded-[16px] backdrop-blur-[12px] bg-white/[0.12] dark:bg-white/[0.06] border border-white/[0.2] dark:border-white/[0.12] shadow-[0_4px_20px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-1px_0_rgba(255,255,255,0.08),inset_0_0_15px_8px_rgba(255,255,255,0.04)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-1px_0_rgba(255,255,255,0.06),inset_0_0_15px_8px_rgba(255,255,255,0.02)] transition-all duration-200 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.12),inset_0_0_20px_10px_rgba(255,255,255,0.06)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.16),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-1px_0_rgba(255,255,255,0.08),inset_0_0_20px_10px_rgba(255,255,255,0.04)] text-left group"
                     >
                       <div className="flex items-start gap-2.5">
@@ -155,7 +165,7 @@ export default function Daeva() {
 
         {/* Messages Container */}
         <div className="flex-1 overflow-hidden">
-          <div className="h-full overflow-y-auto px-4 pb-4">
+          <div className="h-full overflow-y-auto px-4 pb-4 pt-4">
             <div className="space-y-4">
               {messages.map((message) => (
                 <motion.div
