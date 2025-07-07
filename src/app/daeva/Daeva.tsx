@@ -289,7 +289,7 @@ export default function Daeva() {
                     fullContent += parsed.content;
                     onStreamChunk(parsed.content);
                   }
-                } catch (e) {
+                } catch {
                   // Ignore invalid JSON lines
                 }
               }
@@ -336,15 +336,15 @@ export default function Daeva() {
     setIsLoading(true);
 
     try {
-      // Create the assistant message placeholder
+      // Create the assistant message placeholder with "pensando..." animation
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: "assistant",
-        content: "",
+        content: "pensando",
         timestamp: new Date(),
       };
 
-      // Add the empty assistant message to start streaming
+      // Add the thinking message
       setMessages((prev) => [...prev, assistantMessage]);
       setIsLoading(false);
 
@@ -357,7 +357,11 @@ export default function Daeva() {
           setMessages((prev) =>
             prev.map((msg) =>
               msg.id === assistantMessage.id
-                ? { ...msg, content: msg.content + chunk }
+                ? {
+                    ...msg,
+                    content:
+                      msg.content === "pensando" ? chunk : msg.content + chunk,
+                  }
                 : msg
             )
           );
@@ -517,74 +521,94 @@ export default function Daeva() {
                     }`}
                   >
                     <div className="text-sm text-brand-black dark:text-brand-white leading-relaxed">
-                      <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
-                        components={{
-                          // Custom styling for markdown elements
-                          h1: ({ ...props }) => (
-                            <h1
-                              className="text-lg font-bold mb-3 text-brand-navy-blue dark:text-brand-yellow"
-                              {...props}
+                      {message.content === "pensando" ? (
+                        <div className="flex items-center space-x-1">
+                          <span>pensando</span>
+                          <div className="flex space-x-1">
+                            <div
+                              className="w-1 h-1 bg-brand-navy-blue dark:bg-brand-yellow rounded-full animate-bounce"
+                              style={{ animationDelay: "0ms" }}
                             />
-                          ),
-                          h2: ({ ...props }) => (
-                            <h2
-                              className="text-base font-bold mb-2 text-brand-navy-blue dark:text-brand-yellow"
-                              {...props}
+                            <div
+                              className="w-1 h-1 bg-brand-navy-blue dark:bg-brand-yellow rounded-full animate-bounce"
+                              style={{ animationDelay: "150ms" }}
                             />
-                          ),
-                          h3: ({ ...props }) => (
-                            <h3
-                              className="text-sm font-semibold mb-2 text-brand-navy-blue dark:text-brand-yellow"
-                              {...props}
+                            <div
+                              className="w-1 h-1 bg-brand-navy-blue dark:bg-brand-yellow rounded-full animate-bounce"
+                              style={{ animationDelay: "300ms" }}
                             />
-                          ),
-                          p: ({ ...props }) => (
-                            <p className="mb-3 last:mb-0" {...props} />
-                          ),
-                          ul: ({ ...props }) => (
-                            <ul className="mb-3 pl-4 space-y-1" {...props} />
-                          ),
-                          ol: ({ ...props }) => (
-                            <ol
-                              className="mb-3 pl-4 space-y-1 list-decimal"
-                              {...props}
-                            />
-                          ),
-                          li: ({ ...props }) => (
-                            <li className="text-sm list-disc" {...props} />
-                          ),
-                          strong: ({ ...props }) => (
-                            <strong
-                              className="font-semibold text-brand-navy-blue dark:text-brand-yellow"
-                              {...props}
-                            />
-                          ),
-                          em: ({ ...props }) => (
-                            <em className="italic" {...props} />
-                          ),
-                          code: ({ ...props }) => (
-                            <code
-                              className="bg-brand-navy-blue/10 dark:bg-brand-yellow/10 px-1 py-0.5 rounded text-xs font-mono"
-                              {...props}
-                            />
-                          ),
-                          pre: ({ ...props }) => (
-                            <pre
-                              className="bg-brand-navy-blue/10 dark:bg-brand-yellow/10 p-3 rounded-lg text-xs font-mono overflow-x-auto mb-3"
-                              {...props}
-                            />
-                          ),
-                          blockquote: ({ ...props }) => (
-                            <blockquote
-                              className="border-l-2 border-brand-navy-blue/30 dark:border-brand-yellow/30 pl-4 italic mb-3"
-                              {...props}
-                            />
-                          ),
-                        }}
-                      >
-                        {message.content}
-                      </ReactMarkdown>
+                          </div>
+                        </div>
+                      ) : (
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            // Custom styling for markdown elements
+                            h1: ({ ...props }) => (
+                              <h1
+                                className="text-lg font-bold mb-3 text-brand-navy-blue dark:text-brand-yellow"
+                                {...props}
+                              />
+                            ),
+                            h2: ({ ...props }) => (
+                              <h2
+                                className="text-base font-bold mb-2 text-brand-navy-blue dark:text-brand-yellow"
+                                {...props}
+                              />
+                            ),
+                            h3: ({ ...props }) => (
+                              <h3
+                                className="text-sm font-semibold mb-2 text-brand-navy-blue dark:text-brand-yellow"
+                                {...props}
+                              />
+                            ),
+                            p: ({ ...props }) => (
+                              <p className="mb-3 last:mb-0" {...props} />
+                            ),
+                            ul: ({ ...props }) => (
+                              <ul className="mb-3 pl-4 space-y-1" {...props} />
+                            ),
+                            ol: ({ ...props }) => (
+                              <ol
+                                className="mb-3 pl-4 space-y-1 list-decimal"
+                                {...props}
+                              />
+                            ),
+                            li: ({ ...props }) => (
+                              <li className="text-sm list-disc" {...props} />
+                            ),
+                            strong: ({ ...props }) => (
+                              <strong
+                                className="font-semibold text-brand-navy-blue dark:text-brand-yellow"
+                                {...props}
+                              />
+                            ),
+                            em: ({ ...props }) => (
+                              <em className="italic" {...props} />
+                            ),
+                            code: ({ ...props }) => (
+                              <code
+                                className="bg-brand-navy-blue/10 dark:bg-brand-yellow/10 px-1 py-0.5 rounded text-xs font-mono"
+                                {...props}
+                              />
+                            ),
+                            pre: ({ ...props }) => (
+                              <pre
+                                className="bg-brand-navy-blue/10 dark:bg-brand-yellow/10 p-3 rounded-lg text-xs font-mono overflow-x-auto mb-3"
+                                {...props}
+                              />
+                            ),
+                            blockquote: ({ ...props }) => (
+                              <blockquote
+                                className="border-l-2 border-brand-navy-blue/30 dark:border-brand-yellow/30 pl-4 italic mb-3"
+                                {...props}
+                              />
+                            ),
+                          }}
+                        >
+                          {message.content}
+                        </ReactMarkdown>
+                      )}
                     </div>
                   </div>
                 </motion.div>

@@ -76,16 +76,20 @@ Pergunta do usuário: ${message}`;
               throw new Error("No content received from Gemini API");
             }
 
-            // Split content into words and stream them
-            const words = content.split(" ");
+            // Split content into words and stream them with better handling
+            const words = content.split(/(\s+)/); // This preserves spaces and line breaks
             for (let i = 0; i < words.length; i++) {
-              const word = words[i] + (i < words.length - 1 ? " " : "");
-              controller.enqueue(
-                encoder.encode(`data: ${JSON.stringify({ content: word })}\n\n`)
-              );
+              if (words[i].trim()) {
+                // Only send non-empty words
+                controller.enqueue(
+                  encoder.encode(
+                    `data: ${JSON.stringify({ content: words[i] })}\n\n`
+                  )
+                );
 
-              // Add a small delay between words to simulate typing
-              await new Promise((resolve) => setTimeout(resolve, 50));
+                // Add a small delay between words to simulate typing
+                await new Promise((resolve) => setTimeout(resolve, 30));
+              }
             }
 
             // Signal end of stream
@@ -96,14 +100,17 @@ Pergunta do usuário: ${message}`;
 
             const fallbackResponse =
               "Olá! Sou a Daeva especializada em apresentações culturais. No momento estou com dificuldades técnicas, tente novamente em alguns instantes.";
-            const words = fallbackResponse.split(" ");
+            const words = fallbackResponse.split(/(\s+)/);
 
             for (let i = 0; i < words.length; i++) {
-              const word = words[i] + (i < words.length - 1 ? " " : "");
-              controller.enqueue(
-                encoder.encode(`data: ${JSON.stringify({ content: word })}\n\n`)
-              );
-              await new Promise((resolve) => setTimeout(resolve, 50));
+              if (words[i].trim()) {
+                controller.enqueue(
+                  encoder.encode(
+                    `data: ${JSON.stringify({ content: words[i] })}\n\n`
+                  )
+                );
+                await new Promise((resolve) => setTimeout(resolve, 30));
+              }
             }
 
             controller.enqueue(encoder.encode(`data: [DONE]\n\n`));
