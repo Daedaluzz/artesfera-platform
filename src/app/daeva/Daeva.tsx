@@ -514,13 +514,13 @@ export default function Daeva() {
 
                   {/* Message Bubble */}
                   <div
-                    className={`flex-1 max-w-2xl p-3 rounded-[16px] backdrop-blur-[12px] border ${
+                    className={`flex-1 max-w-2xl p-3 rounded-[16px] backdrop-blur-[12px] border break-words ${
                       message.type === "assistant"
                         ? "bg-white/[0.12] dark:bg-white/[0.06] border-white/[0.2] dark:border-white/[0.12] shadow-[0_4px_20px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-1px_0_rgba(255,255,255,0.08),inset_0_0_15px_8px_rgba(255,255,255,0.04)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-1px_0_rgba(255,255,255,0.06),inset_0_0_15px_8px_rgba(255,255,255,0.02)]"
                         : "bg-brand-navy-blue/8 dark:bg-brand-yellow/8 border-brand-navy-blue/15 dark:border-brand-yellow/15 shadow-[0_4px_20px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-1px_0_rgba(255,255,255,0.08),inset_0_0_15px_8px_rgba(255,255,255,0.03)]"
                     }`}
                   >
-                    <div className="text-sm text-brand-black dark:text-brand-white leading-relaxed">
+                    <div className="text-sm text-brand-black dark:text-brand-white leading-relaxed whitespace-pre-wrap break-words">
                       {message.content === "pensando" ? (
                         <div className="flex items-center space-x-1">
                           <span>pensando</span>
@@ -563,19 +563,28 @@ export default function Daeva() {
                               />
                             ),
                             p: ({ ...props }) => (
-                              <p className="mb-3 last:mb-0" {...props} />
+                              <p
+                                className="mb-3 last:mb-0 whitespace-pre-wrap"
+                                {...props}
+                              />
                             ),
                             ul: ({ ...props }) => (
-                              <ul className="mb-3 pl-4 space-y-1" {...props} />
+                              <ul
+                                className="mb-3 pl-4 space-y-1 list-disc list-inside"
+                                {...props}
+                              />
                             ),
                             ol: ({ ...props }) => (
                               <ol
-                                className="mb-3 pl-4 space-y-1 list-decimal"
+                                className="mb-3 pl-4 space-y-1 list-decimal list-inside"
                                 {...props}
                               />
                             ),
                             li: ({ ...props }) => (
-                              <li className="text-sm list-disc" {...props} />
+                              <li
+                                className="marker:text-brand-navy-blue dark:marker:text-brand-yellow"
+                                {...props}
+                              />
                             ),
                             strong: ({ ...props }) => (
                               <strong

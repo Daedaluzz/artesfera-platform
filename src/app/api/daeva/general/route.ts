@@ -64,16 +64,20 @@ Pergunta do usuário: ${message}`;
             // Split content into words and stream them with better handling
             const words = content.split(/(\s+)/); // This preserves spaces and line breaks
             for (let i = 0; i < words.length; i++) {
-              if (words[i].trim()) {
-                // Only send non-empty words
+              const word = words[i];
+              if (word) {
+                // Send all parts including spaces
                 controller.enqueue(
                   encoder.encode(
-                    `data: ${JSON.stringify({ content: words[i] })}\n\n`
+                    `data: ${JSON.stringify({ content: word })}\n\n`
                   )
                 );
 
                 // Add a small delay between words to simulate typing
-                await new Promise((resolve) => setTimeout(resolve, 30));
+                if (word.trim()) {
+                  // Only delay on actual words, not spaces
+                  await new Promise((resolve) => setTimeout(resolve, 30));
+                }
               }
             }
 
@@ -88,13 +92,16 @@ Pergunta do usuário: ${message}`;
             const words = fallbackResponse.split(/(\s+)/);
 
             for (let i = 0; i < words.length; i++) {
-              if (words[i].trim()) {
+              const word = words[i];
+              if (word) {
                 controller.enqueue(
                   encoder.encode(
-                    `data: ${JSON.stringify({ content: words[i] })}\n\n`
+                    `data: ${JSON.stringify({ content: word })}\n\n`
                   )
                 );
-                await new Promise((resolve) => setTimeout(resolve, 30));
+                if (word.trim()) {
+                  await new Promise((resolve) => setTimeout(resolve, 30));
+                }
               }
             }
 
