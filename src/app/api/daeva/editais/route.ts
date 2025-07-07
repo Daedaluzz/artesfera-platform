@@ -2,56 +2,80 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { message, specialization } = await request.json();
+    const { message } = await request.json();
 
-    // TODO: Replace with actual LLM API call with editais-specific prompts
-    // Example API call structure:
-    /*
-    const response = await fetch("YOUR_LLM_API_ENDPOINT", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.LLM_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "your-model",
-        messages: [
-          {
-            role: "system",
-            content: "Você é a Daeva especializada em editais culturais. Você é expert em captação de recursos, elaboração de projetos culturais, orçamentos, cronogramas, e navegação por editais públicos e privados no Brasil. Forneça orientações detalhadas e práticas sobre editais culturais."
+    if (!message || typeof message !== "string") {
+      return NextResponse.json({ error: "Mensagem inválida" }, { status: 400 });
+    }
+
+    // Google Gemini API call
+    const geminiResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${process.env.LLM_MODEL}:generateContent?key=${process.env.LLM_API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: `Você é a Daeva Editais, uma especialista em editais culturais, captação de recursos e elaboração de projetos no Brasil. Você tem conhecimento profundo sobre:
+
+- Editais públicos de cultura (municipais, estaduais e federais)
+- Leis de incentivo fiscal (Lei Rouanet, leis estaduais e municipais)
+- Elaboração de projetos culturais
+- Orçamentos detalhados para projetos
+- Cronogramas de execução
+- Prestação de contas
+- Captação de recursos privados
+- Editais de empresas e fundações
+- Documentação necessária
+- Prazos e requisitos
+- Contrapartidas sociais
+
+Características da sua personalidade:
+- Especialista e técnica
+- Didática e clara nas explicações
+- Orientada a detalhes práticos
+- Conhecedora da legislação cultural brasileira
+- Focada em resultados e aprovações
+
+Sempre forneça informações específicas, práticas e atualizadas sobre o cenário brasileiro de editais culturais.
+
+Pergunta do usuário: ${message}`,
+                },
+              ],
+            },
+          ],
+          generationConfig: {
+            temperature: parseFloat(process.env.LLM_TEMPERATURE || "0.2"),
+            maxOutputTokens: 1000,
           },
-          {
-            role: "user",
-            content: message
-          }
-        ],
-        max_tokens: 1000,
-        temperature: 0.7,
-      }),
-    });
+        }),
+      }
+    );
 
-    const data = await response.json();
-    return NextResponse.json({ content: data.choices[0].message.content });
-    */
+    if (!geminiResponse.ok) {
+      throw new Error(`Gemini API error: ${geminiResponse.status}`);
+    }
 
-    // Temporary mock response specific to editais
-    const mockResponses = [
-      "Para encontrar editais adequados, recomendo consultar plataformas como o Mapa Cultural, FUNARTE e sites de secretarias estaduais de cultura. É importante criar alertas para editais que se alinhem com seu perfil artístico.",
-      "Um projeto para edital deve ter objetivos claros, cronograma realista, orçamento detalhado e contrapartidas sociais bem definidas. A fundamentação teórica e a viabilidade técnica são essenciais.",
-      "O orçamento deve incluir custos diretos (produção, materiais, pessoal) e indiretos (administração, impostos). Sempre considere uma margem para imprevistos de 5-10% do valor total.",
-      "Os prazos variam muito, mas geralmente editais ficam abertos por 30-60 dias. É crucial se organizar com antecedência e ter um banco de projetos prontos para adaptação rápida.",
-    ];
+    const data = await geminiResponse.json();
+    const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
-    const response =
-      mockResponses[Math.floor(Math.random() * mockResponses.length)];
+    if (!content) {
+      throw new Error("No content received from Gemini API");
+    }
 
-    return NextResponse.json({ content: response });
+    return NextResponse.json({ content });
   } catch (error) {
     console.error("Error in editais Daeva API:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+
+    // Fallback response
+    const fallbackResponse =
+      "Olá! Sou a Daeva especializada em editais culturais. Posso ajudá-lo com orientações sobre captação de recursos, elaboração de projetos, cronogramas, orçamentos e muito mais. No momento estou com dificuldades técnicas, tente novamente em alguns instantes.";
+
+    return NextResponse.json({ content: fallbackResponse });
   }
 }

@@ -2,56 +2,82 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { message, specialization } = await request.json();
+    const { message } = await request.json();
 
-    // TODO: Replace with actual LLM API call with apresentacoes-specific prompts
-    // Example API call structure:
-    /*
-    const response = await fetch("YOUR_LLM_API_ENDPOINT", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.LLM_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "your-model",
-        messages: [
-          {
-            role: "system",
-            content: "Você é a Daeva especializada em apresentações e eventos culturais. Você é expert em planejamento de eventos, produção cultural, estruturação de apresentações, engajamento de público e organização de atividades artísticas e culturais."
+    if (!message || typeof message !== "string") {
+      return NextResponse.json({ error: "Mensagem inválida" }, { status: 400 });
+    }
+
+    // Google Gemini API call
+    const geminiResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${process.env.LLM_MODEL}:generateContent?key=${process.env.LLM_API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: `Você é a Daeva Apresentações, uma especialista em planejamento e estruturação de apresentações culturais e eventos no Brasil. Você tem conhecimento profundo sobre:
+
+- Planejamento de eventos culturais
+- Produção de espetáculos e shows
+- Estruturação de apresentações artísticas
+- Engajamento e experiência do público
+- Logística de eventos
+- Tecnologia e equipamentos para apresentações
+- Marketing e divulgação de eventos
+- Orçamentos e custos de produção
+- Gestão de equipes e fornecedores
+- Segurança e licenças para eventos
+- Avaliação e métricas de sucesso
+- Tendências em experiências culturais
+
+Características da sua personalidade:
+- Criativa e inovadora
+- Organizacional e detalhista
+- Focada na experiência do público
+- Conhecedora de produção cultural
+- Prática e orientada a resultados
+- Entusiasta das artes e cultura
+
+Sempre forneça orientações práticas e criativas para criar apresentações culturais memoráveis e bem-sucedidas.
+
+Pergunta do usuário: ${message}`,
+                },
+              ],
+            },
+          ],
+          generationConfig: {
+            temperature: parseFloat(process.env.LLM_TEMPERATURE || "0.2"),
+            maxOutputTokens: 1000,
           },
-          {
-            role: "user",
-            content: message
-          }
-        ],
-        max_tokens: 1000,
-        temperature: 0.7,
-      }),
-    });
+        }),
+      }
+    );
 
-    const data = await response.json();
-    return NextResponse.json({ content: data.choices[0].message.content });
-    */
+    if (!geminiResponse.ok) {
+      throw new Error(`Gemini API error: ${geminiResponse.status}`);
+    }
 
-    // Temporary mock response specific to apresentacoes
-    const mockResponses = [
-      "Para uma apresentação cultural impactante, defina claramente seu público-alvo, escolha um formato envolvente, prepare um roteiro bem estruturado e considere elementos visuais e sonoros que complementem sua mensagem.",
-      "As etapas incluem: concepção e planejamento, definição de orçamento, escolha de local e data, contratação de fornecedores, divulgação, produção, execução do evento e pós-evento (avaliação e relatórios).",
-      "Calcule custos de: local, equipamentos, pessoal técnico, artistas, divulgação, segurança, limpeza, alimentação (se aplicável), licenças e seguros. Sempre inclua uma reserva de emergência de 10-15%.",
-      "Para engajar o público, use: narrativa envolvente, interação direta, elementos surpresa, tecnologia quando apropriado, experiências sensoriais variadas e momentos de participação ativa da audiência.",
-    ];
+    const data = await geminiResponse.json();
+    const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
-    const response =
-      mockResponses[Math.floor(Math.random() * mockResponses.length)];
+    if (!content) {
+      throw new Error("No content received from Gemini API");
+    }
 
-    return NextResponse.json({ content: response });
+    return NextResponse.json({ content });
   } catch (error) {
     console.error("Error in apresentacoes Daeva API:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+
+    // Fallback response
+    const fallbackResponse =
+      "Olá! Sou a Daeva especializada em apresentações culturais. Posso ajudá-lo com planejamento de eventos, estruturação de apresentações, produção cultural e organização de atividades artísticas. No momento estou com dificuldades técnicas, tente novamente em alguns instantes.";
+
+    return NextResponse.json({ content: fallbackResponse });
   }
 }

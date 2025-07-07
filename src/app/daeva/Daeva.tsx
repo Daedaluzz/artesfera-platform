@@ -15,6 +15,10 @@ import {
   DollarSign,
   Calendar,
   Presentation,
+  Star,
+  Users,
+  TrendingUp,
+  Camera,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import DaevaSidebar from "@/components/DaevaSidebar";
@@ -26,7 +30,7 @@ interface Message {
   timestamp: Date;
 }
 
-type SpecializationType = "general" | "editais" | "contratos" | "apresentacoes";
+type SpecializationType = "general" | "editais" | "contratos" | "apresentacoes" | "produtora";
 
 interface SpecializationConfig {
   title: string;
@@ -146,6 +150,34 @@ const specializationConfigs: Record<SpecializationType, SpecializationConfig> =
         {
           icon: Brain,
           text: "Como engajar o público em apresentações culturais?",
+        },
+      ],
+    },
+    produtora: {
+      title: "Daeva Produtora",
+      subtitle:
+        "Especialista em desenvolvimento de carreiras artísticas e promoção profissional",
+      icon: Star,
+      placeholder: "Pergunte sobre carreira artística, portfólio, promoção...",
+      apiEndpoint: "/api/daeva/produtora",
+      welcomeMessage:
+        "Olá! Sou a Daeva Produtora, especialista em desenvolvimento de carreiras artísticas. Posso ajudá-lo com portfólio, currículo, estratégias de promoção, crescimento de audiência e tudo que você precisa para alavancar sua carreira artística. Como posso ajudá-lo hoje?",
+      suggestions: [
+        {
+          icon: FileText,
+          text: "Como criar um portfólio artístico profissional?",
+        },
+        {
+          icon: Users,
+          text: "Estratégias para crescer minha audiência nas redes sociais",
+        },
+        {
+          icon: TrendingUp,
+          text: "Como precificar meus trabalhos artísticos?",
+        },
+        {
+          icon: Camera,
+          text: "Dicas para criar uma identidade visual forte",
         },
       ],
     },

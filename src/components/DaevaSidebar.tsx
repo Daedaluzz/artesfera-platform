@@ -14,6 +14,7 @@ import {
   Sparkles,
   Menu,
   X,
+  Star,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -40,9 +41,9 @@ interface SpecializationItemProps {
 interface DaevaSidebarProps {
   onResetChat?: () => void;
   onSpecializationChange?: (
-    specialization: "general" | "editais" | "contratos" | "apresentacoes"
+    specialization: "general" | "editais" | "contratos" | "apresentacoes" | "produtora"
   ) => void;
-  currentSpecialization?: "general" | "editais" | "contratos" | "apresentacoes";
+  currentSpecialization?: "general" | "editais" | "contratos" | "apresentacoes" | "produtora";
 }
 
 const SidebarItem: React.FC<SidebarItemProps> = ({
@@ -197,7 +198,7 @@ export default function DaevaSidebar({
   };
 
   const handleSpecializationClick = (
-    specialization: "general" | "editais" | "contratos" | "apresentacoes"
+    specialization: "general" | "editais" | "contratos" | "apresentacoes" | "produtora"
   ) => {
     if (onSpecializationChange) {
       onSpecializationChange(specialization);
@@ -347,6 +348,13 @@ export default function DaevaSidebar({
                     onClick={() => handleSpecializationClick("apresentacoes")}
                     isActive={isSpecializationActive("apresentacoes")}
                   />
+                  <SpecializationItem
+                    icon={Star}
+                    label="Produtora"
+                    description="Desenvolvimento de carreira artística e promoção"
+                    onClick={() => handleSpecializationClick("produtora")}
+                    isActive={isSpecializationActive("produtora")}
+                  />
                 </div>
               </div>
             </motion.div>
@@ -454,6 +462,15 @@ export default function DaevaSidebar({
                     description="Planejamento e estruturação de apresentações culturais"
                     onClick={() => handleSpecializationClick("apresentacoes")}
                     isActive={isSpecializationActive("apresentacoes")}
+                  />
+                </div>
+                <div>
+                  <SpecializationItem
+                    icon={Star}
+                    label="Produtora"
+                    description="Desenvolvimento de carreira artística e promoção"
+                    onClick={() => handleSpecializationClick("produtora")}
+                    isActive={isSpecializationActive("produtora")}
                   />
                 </div>
               </SidebarItem>

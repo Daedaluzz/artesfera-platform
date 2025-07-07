@@ -2,56 +2,82 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { message, specialization } = await request.json();
+    const { message } = await request.json();
 
-    // TODO: Replace with actual LLM API call with contratos-specific prompts
-    // Example API call structure:
-    /*
-    const response = await fetch("YOUR_LLM_API_ENDPOINT", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.LLM_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "your-model",
-        messages: [
-          {
-            role: "system",
-            content: "Você é a Daeva especializada em contratos artísticos e culturais. Você é expert em elaboração, revisão e orientação sobre contratos no setor cultural, incluindo prestação de serviços artísticos, direitos autorais, colaborações criativas e aspectos jurídicos específicos do mercado cultural brasileiro."
+    if (!message || typeof message !== "string") {
+      return NextResponse.json({ error: "Mensagem inválida" }, { status: 400 });
+    }
+
+    // Google Gemini API call
+    const geminiResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${process.env.LLM_MODEL}:generateContent?key=${process.env.LLM_API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: `Você é a Daeva Contratos, uma especialista em elaboração e revisão de contratos artísticos e culturais no Brasil. Você tem conhecimento profundo sobre:
+
+- Contratos de prestação de serviços artísticos
+- Direitos autorais e propriedade intelectual
+- Contratos de colaboração criativa
+- Acordos de produção cultural
+- Contratos de patrocínio e apoio
+- Cessão de direitos de imagem e uso
+- Contratos de distribuição e licenciamento
+- Aspectos jurídicos do setor cultural
+- Legislação trabalhista para artistas
+- Negociação de cachês e royalties
+- Cláusulas de rescisão e penalidades
+- Foro competente e resolução de conflitos
+
+Características da sua personalidade:
+- Jurídica e precisa
+- Didática para explicar termos legais
+- Focada em proteção dos direitos
+- Conhecedora da legislação brasileira
+- Prática e orientada a soluções
+- Cuidadosa com detalhes contratuais
+
+Sempre forneça orientações jurídicas práticas, mas lembre que não substitui consultoria jurídica especializada quando necessário.
+
+Pergunta do usuário: ${message}`,
+                },
+              ],
+            },
+          ],
+          generationConfig: {
+            temperature: parseFloat(process.env.LLM_TEMPERATURE || "0.2"),
+            maxOutputTokens: 1000,
           },
-          {
-            role: "user",
-            content: message
-          }
-        ],
-        max_tokens: 1000,
-        temperature: 0.7,
-      }),
-    });
+        }),
+      }
+    );
 
-    const data = await response.json();
-    return NextResponse.json({ content: data.choices[0].message.content });
-    */
+    if (!geminiResponse.ok) {
+      throw new Error(`Gemini API error: ${geminiResponse.status}`);
+    }
 
-    // Temporary mock response specific to contratos
-    const mockResponses = [
-      "Um contrato de prestação de serviços artísticos deve incluir: identificação das partes, descrição detalhada dos serviços, valor e forma de pagamento, prazo de execução, direitos autorais, cláusulas de cancelamento e foro competente.",
-      "Cláusulas essenciais incluem: definição clara do escopo do trabalho, remuneração e reajustes, direitos de imagem e uso, responsabilidades de cada parte, penalidades por descumprimento e condições de rescisão.",
-      "Para definir valores, considere: complexidade do trabalho, tempo de execução, custos envolvidos, experiência do profissional e padrões de mercado. O pagamento pode ser à vista, parcelado ou por etapas do projeto.",
-      "Estabeleça marcos claros do projeto, prazos para cada entrega, consequências por atrasos e flexibilidade para ajustes necessários. Sempre documente mudanças por meio de aditivos contratuais.",
-    ];
+    const data = await geminiResponse.json();
+    const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
-    const response =
-      mockResponses[Math.floor(Math.random() * mockResponses.length)];
+    if (!content) {
+      throw new Error("No content received from Gemini API");
+    }
 
-    return NextResponse.json({ content: response });
+    return NextResponse.json({ content });
   } catch (error) {
     console.error("Error in contratos Daeva API:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+
+    // Fallback response
+    const fallbackResponse =
+      "Olá! Sou a Daeva especializada em contratos artísticos. Posso ajudá-lo com elaboração, revisão e orientações sobre contratos culturais, acordos de colaboração e questões jurídicas do setor. No momento estou com dificuldades técnicas, tente novamente em alguns instantes.";
+
+    return NextResponse.json({ content: fallbackResponse });
   }
 }

@@ -2,55 +2,68 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { message, specialization } = await request.json();
+    const { message } = await request.json();
 
-    // TODO: Replace with actual LLM API call with general cultural prompts
-    // Example API call structure:
-    /*
-    const response = await fetch("YOUR_LLM_API_ENDPOINT", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.LLM_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "your-model",
-        messages: [
-          {
-            role: "system",
-            content: "Você é a Daeva, uma assistente especializada no mercado cultural brasileiro. Ajude com orientações gerais sobre arte, cultura, eventos e o mercado cultural no Brasil."
+    if (!message || typeof message !== "string") {
+      return NextResponse.json({ error: "Mensagem inválida" }, { status: 400 });
+    }
+
+    // Google Gemini API call
+    const geminiResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${process.env.LLM_MODEL}:generateContent?key=${process.env.LLM_API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: `Você é a Daeva, uma IA especializada no mercado cultural brasileiro. Sua missão é ajudar artistas, criadores, fazedores de cultura e negócios culturais com orientações gerais sobre arte, cultura, eventos e o mercado cultural no Brasil.
+
+Características da sua personalidade:
+- Amigável e acessível
+- Conhecedora do mercado cultural brasileiro
+- Prática e orientada a soluções
+- Empática com os desafios dos artistas
+- Atualizada com tendências culturais
+
+Responda sempre em português brasileiro e seja específica sobre o mercado cultural nacional.
+
+Pergunta do usuário: ${message}`,
+                },
+              ],
+            },
+          ],
+          generationConfig: {
+            temperature: parseFloat(process.env.LLM_TEMPERATURE || "0.7"),
+            maxOutputTokens: 1000,
           },
-          {
-            role: "user",
-            content: message
-          }
-        ],
-        max_tokens: 1000,
-        temperature: 0.7,
-      }),
-    });
+        }),
+      }
+    );
 
-    const data = await response.json();
-    return NextResponse.json({ content: data.choices[0].message.content });
-    */
+    if (!geminiResponse.ok) {
+      throw new Error(`Gemini API error: ${geminiResponse.status}`);
+    }
 
-    // Temporary mock response
-    const mockResponses = [
-      "Como assistente cultural, posso ajudá-lo com diversas questões do mercado artístico brasileiro. O que especificamente você gostaria de saber?",
-      "O mercado cultural brasileiro é rico e diversificado. Existem muitas oportunidades tanto para artistas independentes quanto para projetos de grande escala.",
-      "Para desenvolver um projeto cultural de sucesso, é importante considerar o público-alvo, os recursos disponíveis e as oportunidades de financiamento.",
-    ];
+    const data = await geminiResponse.json();
+    const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
-    const response =
-      mockResponses[Math.floor(Math.random() * mockResponses.length)];
+    if (!content) {
+      throw new Error("No content received from Gemini API");
+    }
 
-    return NextResponse.json({ content: response });
+    return NextResponse.json({ content });
   } catch (error) {
     console.error("Error in general Daeva API:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+
+    // Fallback response
+    const fallbackResponse =
+      "Olá! Sou a Daeva, sua assistente especializada no mercado cultural brasileiro. No momento estou com dificuldades técnicas, mas posso ajudá-lo com orientações sobre arte, cultura e mercado cultural. Tente novamente em alguns instantes.";
+
+    return NextResponse.json({ content: fallbackResponse });
   }
 }
