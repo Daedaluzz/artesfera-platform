@@ -239,10 +239,11 @@ export default function Daeva() {
     }
   }, [messages, hasInteracted]);
 
-  // Dynamic API call based on specialization
+  // Dynamic API call based on specialization with streaming support
   const sendMessageToAPI = async (
     message: string,
-    specialization: SpecializationType
+    specialization: SpecializationType,
+    onStreamChunk?: (chunk: string) => void
   ) => {
     try {
       const response = await fetch(currentConfig.apiEndpoint, {
@@ -253,7 +254,7 @@ export default function Daeva() {
         body: JSON.stringify({
           message,
           specialization,
-          // Add any additional context or parameters here
+          stream: !!onStreamChunk, // Enable streaming if callback provided
         }),
       });
 
@@ -261,8 +262,49 @@ export default function Daeva() {
         throw new Error("Failed to get response from API");
       }
 
-      const data = await response.json();
-      return data.content || "Desculpe, ocorreu um erro. Tente novamente.";
+      // Handle streaming response
+      if (onStreamChunk && response.body) {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let fullContent = "";
+
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value, { stream: true });
+            const lines = chunk.split("\n");
+
+            for (const line of lines) {
+              if (line.startsWith("data: ")) {
+                const data = line.slice(6);
+                if (data === "[DONE]") {
+                  return fullContent;
+                }
+
+                try {
+                  const parsed = JSON.parse(data);
+                  if (parsed.content) {
+                    fullContent += parsed.content;
+                    onStreamChunk(parsed.content);
+                  }
+                } catch (e) {
+                  // Ignore invalid JSON lines
+                }
+              }
+            }
+          }
+        } finally {
+          reader.releaseLock();
+        }
+
+        return fullContent;
+      } else {
+        // Non-streaming response
+        const data = await response.json();
+        return data.content || "Desculpe, ocorreu um erro. Tente novamente.";
+      }
     } catch (error) {
       console.error("API Error:", error);
       // Fallback to simulated response for now
@@ -294,28 +336,42 @@ export default function Daeva() {
     setIsLoading(true);
 
     try {
-      // Call the appropriate API based on current specialization
-      const assistantContent = await sendMessageToAPI(
-        messageContent,
-        specialization
-      );
-
+      // Create the assistant message placeholder
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: "assistant",
-        content: assistantContent,
+        content: "",
         timestamp: new Date(),
       };
 
+      // Add the empty assistant message to start streaming
       setMessages((prev) => [...prev, assistantMessage]);
+      setIsLoading(false);
+
+      // Call the API with streaming support
+      await sendMessageToAPI(
+        messageContent,
+        specialization,
+        (chunk: string) => {
+          // Update the assistant message content as chunks arrive
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantMessage.id
+                ? { ...msg, content: msg.content + chunk }
+                : msg
+            )
+          );
+        }
+      );
     } catch (error) {
       console.error("Error sending message:", error);
       const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
+        id: (Date.now() + 2).toString(),
         type: "assistant",
         content: "Desculpe, ocorreu um erro. Tente novamente.",
         timestamp: new Date(),
       };
+
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
