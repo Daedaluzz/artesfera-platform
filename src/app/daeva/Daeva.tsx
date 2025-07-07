@@ -3,6 +3,8 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   Brain,
   MessageCircle,
@@ -30,7 +32,12 @@ interface Message {
   timestamp: Date;
 }
 
-type SpecializationType = "general" | "editais" | "contratos" | "apresentacoes" | "produtora";
+type SpecializationType =
+  | "general"
+  | "editais"
+  | "contratos"
+  | "apresentacoes"
+  | "produtora";
 
 interface SpecializationConfig {
   title: string;
@@ -453,9 +460,76 @@ export default function Daeva() {
                         : "bg-brand-navy-blue/8 dark:bg-brand-yellow/8 border-brand-navy-blue/15 dark:border-brand-yellow/15 shadow-[0_4px_20px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-1px_0_rgba(255,255,255,0.08),inset_0_0_15px_8px_rgba(255,255,255,0.03)]"
                     }`}
                   >
-                    <p className="text-sm text-brand-black dark:text-brand-white leading-relaxed whitespace-pre-wrap">
-                      {message.content}
-                    </p>
+                    <div className="text-sm text-brand-black dark:text-brand-white leading-relaxed">
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          // Custom styling for markdown elements
+                          h1: ({ ...props }) => (
+                            <h1
+                              className="text-lg font-bold mb-3 text-brand-navy-blue dark:text-brand-yellow"
+                              {...props}
+                            />
+                          ),
+                          h2: ({ ...props }) => (
+                            <h2
+                              className="text-base font-bold mb-2 text-brand-navy-blue dark:text-brand-yellow"
+                              {...props}
+                            />
+                          ),
+                          h3: ({ ...props }) => (
+                            <h3
+                              className="text-sm font-semibold mb-2 text-brand-navy-blue dark:text-brand-yellow"
+                              {...props}
+                            />
+                          ),
+                          p: ({ ...props }) => (
+                            <p className="mb-3 last:mb-0" {...props} />
+                          ),
+                          ul: ({ ...props }) => (
+                            <ul className="mb-3 pl-4 space-y-1" {...props} />
+                          ),
+                          ol: ({ ...props }) => (
+                            <ol
+                              className="mb-3 pl-4 space-y-1 list-decimal"
+                              {...props}
+                            />
+                          ),
+                          li: ({ ...props }) => (
+                            <li className="text-sm list-disc" {...props} />
+                          ),
+                          strong: ({ ...props }) => (
+                            <strong
+                              className="font-semibold text-brand-navy-blue dark:text-brand-yellow"
+                              {...props}
+                            />
+                          ),
+                          em: ({ ...props }) => (
+                            <em className="italic" {...props} />
+                          ),
+                          code: ({ ...props }) => (
+                            <code
+                              className="bg-brand-navy-blue/10 dark:bg-brand-yellow/10 px-1 py-0.5 rounded text-xs font-mono"
+                              {...props}
+                            />
+                          ),
+                          pre: ({ ...props }) => (
+                            <pre
+                              className="bg-brand-navy-blue/10 dark:bg-brand-yellow/10 p-3 rounded-lg text-xs font-mono overflow-x-auto mb-3"
+                              {...props}
+                            />
+                          ),
+                          blockquote: ({ ...props }) => (
+                            <blockquote
+                              className="border-l-2 border-brand-navy-blue/30 dark:border-brand-yellow/30 pl-4 italic mb-3"
+                              {...props}
+                            />
+                          ),
+                        }}
+                      >
+                        {message.content}
+                      </ReactMarkdown>
+                    </div>
                   </div>
                 </motion.div>
               ))}

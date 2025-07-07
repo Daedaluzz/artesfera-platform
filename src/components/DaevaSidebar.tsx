@@ -41,9 +41,19 @@ interface SpecializationItemProps {
 interface DaevaSidebarProps {
   onResetChat?: () => void;
   onSpecializationChange?: (
-    specialization: "general" | "editais" | "contratos" | "apresentacoes" | "produtora"
+    specialization:
+      | "general"
+      | "editais"
+      | "contratos"
+      | "apresentacoes"
+      | "produtora"
   ) => void;
-  currentSpecialization?: "general" | "editais" | "contratos" | "apresentacoes" | "produtora";
+  currentSpecialization?:
+    | "general"
+    | "editais"
+    | "contratos"
+    | "apresentacoes"
+    | "produtora";
 }
 
 const SidebarItem: React.FC<SidebarItemProps> = ({
@@ -198,7 +208,12 @@ export default function DaevaSidebar({
   };
 
   const handleSpecializationClick = (
-    specialization: "general" | "editais" | "contratos" | "apresentacoes" | "produtora"
+    specialization:
+      | "general"
+      | "editais"
+      | "contratos"
+      | "apresentacoes"
+      | "produtora"
   ) => {
     if (onSpecializationChange) {
       onSpecializationChange(specialization);

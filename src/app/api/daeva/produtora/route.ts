@@ -5,10 +5,7 @@ export async function POST(request: NextRequest) {
     const { message } = await request.json();
 
     if (!message || typeof message !== "string") {
-      return NextResponse.json(
-        { error: "Mensagem inválida" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Mensagem inválida" }, { status: 400 });
     }
 
     // Google Gemini API call
@@ -57,15 +54,15 @@ Características da sua personalidade:
 
 Sempre forneça conselhos práticos, estratégicos e atualizados para ajudar artistas a construírem carreiras sólidas e sustentáveis no mercado cultural brasileiro.
 
-Pergunta do usuário: ${message}`
-                }
-              ]
-            }
+Pergunta do usuário: ${message}`,
+                },
+              ],
+            },
           ],
           generationConfig: {
             temperature: parseFloat(process.env.LLM_TEMPERATURE || "0.2"),
             maxOutputTokens: 1000,
-          }
+          },
         }),
       }
     );
@@ -84,10 +81,11 @@ Pergunta do usuário: ${message}`
     return NextResponse.json({ content });
   } catch (error) {
     console.error("Error in produtora Daeva API:", error);
-    
+
     // Fallback response
-    const fallbackResponse = "Olá! Sou a Daeva Produtora, especialista em desenvolvimento de carreiras artísticas. Posso ajudá-lo com portfólio, currículo, estratégias de promoção, crescimento de audiência e tudo que você precisa para alavancar sua carreira artística. No momento estou com dificuldades técnicas, tente novamente em alguns instantes.";
-    
+    const fallbackResponse =
+      "Olá! Sou a Daeva Produtora, especialista em desenvolvimento de carreiras artísticas. Posso ajudá-lo com portfólio, currículo, estratégias de promoção, crescimento de audiência e tudo que você precisa para alavancar sua carreira artística. No momento estou com dificuldades técnicas, tente novamente em alguns instantes.";
+
     return NextResponse.json({ content: fallbackResponse });
   }
 }
