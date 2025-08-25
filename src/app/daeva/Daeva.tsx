@@ -239,11 +239,10 @@ export default function Daeva() {
     }
   }, [messages, hasInteracted]);
 
-  // Dynamic API call based on specialization with streaming support
+  // Dynamic API call based on specialization
   const sendMessageToAPI = async (
     message: string,
-    specialization: SpecializationType,
-    onStreamChunk?: (chunk: string) => void
+    specialization: SpecializationType
   ) => {
     try {
       const response = await fetch(currentConfig.apiEndpoint, {
@@ -254,7 +253,7 @@ export default function Daeva() {
         body: JSON.stringify({
           message,
           specialization,
-          stream: !!onStreamChunk, // Enable streaming if callback provided
+          // Add any additional context or parameters here
         }),
       });
 
@@ -262,49 +261,8 @@ export default function Daeva() {
         throw new Error("Failed to get response from API");
       }
 
-      // Handle streaming response
-      if (onStreamChunk && response.body) {
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let fullContent = "";
-
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            const chunk = decoder.decode(value, { stream: true });
-            const lines = chunk.split("\n");
-
-            for (const line of lines) {
-              if (line.startsWith("data: ")) {
-                const data = line.slice(6);
-                if (data === "[DONE]") {
-                  return fullContent;
-                }
-
-                try {
-                  const parsed = JSON.parse(data);
-                  if (parsed.content) {
-                    fullContent += parsed.content;
-                    onStreamChunk(parsed.content);
-                  }
-                } catch {
-                  // Ignore invalid JSON lines
-                }
-              }
-            }
-          }
-        } finally {
-          reader.releaseLock();
-        }
-
-        return fullContent;
-      } else {
-        // Non-streaming response
-        const data = await response.json();
-        return data.content || "Desculpe, ocorreu um erro. Tente novamente.";
-      }
+      const data = await response.json();
+      return data.content || "Desculpe, ocorreu um erro. Tente novamente.";
     } catch (error) {
       console.error("API Error:", error);
       // Fallback to simulated response for now
@@ -336,46 +294,28 @@ export default function Daeva() {
     setIsLoading(true);
 
     try {
-      // Create the assistant message placeholder with "pensando..." animation
+      // Call the appropriate API based on current specialization
+      const assistantContent = await sendMessageToAPI(
+        messageContent,
+        specialization
+      );
+
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: "assistant",
-        content: "pensando",
+        content: assistantContent,
         timestamp: new Date(),
       };
 
-      // Add the thinking message
       setMessages((prev) => [...prev, assistantMessage]);
-      setIsLoading(false);
-
-      // Call the API with streaming support
-      await sendMessageToAPI(
-        messageContent,
-        specialization,
-        (chunk: string) => {
-          // Update the assistant message content as chunks arrive
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg.id === assistantMessage.id
-                ? {
-                    ...msg,
-                    content:
-                      msg.content === "pensando" ? chunk : msg.content + chunk,
-                  }
-                : msg
-            )
-          );
-        }
-      );
     } catch (error) {
       console.error("Error sending message:", error);
       const errorMessage: Message = {
-        id: (Date.now() + 2).toString(),
+        id: (Date.now() + 1).toString(),
         type: "assistant",
         content: "Desculpe, ocorreu um erro. Tente novamente.",
         timestamp: new Date(),
       };
-
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
@@ -514,110 +454,81 @@ export default function Daeva() {
 
                   {/* Message Bubble */}
                   <div
-                    className={`flex-1 max-w-2xl p-3 rounded-[16px] backdrop-blur-[12px] border break-words ${
+                    className={`flex-1 max-w-2xl p-3 rounded-[16px] backdrop-blur-[12px] border ${
                       message.type === "assistant"
                         ? "bg-white/[0.12] dark:bg-white/[0.06] border-white/[0.2] dark:border-white/[0.12] shadow-[0_4px_20px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-1px_0_rgba(255,255,255,0.08),inset_0_0_15px_8px_rgba(255,255,255,0.04)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-1px_0_rgba(255,255,255,0.06),inset_0_0_15px_8px_rgba(255,255,255,0.02)]"
                         : "bg-brand-navy-blue/8 dark:bg-brand-yellow/8 border-brand-navy-blue/15 dark:border-brand-yellow/15 shadow-[0_4px_20px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-1px_0_rgba(255,255,255,0.08),inset_0_0_15px_8px_rgba(255,255,255,0.03)]"
                     }`}
                   >
-                    <div className="text-sm text-brand-black dark:text-brand-white leading-relaxed whitespace-pre-wrap break-words">
-                      {message.content === "pensando" ? (
-                        <div className="flex items-center space-x-1">
-                          <span>pensando</span>
-                          <div className="flex space-x-1">
-                            <div
-                              className="w-1 h-1 bg-brand-navy-blue dark:bg-brand-yellow rounded-full animate-bounce"
-                              style={{ animationDelay: "0ms" }}
+                    <div className="text-sm text-brand-black dark:text-brand-white leading-relaxed">
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          // Custom styling for markdown elements
+                          h1: ({ ...props }) => (
+                            <h1
+                              className="text-lg font-bold mb-3 text-brand-navy-blue dark:text-brand-yellow"
+                              {...props}
                             />
-                            <div
-                              className="w-1 h-1 bg-brand-navy-blue dark:bg-brand-yellow rounded-full animate-bounce"
-                              style={{ animationDelay: "150ms" }}
+                          ),
+                          h2: ({ ...props }) => (
+                            <h2
+                              className="text-base font-bold mb-2 text-brand-navy-blue dark:text-brand-yellow"
+                              {...props}
                             />
-                            <div
-                              className="w-1 h-1 bg-brand-navy-blue dark:bg-brand-yellow rounded-full animate-bounce"
-                              style={{ animationDelay: "300ms" }}
+                          ),
+                          h3: ({ ...props }) => (
+                            <h3
+                              className="text-sm font-semibold mb-2 text-brand-navy-blue dark:text-brand-yellow"
+                              {...props}
                             />
-                          </div>
-                        </div>
-                      ) : (
-                        <ReactMarkdown
-                          remarkPlugins={[remarkGfm]}
-                          components={{
-                            // Custom styling for markdown elements
-                            h1: ({ ...props }) => (
-                              <h1
-                                className="text-lg font-bold mb-3 text-brand-navy-blue dark:text-brand-yellow"
-                                {...props}
-                              />
-                            ),
-                            h2: ({ ...props }) => (
-                              <h2
-                                className="text-base font-bold mb-2 text-brand-navy-blue dark:text-brand-yellow"
-                                {...props}
-                              />
-                            ),
-                            h3: ({ ...props }) => (
-                              <h3
-                                className="text-sm font-semibold mb-2 text-brand-navy-blue dark:text-brand-yellow"
-                                {...props}
-                              />
-                            ),
-                            p: ({ ...props }) => (
-                              <p
-                                className="mb-3 last:mb-0 whitespace-pre-wrap"
-                                {...props}
-                              />
-                            ),
-                            ul: ({ ...props }) => (
-                              <ul
-                                className="mb-3 pl-4 space-y-1 list-disc list-inside"
-                                {...props}
-                              />
-                            ),
-                            ol: ({ ...props }) => (
-                              <ol
-                                className="mb-3 pl-4 space-y-1 list-decimal list-inside"
-                                {...props}
-                              />
-                            ),
-                            li: ({ ...props }) => (
-                              <li
-                                className="marker:text-brand-navy-blue dark:marker:text-brand-yellow"
-                                {...props}
-                              />
-                            ),
-                            strong: ({ ...props }) => (
-                              <strong
-                                className="font-semibold text-brand-navy-blue dark:text-brand-yellow"
-                                {...props}
-                              />
-                            ),
-                            em: ({ ...props }) => (
-                              <em className="italic" {...props} />
-                            ),
-                            code: ({ ...props }) => (
-                              <code
-                                className="bg-brand-navy-blue/10 dark:bg-brand-yellow/10 px-1 py-0.5 rounded text-xs font-mono"
-                                {...props}
-                              />
-                            ),
-                            pre: ({ ...props }) => (
-                              <pre
-                                className="bg-brand-navy-blue/10 dark:bg-brand-yellow/10 p-3 rounded-lg text-xs font-mono overflow-x-auto mb-3"
-                                {...props}
-                              />
-                            ),
-                            blockquote: ({ ...props }) => (
-                              <blockquote
-                                className="border-l-2 border-brand-navy-blue/30 dark:border-brand-yellow/30 pl-4 italic mb-3"
-                                {...props}
-                              />
-                            ),
-                          }}
-                        >
-                          {message.content}
-                        </ReactMarkdown>
-                      )}
+                          ),
+                          p: ({ ...props }) => (
+                            <p className="mb-3 last:mb-0" {...props} />
+                          ),
+                          ul: ({ ...props }) => (
+                            <ul className="mb-3 pl-4 space-y-1" {...props} />
+                          ),
+                          ol: ({ ...props }) => (
+                            <ol
+                              className="mb-3 pl-4 space-y-1 list-decimal"
+                              {...props}
+                            />
+                          ),
+                          li: ({ ...props }) => (
+                            <li className="text-sm list-disc" {...props} />
+                          ),
+                          strong: ({ ...props }) => (
+                            <strong
+                              className="font-semibold text-brand-navy-blue dark:text-brand-yellow"
+                              {...props}
+                            />
+                          ),
+                          em: ({ ...props }) => (
+                            <em className="italic" {...props} />
+                          ),
+                          code: ({ ...props }) => (
+                            <code
+                              className="bg-brand-navy-blue/10 dark:bg-brand-yellow/10 px-1 py-0.5 rounded text-xs font-mono"
+                              {...props}
+                            />
+                          ),
+                          pre: ({ ...props }) => (
+                            <pre
+                              className="bg-brand-navy-blue/10 dark:bg-brand-yellow/10 p-3 rounded-lg text-xs font-mono overflow-x-auto mb-3"
+                              {...props}
+                            />
+                          ),
+                          blockquote: ({ ...props }) => (
+                            <blockquote
+                              className="border-l-2 border-brand-navy-blue/30 dark:border-brand-yellow/30 pl-4 italic mb-3"
+                              {...props}
+                            />
+                          ),
+                        }}
+                      >
+                        {message.content}
+                      </ReactMarkdown>
                     </div>
                   </div>
                 </motion.div>

@@ -32,7 +32,7 @@
   /* ArtEsfera Brand Colors */
   --color-brand-pink: #a4144e;
   --color-brand-orange: #f05913;
-  --color-brand-navy-blue: #000167;
+  --color-brand-navy-blue: #010166;
   --color-brand-blue: #21daed;
   --color-brand-red: #da0f17;
   --color-brand-yellow: #fcc931;
@@ -118,9 +118,9 @@
   --surface-light: rgba(253, 246, 236, 0.9);
 
   /* Clean Glass Effects - Light Mode (No Shadows) */
-  --glass-bg: rgba(255, 255, 255, 0.15);
-  --glass-bg-light: rgba(255, 255, 255, 0.25);
-  --glass-border: rgba(255, 255, 255, 0.3);
+  --glass-bg: rgba(255, 255, 255, 0.35);
+  --glass-bg-light: rgba(255, 255, 255, 0.45);
+  --glass-border: rgba(255, 255, 255, 0.6);
   --glass-shadow: none;
   --glass-shadow-xl: none;
   --glass-hover-glow: none;
@@ -132,36 +132,36 @@
 
   /* Standard Design System Variables */
   --radius: 0.625rem;
-  --background: #ffffff;
-  --foreground: #0a0a0a;
-  --card: #ffffff;
-  --card-foreground: #0a0a0a;
-  --popover: #ffffff;
-  --popover-foreground: #0a0a0a;
+  --background: #f1f5f9;
+  --foreground: #1e293b;
+  --card: rgba(255, 255, 255, 0.7);
+  --card-foreground: #1e293b;
+  --popover: rgba(255, 255, 255, 0.8);
+  --popover-foreground: #1e293b;
   --primary: #171717;
   --primary-foreground: #fafafa;
-  --secondary: #f5f5f5;
-  --secondary-foreground: #171717;
-  --muted: #f5f5f5;
-  --muted-foreground: #737373;
+  --secondary: rgba(248, 250, 252, 0.8);
+  --secondary-foreground: #1e293b;
+  --muted: rgba(241, 245, 249, 0.8);
+  --muted-foreground: #475569;
   --accent: var(--color-brand-navy-blue);
   --accent-foreground: #ffffff;
   --destructive: #dc2626;
-  --border: #e5e5e5;
-  --input: #e5e5e5;
+  --border: rgba(148, 163, 184, 0.5);
+  --input: rgba(148, 163, 184, 0.3);
   --ring: var(--color-brand-navy-blue);
   --chart-1: var(--color-brand-navy-blue);
   --chart-2: var(--color-brand-navy-blue);
   --chart-3: var(--color-brand-navy-blue);
   --chart-4: var(--color-brand-navy-blue);
   --chart-5: var(--color-brand-navy-blue);
-  --sidebar: #fafafa;
-  --sidebar-foreground: #0a0a0a;
+  --sidebar: rgba(248, 250, 252, 0.8);
+  --sidebar-foreground: #1e293b;
   --sidebar-primary: var(--color-brand-navy-blue);
   --sidebar-primary-foreground: #fafafa;
   --sidebar-accent: var(--color-brand-navy-blue);
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #e5e5e5;
+  --sidebar-border: rgba(148, 163, 184, 0.5);
   --sidebar-ring: var(--color-brand-navy-blue);
 }
 
@@ -227,11 +227,11 @@
   body {
     background: linear-gradient(
       135deg,
-      #f8fafc 0%,
-      #e2e8f0 25%,
-      #cbd5e1 50%,
-      #e2e8f0 75%,
-      #f8fafc 100%
+      #e2e8f0 0%,
+      #cbd5e1 25%,
+      #94a3b8 50%,
+      #cbd5e1 75%,
+      #e2e8f0 100%
     );
     backdrop-filter: var(--blur-light);
     color: var(--foreground-dark);
@@ -301,15 +301,15 @@
     backdrop-filter: blur(24px);
     background: linear-gradient(
       135deg,
-      rgba(255, 255, 255, 0.15) 0%,
-      rgba(255, 255, 255, 0.08) 50%,
-      rgba(255, 255, 255, 0.12) 100%
+      rgba(255, 255, 255, 0.4) 0%,
+      rgba(255, 255, 255, 0.25) 50%,
+      rgba(255, 255, 255, 0.35) 100%
     );
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6),
-      inset 0 -1px 0 rgba(255, 255, 255, 0.2),
-      inset 1px 0 0 rgba(255, 255, 255, 0.3),
-      inset -1px 0 0 rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.4),
+      inset 1px 0 0 rgba(255, 255, 255, 0.6),
+      inset -1px 0 0 rgba(255, 255, 255, 0.3);
     transition: all 0.3s ease;
   }
 
@@ -346,18 +346,20 @@
 
   .glass-button-light {
     backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    background: var(--glass-bg);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.3);
     padding: 0.75rem 1.5rem;
-    box-shadow: none;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.3);
     transition: all 0.3s ease;
   }
 
   .glass-button-light:hover {
-    box-shadow: none;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.4), 0 4px 16px rgba(0, 0, 0, 0.1);
     transform: translateY(-1px);
-    border-color: rgba(255, 255, 255, 0.4);
-    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.45);
   }
 
   .dark .glass-button-dark {
@@ -431,15 +433,15 @@
   }
 
   .glass-button-brand-light:hover {
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4),
-      inset 0 -1px 0 rgba(255, 255, 255, 0.2),
-      inset 1px 0 0 rgba(255, 255, 255, 0.3),
-      inset -1px 0 0 rgba(255, 255, 255, 0.15), 0 4px 20px rgba(0, 0, 0, 0.15),
-      0 0 25px rgba(255, 255, 255, 0.2);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.3),
+      inset 1px 0 0 rgba(255, 255, 255, 0.4),
+      inset -1px 0 0 rgba(255, 255, 255, 0.2), 0 4px 20px rgba(0, 0, 0, 0.2),
+      0 0 25px rgba(252, 201, 49, 0.3);
     transform: translateY(-2px);
     background-color: color-mix(
       in srgb,
-      var(--color-brand-yellow) 80%,
+      var(--color-brand-yellow) 90%,
       transparent
     );
   }
@@ -612,12 +614,12 @@
     transition: all 0.3s ease;
     background: linear-gradient(
       135deg,
-      rgba(255, 255, 255, 0.08),
-      rgba(255, 255, 255, 0.05)
+      rgba(255, 255, 255, 0.3),
+      rgba(255, 255, 255, 0.2)
     );
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.08),
-      inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 0 -1px 0 rgba(0, 0, 0, 0.05),
-      inset 0 0 20px 10px rgba(255, 255, 255, 0.06);
+      inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 -1px 0 rgba(0, 0, 0, 0.05),
+      inset 0 0 20px 10px rgba(255, 255, 255, 0.15);
   }
 
   /* Primary Button Dark Mode */
@@ -633,10 +635,10 @@
   .glass-primary-btn:hover {
     backdrop-filter: blur(24px);
     transform: translateY(-1px);
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.5);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), 0 4px 16px rgba(0, 0, 0, 0.12),
-      inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -1px 0 rgba(0, 0, 0, 0.08),
-      inset 0 0 20px 10px rgba(255, 255, 255, 0.12);
+      inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 -1px 0 rgba(0, 0, 0, 0.08),
+      inset 0 0 20px 10px rgba(255, 255, 255, 0.25);
   }
 
   .dark .glass-primary-btn:hover {
@@ -708,12 +710,12 @@
     overflow: hidden;
     cursor: pointer;
     transition: all 0.3s ease;
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05),
-      inset 0 1px 0 rgba(255, 255, 255, 0.4),
-      inset 0 -1px 0 rgba(255, 255, 255, 0.1),
-      inset 0 0 20px 10px rgba(255, 255, 255, 0.05);
+      inset 0 1px 0 rgba(255, 255, 255, 0.7),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.3),
+      inset 0 0 20px 10px rgba(255, 255, 255, 0.1);
   }
 
   /* Secondary Button Dark Mode */
@@ -730,11 +732,11 @@
   .glass-secondary-btn:hover {
     backdrop-filter: blur(24px);
     transform: translateY(-1px);
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.4);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08),
-      inset 0 1px 0 rgba(255, 255, 255, 0.6),
-      inset 0 -1px 0 rgba(255, 255, 255, 0.15),
-      inset 0 0 20px 10px rgba(255, 255, 255, 0.08);
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 0 20px 10px rgba(255, 255, 255, 0.2);
   }
 
   .dark .glass-secondary-btn:hover {
@@ -806,12 +808,12 @@
     border: 1px solid;
     position: relative;
     overflow: hidden;
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.35);
+    border-color: rgba(255, 255, 255, 0.6);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08),
-      inset 0 1px 0 rgba(255, 255, 255, 0.4),
-      inset 0 -1px 0 rgba(255, 255, 255, 0.1),
-      inset 0 0 20px 10px rgba(255, 255, 255, 0.08);
+      inset 0 1px 0 rgba(255, 255, 255, 0.8),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.3),
+      inset 0 0 20px 10px rgba(255, 255, 255, 0.15);
   }
 
   .dark .glass-container {
@@ -855,7 +857,7 @@
   .glass-link:hover {
     backdrop-filter: blur(24px);
     transform: translateY(-1px);
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.3);
   }
 
   .dark .glass-link:hover {

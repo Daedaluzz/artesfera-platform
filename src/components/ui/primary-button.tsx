@@ -43,13 +43,9 @@ export function PrimaryButton({
         fullWidth ? "w-full" : "",
         className
       )}
-      style={{
-        background:
-          "linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.05))",
-      }}
       {...props}
     >
-      <span className="relative z-20 flex items-center justify-center gap-2 text-base font-medium text-brand-black dark:text-brand-black">
+      <span className="relative z-20 flex items-center justify-center gap-2 text-base font-medium text-brand-black dark:text-brand-black transition-colors duration-300">
         {leftIcon && (
           <span className="flex items-center justify-center w-4 h-4 flex-shrink-0">
             {leftIcon}
