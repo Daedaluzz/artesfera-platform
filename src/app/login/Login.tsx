@@ -1,17 +1,179 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Metadata } from "next";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useRouter, useSearchParams } from "next/navigation";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { SecondaryButton } from "@/components/ui/secondary-button";
+import { useAuth } from "@/context/AuthContext";
+import { Eye, EyeOff, AlertCircle } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "Entrar - ArtEsfera",
-  description:
-    "Faça login na sua conta ArtEsfera e conecte-se com a comunidade artística.",
-};
+interface FormErrors {
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+  general?: string;
+}
 
 export default function Login() {
+  const [isLogin, setIsLogin] = useState(true);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    confirmPassword: "",
+    name: "",
+  });
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  const { user, loading: authLoading, signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Redirect if user is already authenticated
+  useEffect(() => {
+    if (!authLoading && user) {
+      const nextUrl = searchParams.get("next") || "/dashboard";
+      router.push(nextUrl);
+    }
+  }, [user, authLoading, router, searchParams]);
+
+  // Form validation
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+
+    // Email validation
+    if (!formData.email) {
+      newErrors.email = "Email é obrigatório";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Email inválido";
+    }
+
+    // Password validation
+    if (!formData.password) {
+      newErrors.password = "Senha é obrigatória";
+    } else if (formData.password.length < 6) {
+      newErrors.password = "Senha deve ter pelo menos 6 caracteres";
+    }
+
+    // Confirm password validation (only for register)
+    if (!isLogin) {
+      if (!formData.confirmPassword) {
+        newErrors.confirmPassword = "Confirmação de senha é obrigatória";
+      } else if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = "Senhas não coincidem";
+      }
+
+      if (!formData.name.trim()) {
+        newErrors.general = "Nome é obrigatório para cadastro";
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Handle form input changes
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Clear error when user starts typing
+    if (errors[name as keyof FormErrors]) {
+      setErrors(prev => ({ ...prev, [name]: undefined }));
+    }
+  };
+
+  // Handle Google sign-in
+  const handleGoogleSignIn = async () => {
+    try {
+      setIsLoading(true);
+      setErrors({});
+      await signInWithGoogle();
+      // Redirect handled by useEffect
+    } catch (error: unknown) {
+      console.error("Google sign-in error:", error);
+      setErrors({ general: getFirebaseErrorMessage(error) });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle email/password form submission
+  const handleEmailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) return;
+
+    try {
+      setIsLoading(true);
+      setErrors({});
+
+      if (isLogin) {
+        await signInWithEmail(formData.email, formData.password);
+      } else {
+        await signUpWithEmail(formData.email, formData.password, formData.name);
+      }
+      // Redirect handled by useEffect
+    } catch (error: unknown) {
+      console.error("Email auth error:", error);
+      setErrors({ general: getFirebaseErrorMessage(error) });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Get user-friendly error messages
+  const getFirebaseErrorMessage = (error: unknown): string => {
+    const errorCode = (error as { code?: string })?.code || "";
+    
+    switch (errorCode) {
+      case "auth/popup-closed-by-user":
+        return "Login cancelado. Tente novamente.";
+      case "auth/network-request-failed":
+        return "Erro de conexão. Verifique sua internet e tente novamente.";
+      case "auth/email-already-in-use":
+        return "Este email já está em uso. Tente fazer login ou use outro email.";
+      case "auth/weak-password":
+        return "Senha muito fraca. Use pelo menos 6 caracteres.";
+      case "auth/user-not-found":
+        return "Usuário não encontrado. Verifique o email ou cadastre-se.";
+      case "auth/wrong-password":
+        return "Senha incorreta. Tente novamente.";
+      case "auth/invalid-email":
+        return "Email inválido.";
+      case "auth/user-disabled":
+        return "Esta conta foi desabilitada. Entre em contato com o suporte.";
+      case "auth/too-many-requests":
+        return "Muitas tentativas. Tente novamente mais tarde.";
+      default:
+        return (error as { message?: string })?.message || "Ocorreu um erro inesperado. Tente novamente.";
+    }
+  };
+
+  // Toggle between login and register
+  const toggleMode = () => {
+    setIsLogin(!isLogin);
+    setErrors({});
+    setFormData({
+      email: "",
+      password: "",
+      confirmPassword: "",
+      name: "",
+    });
+  };
+
+  // Show loading if auth is still loading
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-navy-blue dark:border-brand-yellow"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8">
       <div className="max-w-sm w-full sm:max-w-md">
@@ -23,17 +185,20 @@ export default function Login() {
           className="text-center mb-8"
         >
           <h1 className="text-3xl sm:text-4xl font-bold font-serif text-brand-black dark:text-brand-white mb-2">
-            Bem-vindo de volta à{" "}
+            {isLogin ? "Bem-vindo de volta à " : "Junte-se à "}
             <span className="text-brand-navy-blue dark:text-brand-yellow">
               ArtEsfera
             </span>
           </h1>
           <p className="text-base sm:text-lg text-brand-black/70 dark:text-brand-white/70">
-            Entre na sua conta e continue criando
+            {isLogin 
+              ? "Entre na sua conta e continue criando" 
+              : "Crie sua conta e comece a explorar"
+            }
           </p>
         </motion.div>
 
-        {/* Login Form */}
+        {/* Login/Register Form */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -43,46 +208,128 @@ export default function Login() {
           <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent rounded-full" />
           <div className="absolute top-4 left-0 w-px h-[calc(100%-2rem)] bg-gradient-to-b from-white/40 via-transparent to-white/10 rounded-full" />
 
-          <form className="space-y-4" role="form" aria-label="Login form">
-            {/* Google Login Button */}
-            <SecondaryButton
-              fullWidth
+          {/* Mode Toggle */}
+          <div className="flex mb-6 p-1 bg-white/[0.1] dark:bg-black/10 rounded-[12px] border border-white/20 dark:border-white/10">
+            <button
               type="button"
-              leftIcon={
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
-                  <path
-                    fill="currentColor"
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  />
-                  <path
-                    fill="currentColor"
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  />
-                  <path
-                    fill="currentColor"
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                  />
-                  <path
-                    fill="currentColor"
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                  />
-                </svg>
-              }
+              onClick={() => !isLoading && setIsLogin(true)}
+              disabled={isLoading}
+              className={`flex-1 py-2 px-4 rounded-[8px] text-sm font-medium transition-all duration-200 ${
+                isLogin
+                  ? "bg-white/30 dark:bg-white/20 text-brand-black dark:text-brand-white shadow-sm"
+                  : "text-brand-black/70 dark:text-brand-white/70 hover:text-brand-black dark:hover:text-brand-white"
+              }`}
+              aria-pressed={isLogin}
             >
-              Continuar com Google
-            </SecondaryButton>
+              Entrar
+            </button>
+            <button
+              type="button"
+              onClick={() => !isLoading && setIsLogin(false)}
+              disabled={isLoading}
+              className={`flex-1 py-2 px-4 rounded-[8px] text-sm font-medium transition-all duration-200 ${
+                !isLogin
+                  ? "bg-white/30 dark:bg-white/20 text-brand-black dark:text-brand-white shadow-sm"
+                  : "text-brand-black/70 dark:text-brand-white/70 hover:text-brand-black dark:hover:text-brand-white"
+              }`}
+              aria-pressed={!isLogin}
+            >
+              Cadastrar
+            </button>
+          </div>
 
-            {/* Divider */}
-            <div className="relative my-4">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-white/20 dark:border-white/10" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-3 backdrop-blur-sm bg-white/30 dark:bg-black/30 text-brand-black/60 dark:text-brand-white/60 rounded-full border border-white/20 dark:border-white/10 text-xs">
-                  ou continue com email
+          {/* General Error Message */}
+          <AnimatePresence>
+            {errors.general && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="mb-4 p-3 rounded-[12px] bg-red-500/10 border border-red-500/20 flex items-center gap-2"
+              >
+                <AlertCircle className="w-4 h-4 text-red-500" />
+                <span className="text-sm text-red-600 dark:text-red-400">
+                  {errors.general}
                 </span>
-              </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Google Login Button */}
+          <SecondaryButton
+            fullWidth
+            type="button"
+            onClick={handleGoogleSignIn}
+            disabled={isLoading}
+            leftIcon={
+              <svg className="w-5 h-5" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  fill="currentColor"
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                />
+                <path
+                  fill="currentColor"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                />
+                <path
+                  fill="currentColor"
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                />
+                <path
+                  fill="currentColor"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                />
+              </svg>
+            }
+            aria-label={`${isLogin ? "Entrar" : "Cadastrar"} com Google`}
+          >
+            {isLogin ? "Entrar" : "Cadastrar"} com Google
+          </SecondaryButton>
+
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-white/20 dark:border-white/10" />
             </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-3 backdrop-blur-sm bg-white/30 dark:bg-black/30 text-brand-black/60 dark:text-brand-white/60 rounded-full border border-white/20 dark:border-white/10 text-xs">
+                ou continue com email
+              </span>
+            </div>
+          </div>
+
+          {/* Email/Password Form */}
+          <form onSubmit={handleEmailSubmit} className="space-y-4" role="form" aria-label={`${isLogin ? "Login" : "Cadastro"} form`}>
+            {/* Name Input (only for register) */}
+            <AnimatePresence>
+              {!isLogin && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium text-brand-black/80 dark:text-brand-white/80 mb-2"
+                  >
+                    Nome completo
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    disabled={isLoading}
+                    className="w-full px-4 py-3 rounded-[12px] backdrop-blur-[10px] bg-white/[0.1] dark:bg-white/[0.05] border border-white/[0.2] dark:border-white/[0.1] shadow-[0_4px_16px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-1px_0_rgba(255,255,255,0.05)] text-brand-black dark:text-brand-white placeholder-brand-black/50 dark:placeholder-brand-white/50 focus:outline-none focus:ring-2 focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30 focus:border-brand-navy-blue/30 dark:focus:border-brand-yellow/30 transition-all duration-300 disabled:opacity-50"
+                    placeholder="Seu nome completo"
+                    aria-describedby="name-error"
+                    required={!isLogin}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Email Input */}
             <div>
@@ -95,10 +342,32 @@ export default function Login() {
               <input
                 type="email"
                 id="email"
-                className="w-full px-4 py-3 rounded-[12px] backdrop-blur-[10px] bg-white/[0.1] dark:bg-white/[0.05] border border-white/[0.2] dark:border-white/[0.1] shadow-[0_4px_16px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-1px_0_rgba(255,255,255,0.05)] text-brand-black dark:text-brand-white placeholder-brand-black/50 dark:placeholder-brand-white/50 focus:outline-none focus:ring-2 focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30 focus:border-brand-navy-blue/30 dark:focus:border-brand-yellow/30 transition-all duration-300"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                disabled={isLoading}
+                className={`w-full px-4 py-3 rounded-[12px] backdrop-blur-[10px] bg-white/[0.1] dark:bg-white/[0.05] border shadow-[0_4px_16px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-1px_0_rgba(255,255,255,0.05)] text-brand-black dark:text-brand-white placeholder-brand-black/50 dark:placeholder-brand-white/50 focus:outline-none focus:ring-2 focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30 focus:border-brand-navy-blue/30 dark:focus:border-brand-yellow/30 transition-all duration-300 disabled:opacity-50 ${
+                  errors.email
+                    ? "border-red-500/50 focus:border-red-500/50 focus:ring-red-500/30"
+                    : "border-white/[0.2] dark:border-white/[0.1]"
+                }`}
                 placeholder="seu@email.com"
+                aria-describedby={errors.email ? "email-error" : undefined}
+                aria-invalid={!!errors.email}
                 required
               />
+              {errors.email && (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  id="email-error"
+                  className="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center gap-1"
+                  role="alert"
+                >
+                  <AlertCircle className="w-3 h-3" />
+                  {errors.email}
+                </motion.p>
+              )}
             </div>
 
             {/* Password Input */}
@@ -109,75 +378,193 @@ export default function Login() {
               >
                 Senha
               </label>
-              <input
-                type="password"
-                id="password"
-                className="w-full px-4 py-3 rounded-[12px] backdrop-blur-[10px] bg-white/[0.1] dark:bg-white/[0.05] border border-white/[0.2] dark:border-white/[0.1] shadow-[0_4px_16px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-1px_0_rgba(255,255,255,0.05)] text-brand-black dark:text-brand-white placeholder-brand-black/50 dark:placeholder-brand-white/50 focus:outline-none focus:ring-2 focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30 focus:border-brand-navy-blue/30 dark:focus:border-brand-yellow/30 transition-all duration-300"
-                placeholder="••••••••"
-                required
-              />
-            </div>
-
-            {/* Remember Me & Forgot Password */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
+              <div className="relative">
                 <input
-                  id="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 rounded border-white/20 text-brand-navy-blue dark:text-brand-yellow focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30"
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  disabled={isLoading}
+                  className={`w-full px-4 py-3 pr-10 rounded-[12px] backdrop-blur-[10px] bg-white/[0.1] dark:bg-white/[0.05] border shadow-[0_4px_16px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-1px_0_rgba(255,255,255,0.05)] text-brand-black dark:text-brand-white placeholder-brand-black/50 dark:placeholder-brand-white/50 focus:outline-none focus:ring-2 focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30 focus:border-brand-navy-blue/30 dark:focus:border-brand-yellow/30 transition-all duration-300 disabled:opacity-50 ${
+                    errors.password
+                      ? "border-red-500/50 focus:border-red-500/50 focus:ring-red-500/30"
+                      : "border-white/[0.2] dark:border-white/[0.1]"
+                  }`}
+                  placeholder="••••••••"
+                  aria-describedby={errors.password ? "password-error" : undefined}
+                  aria-invalid={!!errors.password}
+                  required
                 />
-                <label
-                  htmlFor="remember-me"
-                  className="ml-2 block text-sm text-brand-black/80 dark:text-brand-white/80"
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  disabled={isLoading}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-brand-black/50 dark:text-brand-white/50 hover:text-brand-black dark:hover:text-brand-white transition-colors duration-200"
+                  aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
                 >
-                  Lembrar de mim
-                </label>
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
               </div>
-
-              <button
-                type="button"
-                className="text-sm text-brand-navy-blue dark:text-brand-yellow hover:text-brand-navy-blue/80 dark:hover:text-brand-yellow/80 transition-colors duration-200 cursor-pointer"
-              >
-                Esqueceu a senha?
-              </button>
+              {errors.password && (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  id="password-error"
+                  className="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center gap-1"
+                  role="alert"
+                >
+                  <AlertCircle className="w-3 h-3" />
+                  {errors.password}
+                </motion.p>
+              )}
             </div>
 
-            {/* Login Button */}
-            <PrimaryButton fullWidth type="submit">
-              Entrar
+            {/* Confirm Password Input (only for register) */}
+            <AnimatePresence>
+              {!isLogin && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <label
+                    htmlFor="confirmPassword"
+                    className="block text-sm font-medium text-brand-black/80 dark:text-brand-white/80 mb-2"
+                  >
+                    Confirmar senha
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleInputChange}
+                      disabled={isLoading}
+                      className={`w-full px-4 py-3 pr-10 rounded-[12px] backdrop-blur-[10px] bg-white/[0.1] dark:bg-white/[0.05] border shadow-[0_4px_16px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-1px_0_rgba(255,255,255,0.05)] text-brand-black dark:text-brand-white placeholder-brand-black/50 dark:placeholder-brand-white/50 focus:outline-none focus:ring-2 focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30 focus:border-brand-navy-blue/30 dark:focus:border-brand-yellow/30 transition-all duration-300 disabled:opacity-50 ${
+                        errors.confirmPassword
+                          ? "border-red-500/50 focus:border-red-500/50 focus:ring-red-500/30"
+                          : "border-white/[0.2] dark:border-white/[0.1]"
+                      }`}
+                      placeholder="••••••••"
+                      aria-describedby={errors.confirmPassword ? "confirm-password-error" : undefined}
+                      aria-invalid={!!errors.confirmPassword}
+                      required={!isLogin}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      disabled={isLoading}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-brand-black/50 dark:text-brand-white/50 hover:text-brand-black dark:hover:text-brand-white transition-colors duration-200"
+                      aria-label={showConfirmPassword ? "Ocultar confirmação de senha" : "Mostrar confirmação de senha"}
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                  {errors.confirmPassword && (
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      id="confirm-password-error"
+                      className="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center gap-1"
+                      role="alert"
+                    >
+                      <AlertCircle className="w-3 h-3" />
+                      {errors.confirmPassword}
+                    </motion.p>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Remember Me & Forgot Password (only for login) */}
+            {isLogin && (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <input
+                    id="remember-me"
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-white/20 text-brand-navy-blue dark:text-brand-yellow focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30"
+                    disabled={isLoading}
+                  />
+                  <label
+                    htmlFor="remember-me"
+                    className="ml-2 block text-sm text-brand-black/80 dark:text-brand-white/80"
+                  >
+                    Lembrar de mim
+                  </label>
+                </div>
+
+                <button
+                  type="button"
+                  disabled={isLoading}
+                  className="text-sm text-brand-navy-blue dark:text-brand-yellow hover:text-brand-navy-blue/80 dark:hover:text-brand-yellow/80 transition-colors duration-200 cursor-pointer disabled:opacity-50"
+                >
+                  Esqueceu a senha?
+                </button>
+              </div>
+            )}
+
+            {/* Submit Button */}
+            <PrimaryButton 
+              fullWidth 
+              type="submit" 
+              disabled={isLoading}
+              leftIcon={isLoading ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
+              ) : undefined}
+            >
+              {isLoading 
+                ? (isLogin ? "Entrando..." : "Cadastrando...") 
+                : (isLogin ? "Entrar" : "Cadastrar")
+              }
             </PrimaryButton>
 
-            {/* Terms */}
-            <div className="text-center mt-4">
-              <p className="text-xs text-brand-black/60 dark:text-brand-white/60">
-                Ao entrar, você concorda com nossos{" "}
-                <a
-                  href="#"
-                  className="text-brand-navy-blue dark:text-brand-yellow hover:text-brand-navy-blue/80 dark:hover:text-brand-yellow/80 transition-colors duration-200 cursor-pointer"
-                >
-                  Termos de Uso
-                </a>{" "}
-                e{" "}
-                <a
-                  href="#"
-                  className="text-brand-navy-blue dark:text-brand-yellow hover:text-brand-navy-blue/80 dark:hover:text-brand-yellow/80 transition-colors duration-200 cursor-pointer"
-                >
-                  Política de Privacidade
-                </a>
-              </p>
-            </div>
+            {/* Terms (only for register) */}
+            {!isLogin && (
+              <div className="text-center mt-4">
+                <p className="text-xs text-brand-black/60 dark:text-brand-white/60">
+                  Ao se cadastrar, você concorda com nossos{" "}
+                  <a
+                    href="#"
+                    className="text-brand-navy-blue dark:text-brand-yellow hover:text-brand-navy-blue/80 dark:hover:text-brand-yellow/80 transition-colors duration-200 cursor-pointer"
+                  >
+                    Termos de Uso
+                  </a>{" "}
+                  e{" "}
+                  <a
+                    href="#"
+                    className="text-brand-navy-blue dark:text-brand-yellow hover:text-brand-navy-blue/80 dark:hover:text-brand-yellow/80 transition-colors duration-200 cursor-pointer"
+                  >
+                    Política de Privacidade
+                  </a>
+                </p>
+              </div>
+            )}
           </form>
 
-          {/* Register Link */}
-          <div className="mt-4 text-center">
+          {/* Switch Mode Link */}
+          <div className="mt-6 text-center">
             <p className="text-sm text-brand-black/70 dark:text-brand-white/70">
-              Não tem uma conta?{" "}
-              <a
-                href="/register"
-                className="font-medium text-brand-navy-blue dark:text-brand-yellow hover:text-brand-navy-blue/80 dark:hover:text-brand-yellow/80 transition-colors duration-200 cursor-pointer"
+              {isLogin ? "Não tem uma conta?" : "Já tem uma conta?"}{" "}
+              <button
+                type="button"
+                onClick={toggleMode}
+                disabled={isLoading}
+                className="font-medium text-brand-navy-blue dark:text-brand-yellow hover:text-brand-navy-blue/80 dark:hover:text-brand-yellow/80 transition-colors duration-200 cursor-pointer disabled:opacity-50"
               >
-                Cadastre-se gratuitamente
-              </a>
+                {isLogin ? "Cadastre-se gratuitamente" : "Entre aqui"}
+              </button>
             </p>
           </div>
         </motion.div>
