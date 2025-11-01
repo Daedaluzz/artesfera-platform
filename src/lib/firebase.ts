@@ -1,9 +1,9 @@
 /**
  * Client-side Firebase configuration and initialization for ArtEsfera platform
- * 
+ *
  * This module provides safe singleton initialization for client-side Firebase SDK only.
  * For admin operations, use API routes that import firebase-admin separately.
- * 
+ *
  * Client-side usage:
  * - Use getClientApp() for browser-safe Firebase operations
  * - Includes Auth, Firestore, Storage, and Analytics
@@ -11,7 +11,12 @@
  */
 
 // Client-side Firebase imports
-import { initializeApp, getApps, FirebaseApp, FirebaseOptions } from "firebase/app";
+import {
+  initializeApp,
+  getApps,
+  FirebaseApp,
+  FirebaseOptions,
+} from "firebase/app";
 import { getAuth, Auth } from "firebase/auth";
 import { getFirestore, Firestore } from "firebase/firestore";
 import { getStorage, FirebaseStorage } from "firebase/storage";
@@ -37,7 +42,7 @@ const clientConfig: FirebaseOptions = {
 /**
  * Gets or initializes the client-side Firebase app
  * Safe to use in both browser and server environments
- * 
+ *
  * @returns Firebase client app instance
  */
 export function getClientApp(): FirebaseApp {
