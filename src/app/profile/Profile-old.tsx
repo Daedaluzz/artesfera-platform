@@ -30,8 +30,7 @@ import {
   updateDoc,
   serverTimestamp,
 } from "firebase/firestore";
-import { getClientFirestore } from "@/lib/firebase";
-import { updateProfile } from "firebase/auth";
+import { getClientFirestore, updateProfile } from "@/lib/firebase";
 
 // Initialize Firebase services
 const storage = getStorage();
@@ -95,13 +94,7 @@ const compressImage = (file: File, maxWidth = 400, quality = 0.8): Promise<Blob>
 
       if (ctx) {
         ctx.drawImage(img, 0, 0, newWidth, newHeight);
-        canvas.toBlob((blob) => {
-          if (blob) {
-            resolve(blob);
-          } else {
-            reject(new Error("Could not compress image"));
-          }
-        }, "image/jpeg", quality);
+        canvas.toBlob(resolve, "image/jpeg", quality);
       } else {
         reject(new Error("Could not get canvas context"));
       }
@@ -502,7 +495,7 @@ export default function Profile() {
               )}
             </AnimatePresence>
 
-            <div className="backdrop-blur-[15px] bg-white/[0.15] dark:bg-black/15 border border-white/[0.25] dark:border-white/15 rounded-[20px] p-8 shadow-[0_8px_32px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1),inset_0_0_20px_10px_rgba(255,255,255,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.25),inset_0_-1px_0_rgba(255,255,255,0.05),inset_0_0_20px_10px_rgba(255,255,255,0.04)] overflow-hidden">
+            <div className="relative backdrop-blur-[15px] bg-white/[0.15] dark:bg-black/15 border border-white/[0.25] dark:border-white/15 rounded-[20px] p-8 shadow-[0_8px_32px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1),inset_0_0_20px_10px_rgba(255,255,255,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.25),inset_0_-1px_0_rgba(255,255,255,0.05),inset_0_0_20px_10px_rgba(255,255,255,0.04)] overflow-hidden">
               {/* Glassmorphic decorative elements */}
               <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent rounded-full" />
               <div className="absolute top-4 left-0 w-px h-[calc(100%-2rem)] bg-gradient-to-b from-white/40 via-transparent to-white/10 rounded-full" />
@@ -781,6 +774,207 @@ export default function Profile() {
                       </div>
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Stats */}
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[
+                { label: "Projetos", value: "0", icon: "🎨" },
+                { label: "Conexões", value: "0", icon: "🤝" },
+                { label: "Visualizações", value: "0", icon: "👁️" },
+              ].map((stat) => (
+                <div
+                  key={stat.label}
+                  className="backdrop-blur-[15px] bg-white/[0.15] dark:bg-black/15 border border-white/[0.25] dark:border-white/15 rounded-[16px] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1),inset_0_0_20px_10px_rgba(255,255,255,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.25),inset_0_-1px_0_rgba(255,255,255,0.05),inset_0_0_20px_10px_rgba(255,255,255,0.04)] text-center"
+                >
+                  <div className="text-2xl mb-2">{stat.icon}</div>
+                  <div className="text-2xl font-bold text-brand-black dark:text-brand-white">
+                    {stat.value}
+                  </div>
+                  <div className="text-sm text-brand-black/70 dark:text-brand-white/70">
+                    {stat.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+                {/* Basic Info */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label
+                      htmlFor="firstName"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2"
+                    >
+                      Nome
+                    </label>
+                    <input
+                      type="text"
+                      id="firstName"
+                      defaultValue="João"
+                      className="w-full px-4 py-3 rounded-2xl backdrop-blur-md bg-white/10 dark:bg-gray-800/20 border border-white/20 dark:border-gray-700/30 text-gray-700 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="lastName"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2"
+                    >
+                      Sobrenome
+                    </label>
+                    <input
+                      type="text"
+                      id="lastName"
+                      defaultValue="Silva"
+                      className="w-full px-4 py-3 rounded-2xl backdrop-blur-md bg-white/10 dark:bg-gray-800/20 border border-white/20 dark:border-gray-700/30 text-gray-700 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2"
+                  >
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    defaultValue="joao@email.com"
+                    className="w-full px-4 py-3 rounded-2xl backdrop-blur-md bg-white/10 dark:bg-gray-800/20 border border-white/20 dark:border-gray-700/30 text-gray-700 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="phone"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2"
+                  >
+                    Telefone
+                  </label>
+                  <input
+                    type="tel"
+                    id="phone"
+                    defaultValue="+55 (11) 99999-9999"
+                    className="w-full px-4 py-3 rounded-2xl backdrop-blur-md bg-white/10 dark:bg-gray-800/20 border border-white/20 dark:border-gray-700/30 text-gray-700 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300"
+                  />
+                </div>
+
+                {/* Artist Info */}
+                <div className="border-t border-gray-300/30 dark:border-gray-600/30 pt-6">
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+                    Informações Artísticas
+                  </h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label
+                        htmlFor="artistType"
+                        className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2"
+                      >
+                        Tipo de Artista
+                      </label>
+                      <select
+                        id="artistType"
+                        className="w-full px-4 py-3 rounded-2xl backdrop-blur-md bg-white/10 dark:bg-gray-800/20 border border-white/20 dark:border-gray-700/30 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300"
+                      >
+                        <option value="visual">Artista Visual</option>
+                        <option value="musician">Músico</option>
+                        <option value="actor">Ator/Atriz</option>
+                        <option value="dancer">Dançarino</option>
+                        <option value="writer">Escritor</option>
+                        <option value="photographer">Fotógrafo</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="experience"
+                        className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2"
+                      >
+                        Experiência
+                      </label>
+                      <select
+                        id="experience"
+                        className="w-full px-4 py-3 rounded-2xl backdrop-blur-md bg-white/10 dark:bg-gray-800/20 border border-white/20 dark:border-gray-700/30 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300"
+                      >
+                        <option value="beginner">Iniciante (0-2 anos)</option>
+                        <option value="intermediate">
+                          Intermediário (3-5 anos)
+                        </option>
+                        <option value="experienced">
+                          Experiente (6-10 anos)
+                        </option>
+                        <option value="expert">Expert (10+ anos)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="mt-6">
+                    <label
+                      htmlFor="bio"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2"
+                    >
+                      Biografia
+                    </label>
+                    <textarea
+                      id="bio"
+                      rows={4}
+                      defaultValue="Artista visual apaixonado por explorar novas formas de expressão através da arte contemporânea. Especializado em pinturas abstratas e instalações interativas."
+                      className="w-full px-4 py-3 rounded-2xl backdrop-blur-md bg-white/10 dark:bg-gray-800/20 border border-white/20 dark:border-gray-700/30 text-gray-700 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300 resize-none"
+                    />
+                  </div>
+
+                  {/* Skills/Specialties */}
+                  <div className="mt-6">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                      Especialidades
+                    </label>
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {[
+                        "Pintura",
+                        "Escultura",
+                        "Arte Digital",
+                        "Instalações",
+                        "Performance",
+                      ].map((skill) => (
+                        <span
+                          key={skill}
+                          className="px-3 py-1 rounded-full text-sm bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/20"
+                        >
+                          {skill} ×
+                        </span>
+                      ))}
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Digite uma especialidade e pressione Enter"
+                      className="w-full px-4 py-3 rounded-2xl backdrop-blur-md bg-white/10 dark:bg-gray-800/20 border border-white/20 dark:border-gray-700/30 text-gray-700 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300"
+                    />
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex justify-end space-x-4 pt-6">
+                  <button
+                    type="button"
+                    className="px-6 py-3 rounded-2xl backdrop-blur-md bg-white/10 dark:bg-gray-800/20 border border-white/20 dark:border-gray-700/30 text-gray-700 dark:text-gray-200 font-medium transition-all duration-300 hover:bg-white/20 dark:hover:bg-gray-700/30 cursor-pointer"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="group relative px-8 py-3 rounded-2xl backdrop-blur-md bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-teal-500/20 border border-white/20 dark:border-gray-700/30 text-gray-800 dark:text-white font-semibold transition-all duration-300 hover:from-purple-500/30 hover:via-blue-500/30 hover:to-teal-500/30 hover:scale-105 hover:shadow-lg active:scale-95 cursor-pointer"
+                  >
+                    <span className="relative z-10">Salvar Alterações</span>
+                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-500/0 via-blue-500/0 to-teal-500/0 group-hover:from-purple-500/10 group-hover:via-blue-500/10 group-hover:to-teal-500/10 transition-all duration-300" />
+                  </button>
                 </div>
               </div>
             </div>
