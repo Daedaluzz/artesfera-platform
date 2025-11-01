@@ -8,7 +8,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import Image from "next/image";
 import { SecondaryButton } from "@/components/ui/secondary-button";
 import { PrimaryButton } from "@/components/ui/primary-button";
-import { LogIn, UserPlus, Menu, X, LogOut, User } from "lucide-react";
+import { LogIn, Menu, X, LogOut, User } from "lucide-react";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -134,23 +134,13 @@ export default function NavBar() {
                   </PrimaryButton>
                 </>
               ) : (
-                <>
-                  <SecondaryButton
-                    leftIcon={<LogIn className="w-3 h-3" />}
-                    onClick={() => (window.location.href = "/login")}
-                    className="px-2 py-1.5 text-xs scale-90"
-                  >
-                    <span className="hidden lg:inline text-xs">Entrar</span>
-                  </SecondaryButton>
-
-                  <PrimaryButton
-                    leftIcon={<UserPlus className="w-3 h-3" />}
-                    onClick={() => (window.location.href = "/login")}
-                    className="px-2 py-1.5 text-xs scale-90"
-                  >
-                    <span className="hidden lg:inline text-xs">Cadastrar</span>
-                  </PrimaryButton>
-                </>
+                <SecondaryButton
+                  leftIcon={<LogIn className="w-3 h-3" />}
+                  onClick={() => (window.location.href = "/login")}
+                  className="px-2 py-1.5 text-xs scale-90"
+                >
+                  <span className="hidden lg:inline text-xs">Entrar</span>
+                </SecondaryButton>
               )}
             </div>
 
@@ -265,31 +255,17 @@ export default function NavBar() {
                     </PrimaryButton>
                   </>
                 ) : (
-                  <>
-                    <SecondaryButton
-                      leftIcon={<LogIn className="w-3 h-3" />}
-                      onClick={() => {
-                        window.location.href = "/login";
-                        closeMobileMenu();
-                      }}
-                      fullWidth
-                      className="text-xs font-medium py-2"
-                    >
-                      Entrar
-                    </SecondaryButton>
-
-                    <PrimaryButton
-                      leftIcon={<UserPlus className="w-3 h-3" />}
-                      onClick={() => {
-                        window.location.href = "/login";
-                        closeMobileMenu();
-                      }}
-                      fullWidth
-                      className="text-xs font-medium py-2"
-                    >
-                      Cadastrar
-                    </PrimaryButton>
-                  </>
+                  <SecondaryButton
+                    leftIcon={<LogIn className="w-3 h-3" />}
+                    onClick={() => {
+                      window.location.href = "/login";
+                      closeMobileMenu();
+                    }}
+                    fullWidth
+                    className="text-xs font-medium py-2"
+                  >
+                    Entrar
+                  </SecondaryButton>
                 )}
               </div>
             </div>

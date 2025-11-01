@@ -18,11 +18,6 @@ export const navLinks: NavLink[] = [
 export const authLinks = {
   unauthenticated: [
     { title: "Entrar", path: "/login", icon: "LogIn" as keyof typeof Icons },
-    {
-      title: "Cadastrar",
-      path: "/login",
-      icon: "UserPlus" as keyof typeof Icons,
-    },
   ],
   authenticated: [
     { title: "Perfil", path: "/profile", icon: "User" as keyof typeof Icons },
