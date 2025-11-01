@@ -8,7 +8,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import Image from "next/image";
 import { SecondaryButton } from "@/components/ui/secondary-button";
 import { PrimaryButton } from "@/components/ui/primary-button";
-import { LogIn, UserPlus, Menu, X } from "lucide-react";
+import { LogIn, UserPlus, Menu, X, LogOut, User } from "lucide-react";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -17,10 +17,12 @@ import {
 } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function NavBar() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, loading, signOut } = useAuth();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -28,6 +30,15 @@ export default function NavBar() {
 
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      closeMobileMenu();
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
   return (
@@ -102,21 +113,45 @@ export default function NavBar() {
 
             {/* Desktop Auth Buttons */}
             <div className="flex items-center h-full gap-1 px-2">
-              <SecondaryButton
-                leftIcon={<LogIn className="w-3 h-3" />}
-                onClick={() => (window.location.href = "/login")}
-                className="px-2 py-1.5 text-xs scale-90"
-              >
-                <span className="hidden lg:inline text-xs">Entrar</span>
-              </SecondaryButton>
+              {loading ? (
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-brand-navy-blue dark:border-brand-yellow" />
+              ) : user ? (
+                <>
+                  <SecondaryButton
+                    leftIcon={<User className="w-3 h-3" />}
+                    onClick={() => (window.location.href = "/profile")}
+                    className="px-2 py-1.5 text-xs scale-90"
+                  >
+                    <span className="hidden lg:inline text-xs">Perfil</span>
+                  </SecondaryButton>
 
-              <PrimaryButton
-                leftIcon={<UserPlus className="w-3 h-3" />}
-                onClick={() => (window.location.href = "/register")}
-                className="px-2 py-1.5 text-xs scale-90"
-              >
-                <span className="hidden lg:inline text-xs">Cadastrar</span>
-              </PrimaryButton>
+                  <PrimaryButton
+                    leftIcon={<LogOut className="w-3 h-3" />}
+                    onClick={handleLogout}
+                    className="px-2 py-1.5 text-xs scale-90"
+                  >
+                    <span className="hidden lg:inline text-xs">Sair</span>
+                  </PrimaryButton>
+                </>
+              ) : (
+                <>
+                  <SecondaryButton
+                    leftIcon={<LogIn className="w-3 h-3" />}
+                    onClick={() => (window.location.href = "/login")}
+                    className="px-2 py-1.5 text-xs scale-90"
+                  >
+                    <span className="hidden lg:inline text-xs">Entrar</span>
+                  </SecondaryButton>
+
+                  <PrimaryButton
+                    leftIcon={<UserPlus className="w-3 h-3" />}
+                    onClick={() => (window.location.href = "/login")}
+                    className="px-2 py-1.5 text-xs scale-90"
+                  >
+                    <span className="hidden lg:inline text-xs">Cadastrar</span>
+                  </PrimaryButton>
+                </>
+              )}
             </div>
 
             <div className="flex items-center h-full px-1">
@@ -202,29 +237,60 @@ export default function NavBar() {
 
               {/* Mobile Auth Buttons */}
               <div className="space-y-2 pt-3 border-t border-white/[0.3] dark:border-white/[0.2]">
-                <SecondaryButton
-                  leftIcon={<LogIn className="w-3 h-3" />}
-                  onClick={() => {
-                    window.location.href = "/login";
-                    closeMobileMenu();
-                  }}
-                  fullWidth
-                  className="text-xs font-medium py-2"
-                >
-                  Entrar
-                </SecondaryButton>
+                {loading ? (
+                  <div className="flex justify-center py-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-brand-navy-blue dark:border-brand-yellow" />
+                  </div>
+                ) : user ? (
+                  <>
+                    <SecondaryButton
+                      leftIcon={<User className="w-3 h-3" />}
+                      onClick={() => {
+                        window.location.href = "/profile";
+                        closeMobileMenu();
+                      }}
+                      fullWidth
+                      className="text-xs font-medium py-2"
+                    >
+                      Perfil
+                    </SecondaryButton>
 
-                <PrimaryButton
-                  leftIcon={<UserPlus className="w-3 h-3" />}
-                  onClick={() => {
-                    window.location.href = "/register";
-                    closeMobileMenu();
-                  }}
-                  fullWidth
-                  className="text-xs font-medium py-2"
-                >
-                  Cadastrar
-                </PrimaryButton>
+                    <PrimaryButton
+                      leftIcon={<LogOut className="w-3 h-3" />}
+                      onClick={handleLogout}
+                      fullWidth
+                      className="text-xs font-medium py-2"
+                    >
+                      Sair
+                    </PrimaryButton>
+                  </>
+                ) : (
+                  <>
+                    <SecondaryButton
+                      leftIcon={<LogIn className="w-3 h-3" />}
+                      onClick={() => {
+                        window.location.href = "/login";
+                        closeMobileMenu();
+                      }}
+                      fullWidth
+                      className="text-xs font-medium py-2"
+                    >
+                      Entrar
+                    </SecondaryButton>
+
+                    <PrimaryButton
+                      leftIcon={<UserPlus className="w-3 h-3" />}
+                      onClick={() => {
+                        window.location.href = "/login";
+                        closeMobileMenu();
+                      }}
+                      fullWidth
+                      className="text-xs font-medium py-2"
+                    >
+                      Cadastrar
+                    </PrimaryButton>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>

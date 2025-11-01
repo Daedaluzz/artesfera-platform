@@ -20,7 +20,7 @@ export const authLinks = {
     { title: "Entrar", path: "/login", icon: "LogIn" as keyof typeof Icons },
     {
       title: "Cadastrar",
-      path: "/register",
+      path: "/login",
       icon: "UserPlus" as keyof typeof Icons,
     },
   ],
