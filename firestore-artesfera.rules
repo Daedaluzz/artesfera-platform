@@ -1,0 +1,252 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ========================================
+    // HELPER FUNCTIONS
+    // ========================================
+    
+    // Helper function to check if a user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if the user is the owner of the data
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Helper function to check if a string is within a size limit
+    function isStringSized(str, min, max) {
+      return str is string && str.size() >= min && str.size() <= max;
+    }
+
+    // Helper function to check if user has admin role (custom claims)
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.admin == true;
+    }
+
+    // Helper function to validate email format
+    function isValidEmail(email) {
+      return email is string && email.matches('.*@.*\\..*');
+    }
+
+    // Helper function to validate artwork status
+    function isValidArtworkStatus(status) {
+      return status in ['draft', 'published', 'archived', 'featured'];
+    }
+
+    // Helper function to validate project status
+    function isValidProjectStatus(status) {
+      return status in ['draft', 'active', 'recruiting', 'in_progress', 'completed', 'cancelled'];
+    }
+
+    // ========================================
+    // PRIVATE USER DATA
+    // ========================================
+    // Matches /artesfera/users/{userId}/...
+    // Only the authenticated owner can read or write their private data
+    match /artesfera/users/{userId}/{allUserData=**} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // ========================================
+    // USER PROFILES (Public Read, Owner Write)
+    // ========================================
+    // User profiles that others can read but only owner can modify
+    match /artesfera/public/profiles/{userId} {
+      allow get, list: if isAuthenticated();
+      
+      allow create: if isOwner(userId)
+                     && isValidEmail(request.resource.data.email)
+                     && isStringSized(request.resource.data.displayName, 1, 50)
+                     && request.resource.data.createdAt is timestamp
+                     && request.resource.data.isActive == true;
+      
+      allow update: if isOwner(userId)
+                     && isValidEmail(request.resource.data.email)
+                     && isStringSized(request.resource.data.displayName, 1, 50)
+                     && request.resource.data.lastUpdatedAt is timestamp
+                     // Prevent changing certain fields
+                     && request.resource.data.createdAt == resource.data.createdAt
+                     && request.resource.data.uid == resource.data.uid;
+      
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+
+    // ========================================
+    // ARTWORKS (Public Read, Artist Write)
+    // ========================================
+    match /artesfera/public/artworks/{artworkId} {
+      // Anyone can read published artworks
+      allow get, list: if isAuthenticated() && 
+        (resource.data.status in ['published', 'featured'] || isOwner(resource.data.artistId));
+      
+      // Artists can create their own artworks
+      allow create: if isOwner(request.resource.data.artistId)
+                     && isStringSized(request.resource.data.title, 1, 100)
+                     && isStringSized(request.resource.data.description, 0, 1000)
+                     && isValidArtworkStatus(request.resource.data.status)
+                     && request.resource.data.createdAt is timestamp
+                     && request.resource.data.artistId == request.auth.uid;
+      
+      // Artists can update their own artworks
+      allow update: if isOwner(resource.data.artistId)
+                     && isStringSized(request.resource.data.title, 1, 100)
+                     && isStringSized(request.resource.data.description, 0, 1000)
+                     && isValidArtworkStatus(request.resource.data.status)
+                     && request.resource.data.updatedAt is timestamp
+                     // Prevent changing ownership
+                     && request.resource.data.artistId == resource.data.artistId
+                     && request.resource.data.createdAt == resource.data.createdAt;
+      
+      // Artists can delete their own artworks, admins can delete any
+      allow delete: if isOwner(resource.data.artistId) || isAdmin();
+    }
+
+    // ========================================
+    // PROJECTS (Collaborative Data)
+    // ========================================
+    match /artesfera/public/projects/{projectId} {
+      
+      // Anyone can read active/published projects, members can read any status
+      allow get, list: if isAuthenticated() && 
+        (resource.data.status in ['active', 'recruiting', 'completed'] || 
+         resource.data.members.hasAny([request.auth.uid]) ||
+         isOwner(resource.data.createdBy));
+
+      // Project members can update, but with validation
+      allow update: if isAuthenticated() && 
+                     (resource.data.members.hasAny([request.auth.uid]) || isOwner(resource.data.createdBy))
+                     && isStringSized(request.resource.data.title, 1, 100)
+                     && isStringSized(request.resource.data.description, 0, 2000)
+                     && isValidProjectStatus(request.resource.data.status)
+                     && request.resource.data.updatedAt is timestamp
+                     // Prevent changing ownership and creation date
+                     && request.resource.data.createdBy == resource.data.createdBy
+                     && request.resource.data.createdAt == resource.data.createdAt;
+
+      // Only the project creator can delete it
+      allow delete: if isOwner(resource.data.createdBy) || isAdmin();
+
+      // Rule for creating a new project
+      allow create: if isAuthenticated()
+                     && isOwner(request.resource.data.createdBy)
+                     && isStringSized(request.resource.data.title, 1, 100)
+                     && isStringSized(request.resource.data.description, 0, 2000)
+                     && isValidProjectStatus(request.resource.data.status)
+                     && request.resource.data.createdAt is timestamp
+                     && request.resource.data.createdBy == request.auth.uid
+                     // Creator must be in members list
+                     && request.resource.data.members.hasAny([request.auth.uid]);
+    }
+
+    // ========================================
+    // DAEVA AI CONVERSATIONS
+    // ========================================
+    // Private AI conversations - only user can access
+    match /artesfera/users/{userId}/conversations/{conversationId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // AI conversation summaries (for analytics - admin only)
+    match /artesfera/admin/conversationSummaries/{summaryId} {
+      allow read, write: if isAdmin();
+      allow create, update, delete: if false; // Only server-side functions
+    }
+
+    // ========================================
+    // USER SAVED ITEMS
+    // ========================================
+    // Users' saved artworks
+    match /artesfera/users/{userId}/savedArtworks/{savedId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // Users' saved projects
+    match /artesfera/users/{userId}/savedProjects/{savedId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // ========================================
+    // PROJECT APPLICATIONS & COLLABORATIONS
+    // ========================================
+    match /artesfera/public/projectApplications/{applicationId} {
+      // Applicant and project owner can read
+      allow get, list: if isAuthenticated() && 
+        (isOwner(resource.data.applicantId) || isOwner(resource.data.projectOwnerId));
+        
+      // Only applicant can create application
+      allow create: if isOwner(request.resource.data.applicantId)
+                     && isStringSized(request.resource.data.message, 1, 1000)
+                     && request.resource.data.status == 'pending'
+                     && request.resource.data.createdAt is timestamp;
+        
+      // Only project owner can update status
+      allow update: if isOwner(resource.data.projectOwnerId)
+                     && request.resource.data.status in ['pending', 'accepted', 'rejected']
+                     && request.resource.data.updatedAt is timestamp
+                     // Prevent changing core data
+                     && request.resource.data.applicantId == resource.data.applicantId
+                     && request.resource.data.projectOwnerId == resource.data.projectOwnerId
+                     && request.resource.data.createdAt == resource.data.createdAt;
+    }
+
+    // ========================================
+    // NOTIFICATIONS
+    // ========================================
+    // User notifications - only user can read/update, system creates
+    match /artesfera/users/{userId}/notifications/{notificationId} {
+      allow read: if isOwner(userId);
+      allow update: if isOwner(userId) && 
+        request.resource.data.readAt is timestamp; // Can only mark as read
+      allow create, delete: if false; // Only server-side functions
+    }
+
+    // ========================================
+    // ADMIN & SYSTEM DATA
+    // ========================================
+    // App configuration and public announcements
+    match /artesfera/public/config/{configDoc=**} {
+      allow get, list: if isAuthenticated();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Admin reports and content moderation
+    match /artesfera/admin/reports/{reportId} {
+      allow create: if isAuthenticated() && 
+        isOwner(request.resource.data.reporterId)
+        && isStringSized(request.resource.data.reason, 1, 500)
+        && request.resource.data.createdAt is timestamp;
+      allow read, update: if isAdmin();
+      allow delete: if false; // Keep all reports for records
+    }
+
+    // Analytics data (server-side only)
+    match /artesfera/admin/analytics/{document=**} {
+      allow read, write: if false; // Only server-side functions
+    }
+
+    // System logs (server-side only)
+    match /artesfera/system/{document=**} {
+      allow read, write: if false; // Only server-side functions
+    }
+
+    // ========================================
+    // DEVELOPMENT & TESTING
+    // ========================================
+    // Development collections for testing
+    match /artesfera/dev/{document=**} {
+      allow read, write: if isAuthenticated(); // More permissive for development
+    }
+
+    // ========================================
+    // FALLBACK - DENY ALL OTHER ACCESS
+    // ========================================
+    // Explicitly deny access to any other documents
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

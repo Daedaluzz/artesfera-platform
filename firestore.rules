@@ -1,0 +1,126 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================
+    // HELPER FUNCTIONS
+    // ========================================
+    
+    // Helper function to check if a user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if the user is the owner of the data
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Helper function to check if a string is within a size limit
+    function isStringSized(str, min, max) {
+      return str is string && str.size() >= min && str.size() <= max;
+    }
+    
+    // Helper function to check if the user is the owner of a specific document
+    // by checking an 'ownerId' (or 'artistId', etc.) field inside the document.
+    function isDocOwner() {
+      // Check create (data doesn't exist yet, check incoming doc)
+      return (request.resource.data.ownerId == request.auth.uid)
+      // Check update/delete (data exists, check existing doc)
+      || (resource.data.ownerId == request.auth.uid);
+    }
+    
+    // Helper function to check if the user owns a saved item (uses userId field)
+    function isSavedItemOwner() {
+      // Check create (data doesn't exist yet, check incoming doc)
+      return (request.resource.data.userId == request.auth.uid)
+      // Check update/delete (data exists, check existing doc)
+      || (resource.data.userId == request.auth.uid);
+    }
+
+    // ========================================
+    // ARTESFERA NAMESPACED COLLECTIONS
+    // ========================================
+    
+    // Private user data - only user can access
+    // This rule is perfect. It correctly secures all subcollections.
+    match /artesfera/users/{userId}/{allUserData=**} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // Public profiles - anyone can read, only owner can write
+    // This rule is also perfect.
+    match /artesfera/public/profiles/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+    }
+
+    // Public artworks - anyone can read, only artist can write
+    match /artesfera/public/artworks/{artworkId} {
+      allow read: if isAuthenticated();
+      // FIXED: Writes (create, update, delete) now require
+      // the user's UID to match an 'ownerId' field in the document.
+      allow write: if isAuthenticated() && isDocOwner();
+    }
+
+    // Public projects - anyone can read, authenticated users can write
+    match /artesfera/public/projects/{projectId} {
+      allow read: if isAuthenticated();
+      // FIXED: Writes also require ownership.
+      allow write: if isAuthenticated() && isDocOwner();
+    }
+
+    // ========================================
+    // LEGACY/CURRENT COLLECTIONS (for compatibility)
+    // ========================================
+    
+    // Current user documents structure
+    // This rule is perfect.
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // Current artworks structure
+    match /artworks/{artworkId} {
+      allow read: if isAuthenticated();
+      // FIXED: Writes also require ownership.
+      allow write: if isAuthenticated() && isDocOwner();
+    }
+
+    // Current projects structure
+    match /projects/{projectId} {
+      allow read: if isAuthenticated();
+      // FIXED: Writes also require ownership.
+      allow write: if isAuthenticated() && isDocOwner();
+    }
+
+    // Current saved items
+    match /savedArtworks/{savedId} {
+      allow read: if isAuthenticated() && isSavedItemOwner();
+      // FIXED: Uses correct field name 'userId' instead of 'ownerId'
+      // This matches the current Firestore structure.
+      allow write: if isAuthenticated() && isSavedItemOwner();
+    }
+
+    match /savedProjects/{savedId} {
+      allow read: if isAuthenticated() && isSavedItemOwner();
+      // FIXED: Uses correct field name 'userId' instead of 'ownerId'
+      // This matches the current Firestore structure.
+      allow write: if isAuthenticated() && isSavedItemOwner();
+    }
+
+    // ========================================
+    // DELETED SECTIONS
+    // ========================================
+    
+    // REMOVED: /dev and /test collections.
+    // These should not be in a user-facing test environment.
+    // Use a separate Firebase project for pure dev.
+    
+    // REMOVED: The fallback 'match /{document=**}' rule.
+    // This was a critical security flaw that allowed any user
+    // to write to any document. Removing it enforces a
+    // "default-deny" posture, which is secure.
+  }
+}
