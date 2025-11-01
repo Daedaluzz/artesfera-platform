@@ -7,25 +7,29 @@ This guide explains how Firebase has been integrated into the ArtEsfera platform
 ## Services Configured
 
 ### 1. Firebase Authentication
+
 - Email/password authentication
 - Google OAuth integration
 - User profile management
 - Password reset functionality
 
 ### 2. Firestore Database
+
 - User profiles collection
-- Artworks collection  
+- Artworks collection
 - Projects collection
 - Saved items tracking
 - Real-time data synchronization
 
 ### 3. Firebase Storage
+
 - Artwork image uploads
 - Project image uploads
 - Profile picture uploads
 - Document storage (PDFs, resumes)
 
 ### 4. Firebase Analytics
+
 - User behavior tracking
 - Performance monitoring
 - Custom event tracking
@@ -64,7 +68,7 @@ NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
 ### Basic Authentication
 
 ```tsx
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from "@/contexts/AuthContext";
 
 function LoginComponent() {
   const { signIn, signUp, signInWithGoogle, user, loading } = useAuth();
@@ -73,7 +77,7 @@ function LoginComponent() {
     try {
       await signIn(email, password);
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error("Login failed:", error);
     }
   };
 
@@ -81,7 +85,7 @@ function LoginComponent() {
     try {
       await signInWithGoogle();
     } catch (error) {
-      console.error('Google login failed:', error);
+      console.error("Google login failed:", error);
     }
   };
 
@@ -100,8 +104,8 @@ function LoginComponent() {
 ### Protected Routes
 
 ```tsx
-import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 
 function ProtectedPage() {
   const { user, loading } = useAuth();
@@ -109,7 +113,7 @@ function ProtectedPage() {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/login');
+      router.push("/login");
     }
   }, [user, loading, router]);
 
@@ -125,8 +129,8 @@ function ProtectedPage() {
 ### Creating Artworks
 
 ```tsx
-import { dbUtils } from '@/lib/firestore';
-import { storageUtils } from '@/lib/storage';
+import { dbUtils } from "@/lib/firestore";
+import { storageUtils } from "@/lib/storage";
 
 const createArtwork = async (artworkData: ArtworkFormData) => {
   try {
@@ -149,9 +153,9 @@ const createArtwork = async (artworkData: ArtworkFormData) => {
       tags: artworkData.tags,
     });
 
-    console.log('Artwork created:', artworkId);
+    console.log("Artwork created:", artworkId);
   } catch (error) {
-    console.error('Error creating artwork:', error);
+    console.error("Error creating artwork:", error);
   }
 };
 ```
@@ -159,7 +163,7 @@ const createArtwork = async (artworkData: ArtworkFormData) => {
 ### Fetching Data
 
 ```tsx
-import { dbUtils } from '@/lib/firestore';
+import { dbUtils } from "@/lib/firestore";
 
 const GalleryPage = () => {
   const [artworks, setArtworks] = useState([]);
@@ -169,12 +173,12 @@ const GalleryPage = () => {
     const fetchArtworks = async () => {
       try {
         const artworksData = await dbUtils.artworks.getAll([
-          orderBy('createdAt', 'desc'),
-          limit(12)
+          orderBy("createdAt", "desc"),
+          limit(12),
         ]);
         setArtworks(artworksData);
       } catch (error) {
-        console.error('Error fetching artworks:', error);
+        console.error("Error fetching artworks:", error);
       } finally {
         setLoading(false);
       }
@@ -189,7 +193,7 @@ const GalleryPage = () => {
         <div>Loading...</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {artworks.map(artwork => (
+          {artworks.map((artwork) => (
             <ArtworkCard key={artwork.id} artwork={artwork} />
           ))}
         </div>
@@ -204,7 +208,7 @@ const GalleryPage = () => {
 ### Artwork Image Upload
 
 ```tsx
-import { storageUtils, FILE_TYPES, FILE_SIZE_LIMITS } from '@/lib/storage';
+import { storageUtils, FILE_TYPES, FILE_SIZE_LIMITS } from "@/lib/storage";
 
 const ArtworkUploadForm = () => {
   const [uploading, setUploading] = useState(false);
@@ -225,7 +229,7 @@ const ArtworkUploadForm = () => {
 
     try {
       setUploading(true);
-      
+
       const imageUrl = await storageUtils.uploadArtworkImage(
         file,
         user.uid,
@@ -233,9 +237,9 @@ const ArtworkUploadForm = () => {
         (progress) => setUploadProgress(progress)
       );
 
-      console.log('Upload completed:', imageUrl);
+      console.log("Upload completed:", imageUrl);
     } catch (error) {
-      console.error('Upload failed:', error);
+      console.error("Upload failed:", error);
     } finally {
       setUploading(false);
     }
@@ -251,9 +255,7 @@ const ArtworkUploadForm = () => {
           if (file) handleFileUpload(file);
         }}
       />
-      {uploading && (
-        <div>Uploading: {Math.round(uploadProgress)}%</div>
-      )}
+      {uploading && <div>Uploading: {Math.round(uploadProgress)}%</div>}
     </div>
   );
 };
@@ -271,37 +273,37 @@ service cloud.firestore {
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
-    
+
     // Anyone can read artworks, only owner can write
     match /artworks/{artworkId} {
       allow read: if true;
-      allow write: if request.auth != null && 
+      allow write: if request.auth != null &&
         request.auth.uid == resource.data.artistId;
-      allow create: if request.auth != null && 
+      allow create: if request.auth != null &&
         request.auth.uid == request.resource.data.artistId;
     }
-    
+
     // Anyone can read active projects, only creator can write
     match /projects/{projectId} {
       allow read: if resource.data.status == 'active';
-      allow write: if request.auth != null && 
+      allow write: if request.auth != null &&
         request.auth.uid == resource.data.createdBy;
-      allow create: if request.auth != null && 
+      allow create: if request.auth != null &&
         request.auth.uid == request.resource.data.createdBy;
     }
-    
+
     // Users can manage their own saved items
     match /savedArtworks/{documentId} {
-      allow read, write: if request.auth != null && 
+      allow read, write: if request.auth != null &&
         request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && 
+      allow create: if request.auth != null &&
         request.auth.uid == request.resource.data.userId;
     }
-    
+
     match /savedProjects/{documentId} {
-      allow read, write: if request.auth != null && 
+      allow read, write: if request.auth != null &&
         request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && 
+      allow create: if request.auth != null &&
         request.auth.uid == request.resource.data.userId;
     }
   }
@@ -319,19 +321,19 @@ service firebase.storage {
       allow read: if true;
       allow write: if request.auth != null && request.auth.uid == userId;
     }
-    
+
     // Project images - anyone can read, only owner can write
     match /projects/{userId}/{allPaths=**} {
       allow read: if true;
       allow write: if request.auth != null && request.auth.uid == userId;
     }
-    
+
     // Profile images - anyone can read, only owner can write
     match /profiles/{userId}/{allPaths=**} {
       allow read: if true;
       allow write: if request.auth != null && request.auth.uid == userId;
     }
-    
+
     // Documents - only owner can read/write
     match /documents/{userId}/{allPaths=**} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
@@ -343,22 +345,26 @@ service firebase.storage {
 ## Next Steps
 
 1. **Set up Firebase Console:**
+
    - Enable Authentication providers (Email/Password, Google)
    - Configure Firestore database
    - Set up Storage buckets
    - Apply security rules
 
 2. **Test Authentication:**
+
    - Update login/register pages to use Firebase auth
    - Test Google OAuth integration
    - Verify user profile creation
 
 3. **Migrate Gallery Data:**
+
    - Convert mock data to Firestore collections
    - Update Gallery component to use Firebase
    - Implement real-time updates
 
 4. **Implement Projects Integration:**
+
    - Convert Projects page to use Firestore
    - Add project creation functionality
    - Implement save/apply features
@@ -373,16 +379,19 @@ service firebase.storage {
 ### Common Issues
 
 1. **Authentication not working:**
+
    - Check environment variables are set correctly
    - Verify Firebase console authentication providers are enabled
    - Ensure domain is added to authorized domains
 
 2. **Firestore permission denied:**
+
    - Check security rules are configured
    - Verify user is authenticated
    - Ensure document ownership rules
 
 3. **Storage upload fails:**
+
    - Check file size limits
    - Verify file type validation
    - Ensure storage rules allow uploads

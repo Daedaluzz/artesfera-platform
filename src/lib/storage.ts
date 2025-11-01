@@ -5,17 +5,16 @@ import {
   uploadBytesResumable,
   getDownloadURL,
   deleteObject,
-  UploadTask,
   UploadTaskSnapshot,
-} from 'firebase/storage';
-import { storage } from './firebase';
+} from "firebase/storage";
+import { storage } from "./firebase";
 
 // Storage paths
 export const STORAGE_PATHS = {
-  ARTWORKS: 'artworks',
-  PROJECTS: 'projects',
-  PROFILES: 'profiles',
-  DOCUMENTS: 'documents',
+  ARTWORKS: "artworks",
+  PROJECTS: "projects",
+  PROFILES: "profiles",
+  DOCUMENTS: "documents",
 } as const;
 
 // Upload progress callback type
@@ -35,16 +34,17 @@ export const storageUtils = {
 
     if (onProgress) {
       const uploadTask = uploadBytesResumable(storageRef, file);
-      
+
       return new Promise((resolve, reject) => {
         uploadTask.on(
-          'state_changed',
+          "state_changed",
           (snapshot: UploadTaskSnapshot) => {
-            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            const progress =
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
             onProgress(progress);
           },
           (error) => {
-            console.error('Upload error:', error);
+            console.error("Upload error:", error);
             reject(error);
           },
           async () => {
@@ -75,16 +75,17 @@ export const storageUtils = {
 
     if (onProgress) {
       const uploadTask = uploadBytesResumable(storageRef, file);
-      
+
       return new Promise((resolve, reject) => {
         uploadTask.on(
-          'state_changed',
+          "state_changed",
           (snapshot: UploadTaskSnapshot) => {
-            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            const progress =
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
             onProgress(progress);
           },
           (error) => {
-            console.error('Upload error:', error);
+            console.error("Upload error:", error);
             reject(error);
           },
           async () => {
@@ -114,16 +115,17 @@ export const storageUtils = {
 
     if (onProgress) {
       const uploadTask = uploadBytesResumable(storageRef, file);
-      
+
       return new Promise((resolve, reject) => {
         uploadTask.on(
-          'state_changed',
+          "state_changed",
           (snapshot: UploadTaskSnapshot) => {
-            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            const progress =
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
             onProgress(progress);
           },
           (error) => {
-            console.error('Upload error:', error);
+            console.error("Upload error:", error);
             reject(error);
           },
           async () => {
@@ -154,16 +156,17 @@ export const storageUtils = {
 
     if (onProgress) {
       const uploadTask = uploadBytesResumable(storageRef, file);
-      
+
       return new Promise((resolve, reject) => {
         uploadTask.on(
-          'state_changed',
+          "state_changed",
           (snapshot: UploadTaskSnapshot) => {
-            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            const progress =
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
             onProgress(progress);
           },
           (error) => {
-            console.error('Upload error:', error);
+            console.error("Upload error:", error);
             reject(error);
           },
           async () => {
@@ -188,7 +191,7 @@ export const storageUtils = {
       const fileRef = ref(storage, fileUrl);
       await deleteObject(fileRef);
     } catch (error) {
-      console.error('Error deleting file:', error);
+      console.error("Error deleting file:", error);
       throw error;
     }
   },
@@ -212,7 +215,9 @@ export const storageUtils = {
     if (!allowedTypes.includes(file.type)) {
       return {
         isValid: false,
-        error: `Tipo de arquivo não permitido. Tipos aceitos: ${allowedTypes.join(', ')}`,
+        error: `Tipo de arquivo não permitido. Tipos aceitos: ${allowedTypes.join(
+          ", "
+        )}`,
       };
     }
 
@@ -231,12 +236,23 @@ export const storageUtils = {
 
 // File type constants
 export const FILE_TYPES = {
-  IMAGES: ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'],
-  DOCUMENTS: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+  IMAGES: ["image/jpeg", "image/png", "image/webp", "image/jpg"],
+  DOCUMENTS: [
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ],
   ALL_MEDIA: [
-    'image/jpeg', 'image/png', 'image/webp', 'image/jpg',
-    'video/mp4', 'video/webm', 'video/ogg',
-    'audio/mp3', 'audio/wav', 'audio/ogg'
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/jpg",
+    "video/mp4",
+    "video/webm",
+    "video/ogg",
+    "audio/mp3",
+    "audio/wav",
+    "audio/ogg",
   ],
 } as const;
 

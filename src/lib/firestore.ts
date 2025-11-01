@@ -12,24 +12,22 @@ import {
   where,
   orderBy,
   limit,
-  startAfter,
   QueryConstraint,
-  DocumentSnapshot,
   Timestamp,
   serverTimestamp,
-} from 'firebase/firestore';
-import { db } from './firebase';
+} from "firebase/firestore";
+import { db } from "./firebase";
 
 // Collection names
 export const COLLECTIONS = {
-  USERS: 'users',
-  ARTWORKS: 'artworks',
-  PROJECTS: 'projects',
-  APPLICATIONS: 'applications',
-  SAVED_PROJECTS: 'savedProjects',
-  SAVED_ARTWORKS: 'savedArtworks',
-  CATEGORIES: 'categories',
-  TAGS: 'tags',
+  USERS: "users",
+  ARTWORKS: "artworks",
+  PROJECTS: "projects",
+  APPLICATIONS: "applications",
+  SAVED_PROJECTS: "savedProjects",
+  SAVED_ARTWORKS: "savedArtworks",
+  CATEGORIES: "categories",
+  TAGS: "tags",
 } as const;
 
 // User profile interface
@@ -44,7 +42,7 @@ export interface UserProfile {
   experience?: string;
   specialties?: string[];
   verified?: boolean;
-  role?: 'artist' | 'producer' | 'contractor' | 'admin';
+  role?: "artist" | "producer" | "contractor" | "admin";
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
@@ -82,14 +80,14 @@ export interface Project {
     min: number;
     max: number;
   };
-  type: 'freelance' | 'contract' | 'temporary' | 'event';
+  type: "freelance" | "contract" | "temporary" | "event";
   duration: string;
   positions: number;
   applicants: number;
   tags: string[];
   featured?: boolean;
   postedDate: Timestamp;
-  status: 'active' | 'closed' | 'draft';
+  status: "active" | "closed" | "draft";
   createdBy: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;
@@ -99,7 +97,10 @@ export interface Project {
 export const dbUtils = {
   // User operations
   users: {
-    create: async (uid: string, userData: Partial<UserProfile>): Promise<void> => {
+    create: async (
+      uid: string,
+      userData: Partial<UserProfile>
+    ): Promise<void> => {
       const userRef = doc(db, COLLECTIONS.USERS, uid);
       await setDoc(userRef, {
         uid,
@@ -115,7 +116,10 @@ export const dbUtils = {
       return userSnap.exists() ? (userSnap.data() as UserProfile) : null;
     },
 
-    update: async (uid: string, updates: Partial<UserProfile>): Promise<void> => {
+    update: async (
+      uid: string,
+      updates: Partial<UserProfile>
+    ): Promise<void> => {
       const userRef = doc(db, COLLECTIONS.USERS, uid);
       await updateDoc(userRef, {
         ...updates,
@@ -131,7 +135,9 @@ export const dbUtils = {
 
   // Artwork operations
   artworks: {
-    create: async (artworkData: Omit<Artwork, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
+    create: async (
+      artworkData: Omit<Artwork, "id" | "createdAt" | "updatedAt">
+    ): Promise<string> => {
       const artworksRef = collection(db, COLLECTIONS.ARTWORKS);
       const docRef = await addDoc(artworksRef, {
         ...artworkData,
@@ -146,35 +152,42 @@ export const dbUtils = {
     get: async (id: string): Promise<Artwork | null> => {
       const artworkRef = doc(db, COLLECTIONS.ARTWORKS, id);
       const artworkSnap = await getDoc(artworkRef);
-      return artworkSnap.exists() ? ({ id, ...artworkSnap.data() } as Artwork) : null;
+      return artworkSnap.exists()
+        ? ({ id, ...artworkSnap.data() } as Artwork)
+        : null;
     },
 
     getAll: async (constraints: QueryConstraint[] = []): Promise<Artwork[]> => {
       const artworksRef = collection(db, COLLECTIONS.ARTWORKS);
       const q = query(artworksRef, ...constraints);
       const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Artwork));
+      return querySnapshot.docs.map(
+        (doc) => ({ id: doc.id, ...doc.data() } as Artwork)
+      );
     },
 
-    getByCategory: async (category: string, limitCount = 12): Promise<Artwork[]> => {
+    getByCategory: async (
+      category: string,
+      limitCount = 12
+    ): Promise<Artwork[]> => {
       return dbUtils.artworks.getAll([
-        where('category', '==', category),
-        orderBy('createdAt', 'desc'),
+        where("category", "==", category),
+        orderBy("createdAt", "desc"),
         limit(limitCount),
       ]);
     },
 
     getByArtist: async (artistId: string): Promise<Artwork[]> => {
       return dbUtils.artworks.getAll([
-        where('artistId', '==', artistId),
-        orderBy('createdAt', 'desc'),
+        where("artistId", "==", artistId),
+        orderBy("createdAt", "desc"),
       ]);
     },
 
     getFeatured: async (limitCount = 6): Promise<Artwork[]> => {
       return dbUtils.artworks.getAll([
-        where('featured', '==', true),
-        orderBy('createdAt', 'desc'),
+        where("featured", "==", true),
+        orderBy("createdAt", "desc"),
         limit(limitCount),
       ]);
     },
@@ -222,12 +235,14 @@ export const dbUtils = {
 
   // Project operations
   projects: {
-    create: async (projectData: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
+    create: async (
+      projectData: Omit<Project, "id" | "createdAt" | "updatedAt">
+    ): Promise<string> => {
       const projectsRef = collection(db, COLLECTIONS.PROJECTS);
       const docRef = await addDoc(projectsRef, {
         ...projectData,
         applicants: 0,
-        status: 'active',
+        status: "active",
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
@@ -237,38 +252,45 @@ export const dbUtils = {
     get: async (id: string): Promise<Project | null> => {
       const projectRef = doc(db, COLLECTIONS.PROJECTS, id);
       const projectSnap = await getDoc(projectRef);
-      return projectSnap.exists() ? ({ id, ...projectSnap.data() } as Project) : null;
+      return projectSnap.exists()
+        ? ({ id, ...projectSnap.data() } as Project)
+        : null;
     },
 
     getAll: async (constraints: QueryConstraint[] = []): Promise<Project[]> => {
       const projectsRef = collection(db, COLLECTIONS.PROJECTS);
       const q = query(projectsRef, ...constraints);
       const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
+      return querySnapshot.docs.map(
+        (doc) => ({ id: doc.id, ...doc.data() } as Project)
+      );
     },
 
     getActive: async (limitCount = 12): Promise<Project[]> => {
       return dbUtils.projects.getAll([
-        where('status', '==', 'active'),
-        orderBy('postedDate', 'desc'),
+        where("status", "==", "active"),
+        orderBy("postedDate", "desc"),
         limit(limitCount),
       ]);
     },
 
-    getByCategory: async (category: string, limitCount = 12): Promise<Project[]> => {
+    getByCategory: async (
+      category: string,
+      limitCount = 12
+    ): Promise<Project[]> => {
       return dbUtils.projects.getAll([
-        where('category', '==', category),
-        where('status', '==', 'active'),
-        orderBy('postedDate', 'desc'),
+        where("category", "==", category),
+        where("status", "==", "active"),
+        orderBy("postedDate", "desc"),
         limit(limitCount),
       ]);
     },
 
     getFeatured: async (limitCount = 6): Promise<Project[]> => {
       return dbUtils.projects.getAll([
-        where('featured', '==', true),
-        where('status', '==', 'active'),
-        orderBy('postedDate', 'desc'),
+        where("featured", "==", true),
+        where("status", "==", "active"),
+        orderBy("postedDate", "desc"),
         limit(limitCount),
       ]);
     },
@@ -299,7 +321,11 @@ export const dbUtils = {
   // Saved items operations
   savedItems: {
     saveArtwork: async (userId: string, artworkId: string): Promise<void> => {
-      const savedRef = doc(db, COLLECTIONS.SAVED_ARTWORKS, `${userId}_${artworkId}`);
+      const savedRef = doc(
+        db,
+        COLLECTIONS.SAVED_ARTWORKS,
+        `${userId}_${artworkId}`
+      );
       await setDoc(savedRef, {
         userId,
         artworkId,
@@ -308,12 +334,20 @@ export const dbUtils = {
     },
 
     unsaveArtwork: async (userId: string, artworkId: string): Promise<void> => {
-      const savedRef = doc(db, COLLECTIONS.SAVED_ARTWORKS, `${userId}_${artworkId}`);
+      const savedRef = doc(
+        db,
+        COLLECTIONS.SAVED_ARTWORKS,
+        `${userId}_${artworkId}`
+      );
       await deleteDoc(savedRef);
     },
 
     saveProject: async (userId: string, projectId: string): Promise<void> => {
-      const savedRef = doc(db, COLLECTIONS.SAVED_PROJECTS, `${userId}_${projectId}`);
+      const savedRef = doc(
+        db,
+        COLLECTIONS.SAVED_PROJECTS,
+        `${userId}_${projectId}`
+      );
       await setDoc(savedRef, {
         userId,
         projectId,
@@ -322,22 +356,26 @@ export const dbUtils = {
     },
 
     unsaveProject: async (userId: string, projectId: string): Promise<void> => {
-      const savedRef = doc(db, COLLECTIONS.SAVED_PROJECTS, `${userId}_${projectId}`);
+      const savedRef = doc(
+        db,
+        COLLECTIONS.SAVED_PROJECTS,
+        `${userId}_${projectId}`
+      );
       await deleteDoc(savedRef);
     },
 
     getUserSavedArtworks: async (userId: string): Promise<string[]> => {
       const savedRef = collection(db, COLLECTIONS.SAVED_ARTWORKS);
-      const q = query(savedRef, where('userId', '==', userId));
+      const q = query(savedRef, where("userId", "==", userId));
       const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => doc.data().artworkId);
+      return querySnapshot.docs.map((doc) => doc.data().artworkId);
     },
 
     getUserSavedProjects: async (userId: string): Promise<string[]> => {
       const savedRef = collection(db, COLLECTIONS.SAVED_PROJECTS);
-      const q = query(savedRef, where('userId', '==', userId));
+      const q = query(savedRef, where("userId", "==", userId));
       const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => doc.data().projectId);
+      return querySnapshot.docs.map((doc) => doc.data().projectId);
     },
   },
 };

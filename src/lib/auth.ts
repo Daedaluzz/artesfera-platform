@@ -10,35 +10,43 @@ import {
   UserCredential,
   sendPasswordResetEmail,
   sendEmailVerification,
-} from 'firebase/auth';
-import { auth } from './firebase';
+} from "firebase/auth";
+import { auth } from "./firebase";
 
 // Initialize Google Auth Provider
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({
-  prompt: 'select_account',
+  prompt: "select_account",
 });
 
 // Authentication functions
 export const authUtils = {
   // Sign up with email and password
-  signUp: async (email: string, password: string, displayName: string): Promise<UserCredential> => {
+  signUp: async (
+    email: string,
+    password: string,
+    displayName: string
+  ): Promise<UserCredential> => {
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
       // Update user profile with display name
       if (userCredential.user) {
         await updateProfile(userCredential.user, {
           displayName,
         });
-        
+
         // Send email verification
         await sendEmailVerification(userCredential.user);
       }
-      
+
       return userCredential;
     } catch (error) {
-      console.error('Error signing up:', error);
+      console.error("Error signing up:", error);
       throw error;
     }
   },
@@ -48,7 +56,7 @@ export const authUtils = {
     try {
       return await signInWithEmailAndPassword(auth, email, password);
     } catch (error) {
-      console.error('Error signing in:', error);
+      console.error("Error signing in:", error);
       throw error;
     }
   },
@@ -58,7 +66,7 @@ export const authUtils = {
     try {
       return await signInWithPopup(auth, googleProvider);
     } catch (error) {
-      console.error('Error signing in with Google:', error);
+      console.error("Error signing in with Google:", error);
       throw error;
     }
   },
@@ -68,7 +76,7 @@ export const authUtils = {
     try {
       await signOut(auth);
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error("Error signing out:", error);
       throw error;
     }
   },
@@ -78,21 +86,24 @@ export const authUtils = {
     try {
       await sendPasswordResetEmail(auth, email);
     } catch (error) {
-      console.error('Error sending password reset email:', error);
+      console.error("Error sending password reset email:", error);
       throw error;
     }
   },
 
   // Update user profile
-  updateUserProfile: async (updates: { displayName?: string; photoURL?: string }): Promise<void> => {
+  updateUserProfile: async (updates: {
+    displayName?: string;
+    photoURL?: string;
+  }): Promise<void> => {
     if (!auth.currentUser) {
-      throw new Error('No authenticated user');
+      throw new Error("No authenticated user");
     }
 
     try {
       await updateProfile(auth.currentUser, updates);
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error("Error updating profile:", error);
       throw error;
     }
   },
