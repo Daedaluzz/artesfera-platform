@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { ThemeProvider } from "next-themes";
+import { AuthProvider } from "@/contexts/AuthContext";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 import JsonLd from "@/components/JsonLd";
@@ -131,11 +132,13 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <NavBar />
-          <main className=" flex flex-col">
-            <div className="flex-grow">{children}</div>
-            <Footer />
-          </main>
+          <AuthProvider>
+            <NavBar />
+            <main className=" flex flex-col">
+              <div className="flex-grow">{children}</div>
+              <Footer />
+            </main>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
