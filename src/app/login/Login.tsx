@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { SecondaryButton } from "@/components/ui/secondary-button";
 import { useAuth } from "@/context/AuthContext";
-import { Eye, EyeOff, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, AlertCircle, CheckCircle } from "lucide-react";
 
 interface FormErrors {
   email?: string;
@@ -24,11 +24,18 @@ export default function Login() {
     name: "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
+  const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
-  const { user, loading: authLoading, signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
+
+  const {
+    user,
+    loading: authLoading,
+    signInWithGoogle,
+    signInWithEmail,
+    signUpWithEmail,
+  } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -36,6 +43,7 @@ export default function Login() {
   useEffect(() => {
     if (!authLoading && user) {
       const nextUrl = searchParams.get("next") || "/dashboard";
+      console.log("🔀 Login: Redirecting authenticated user to:", nextUrl);
       router.push(nextUrl);
     }
   }, [user, authLoading, router, searchParams]);
@@ -78,11 +86,11 @@ export default function Login() {
   // Handle form input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
     // Clear error when user starts typing
     if (errors[name as keyof FormErrors]) {
-      setErrors(prev => ({ ...prev, [name]: undefined }));
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
   };
 
@@ -91,7 +99,9 @@ export default function Login() {
     try {
       setIsLoading(true);
       setErrors({});
+      setSuccess(null);
       await signInWithGoogle();
+      setSuccess("✅ Login realizado com sucesso!");
       // Redirect handled by useEffect
     } catch (error: unknown) {
       console.error("Google sign-in error:", error);
@@ -104,17 +114,20 @@ export default function Login() {
   // Handle email/password form submission
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     try {
       setIsLoading(true);
       setErrors({});
+      setSuccess(null);
 
       if (isLogin) {
         await signInWithEmail(formData.email, formData.password);
+        setSuccess("✅ Login realizado com sucesso!");
       } else {
         await signUpWithEmail(formData.email, formData.password, formData.name);
+        setSuccess("✅ Conta criada com sucesso!");
       }
       // Redirect handled by useEffect
     } catch (error: unknown) {
@@ -128,7 +141,7 @@ export default function Login() {
   // Get user-friendly error messages
   const getFirebaseErrorMessage = (error: unknown): string => {
     const errorCode = (error as { code?: string })?.code || "";
-    
+
     switch (errorCode) {
       case "auth/popup-closed-by-user":
         return "Login cancelado. Tente novamente.";
@@ -149,7 +162,10 @@ export default function Login() {
       case "auth/too-many-requests":
         return "Muitas tentativas. Tente novamente mais tarde.";
       default:
-        return (error as { message?: string })?.message || "Ocorreu um erro inesperado. Tente novamente.";
+        return (
+          (error as { message?: string })?.message ||
+          "Ocorreu um erro inesperado. Tente novamente."
+        );
     }
   };
 
@@ -191,10 +207,9 @@ export default function Login() {
             </span>
           </h1>
           <p className="text-base sm:text-lg text-brand-black/70 dark:text-brand-white/70">
-            {isLogin 
-              ? "Entre na sua conta e continue criando" 
-              : "Crie sua conta e comece a explorar"
-            }
+            {isLogin
+              ? "Entre na sua conta e continue criando"
+              : "Crie sua conta e comece a explorar"}
           </p>
         </motion.div>
 
@@ -255,6 +270,23 @@ export default function Login() {
             )}
           </AnimatePresence>
 
+          {/* Success Message */}
+          <AnimatePresence>
+            {success && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="mb-4 p-3 rounded-[12px] bg-green-500/10 border border-green-500/20 flex items-center gap-2"
+              >
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                <span className="text-sm text-green-600 dark:text-green-400">
+                  {success}
+                </span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Google Login Button */}
           <SecondaryButton
             fullWidth
@@ -299,7 +331,12 @@ export default function Login() {
           </div>
 
           {/* Email/Password Form */}
-          <form onSubmit={handleEmailSubmit} className="space-y-4" role="form" aria-label={`${isLogin ? "Login" : "Cadastro"} form`}>
+          <form
+            onSubmit={handleEmailSubmit}
+            className="space-y-4"
+            role="form"
+            aria-label={`${isLogin ? "Login" : "Cadastro"} form`}
+          >
             {/* Name Input (only for register) */}
             <AnimatePresence>
               {!isLogin && (
@@ -392,7 +429,9 @@ export default function Login() {
                       : "border-white/[0.2] dark:border-white/[0.1]"
                   }`}
                   placeholder="••••••••"
-                  aria-describedby={errors.password ? "password-error" : undefined}
+                  aria-describedby={
+                    errors.password ? "password-error" : undefined
+                  }
                   aria-invalid={!!errors.password}
                   required
                 />
@@ -453,16 +492,26 @@ export default function Login() {
                           : "border-white/[0.2] dark:border-white/[0.1]"
                       }`}
                       placeholder="••••••••"
-                      aria-describedby={errors.confirmPassword ? "confirm-password-error" : undefined}
+                      aria-describedby={
+                        errors.confirmPassword
+                          ? "confirm-password-error"
+                          : undefined
+                      }
                       aria-invalid={!!errors.confirmPassword}
                       required={!isLogin}
                     />
                     <button
                       type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
                       disabled={isLoading}
                       className="absolute inset-y-0 right-0 pr-3 flex items-center text-brand-black/50 dark:text-brand-white/50 hover:text-brand-black dark:hover:text-brand-white transition-colors duration-200"
-                      aria-label={showConfirmPassword ? "Ocultar confirmação de senha" : "Mostrar confirmação de senha"}
+                      aria-label={
+                        showConfirmPassword
+                          ? "Ocultar confirmação de senha"
+                          : "Mostrar confirmação de senha"
+                      }
                     >
                       {showConfirmPassword ? (
                         <EyeOff className="w-4 h-4" />
@@ -516,18 +565,23 @@ export default function Login() {
             )}
 
             {/* Submit Button */}
-            <PrimaryButton 
-              fullWidth 
-              type="submit" 
+            <PrimaryButton
+              fullWidth
+              type="submit"
               disabled={isLoading}
-              leftIcon={isLoading ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
-              ) : undefined}
-            >
-              {isLoading 
-                ? (isLogin ? "Entrando..." : "Cadastrando...") 
-                : (isLogin ? "Entrar" : "Cadastrar")
+              leftIcon={
+                isLoading ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
+                ) : undefined
               }
+            >
+              {isLoading
+                ? isLogin
+                  ? "Entrando..."
+                  : "Cadastrando..."
+                : isLogin
+                ? "Entrar"
+                : "Cadastrar"}
             </PrimaryButton>
 
             {/* Terms (only for register) */}
