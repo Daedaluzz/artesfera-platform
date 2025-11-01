@@ -31,6 +31,7 @@ export default function Login() {
 
   const {
     user,
+    userDocument,
     loading: authLoading,
     signInWithGoogle,
     signInWithEmail,
@@ -41,12 +42,20 @@ export default function Login() {
 
   // Redirect if user is already authenticated
   useEffect(() => {
-    if (!authLoading && user) {
+    if (!authLoading && user && userDocument) {
+      // Check if profile is completed
+      if (!userDocument.profileCompleted) {
+        console.log("🔀 Login: Redirecting to profile setup for first-time user");
+        router.push("/dashboard/profile-setup");
+        return;
+      }
+
+      // Profile is completed, redirect to intended destination
       const nextUrl = searchParams.get("next") || "/dashboard";
       console.log("🔀 Login: Redirecting authenticated user to:", nextUrl);
       router.push(nextUrl);
     }
-  }, [user, authLoading, router, searchParams]);
+  }, [user, userDocument, authLoading, router, searchParams]);
 
   // Form validation
   const validateForm = (): boolean => {

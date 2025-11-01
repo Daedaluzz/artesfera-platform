@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
  *
  * Route Configuration:
  * - Public routes: /, /login, /gallery, /profile/[id], /projects, /daeva
- * - Protected routes: /dashboard, /projetos/create, /projetos/manage
+ * - Protected routes: /dashboard, /dashboard/profile-setup, /projetos/create, /projetos/manage
  *
  * Behavior:
  * - Redirects unauthenticated users to /login with next parameter
@@ -19,6 +19,7 @@ import { NextRequest, NextResponse } from "next/server";
 // Define protected route patterns
 const PROTECTED_ROUTES = [
   "/dashboard",
+  "/dashboard/*",
   "/projetos/create",
   "/projetos/*/manage",
 ];

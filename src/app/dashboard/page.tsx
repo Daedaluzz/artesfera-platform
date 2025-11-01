@@ -1,13 +1,23 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { AuthGuard } from "@/components/AuthGuard";
 import { motion } from "framer-motion";
 import { User, LogOut, Settings, BarChart3, Folder, Users } from "lucide-react";
 
 function DashboardContent() {
-  const { user, signOut } = useAuth();
+  const { user, userDocument, signOut, loading } = useAuth();
+  const router = useRouter();
+
+  // Redirect to profile setup if profile is incomplete
+  useEffect(() => {
+    if (!loading && user && userDocument && !userDocument.profileCompleted) {
+      console.log("🔀 Dashboard: Redirecting to profile setup for incomplete profile");
+      router.push("/dashboard/profile-setup");
+    }
+  }, [user, userDocument, loading, router]);
 
   const handleSignOut = async () => {
     try {

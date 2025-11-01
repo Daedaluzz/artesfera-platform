@@ -17,6 +17,7 @@ import {
   serverTimestamp,
   runTransaction,
   FieldValue,
+  onSnapshot,
 } from "firebase/firestore";
 import { getClientAuth, getClientFirestore } from "@/lib/firebase";
 
@@ -31,7 +32,6 @@ googleProvider.setCustomParameters({
 });
 
 // User document interface matching task requirements
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface UserDocument {
   uid: string;
   name: string;
@@ -48,6 +48,7 @@ interface UserDocument {
 // Auth context interface matching task requirements
 interface AuthContextType {
   user: User | null;
+  userDocument: UserDocument | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -143,6 +144,7 @@ interface AuthProviderProps {
  */
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
+  const [userDocument, setUserDocument] = useState<UserDocument | null>(null);
   const [loading, setLoading] = useState(true);
 
   /**
@@ -314,9 +316,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (user) {
           // Ensure user document exists when user is authenticated
           await createUserDocument(user);
+          
+          // Set up real-time listener for user document
+          const userDocRef = doc(db, "users", user.uid);
+          const unsubscribeUserDoc = onSnapshot(userDocRef, (docSnapshot) => {
+            if (docSnapshot.exists()) {
+              setUserDocument(docSnapshot.data() as UserDocument);
+            } else {
+              setUserDocument(null);
+            }
+          });
+
+          // Store the unsubscribe function for cleanup
+          return () => unsubscribeUserDoc();
+        } else {
+          setUserDocument(null);
         }
       } catch (error) {
         console.error("❌ Error in auth state change:", error);
+        setUserDocument(null);
       } finally {
         setLoading(false);
       }
@@ -328,6 +346,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Context value matching task requirements
   const value: AuthContextType = {
     user,
+    userDocument,
     loading,
     signInWithGoogle,
     signOut,
