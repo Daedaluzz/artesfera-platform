@@ -31,6 +31,7 @@ googleProvider.setCustomParameters({
 });
 
 // User document interface matching task requirements
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface UserDocument {
   uid: string;
   name: string;
@@ -51,33 +52,37 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
-  signUpWithEmail: (email: string, password: string, name: string) => Promise<void>;
+  signUpWithEmail: (
+    email: string,
+    password: string,
+    name: string
+  ) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 /**
  * Custom hook to access authentication context
- * 
+ *
  * Usage examples:
- * 
+ *
  * Basic authentication check:
  * ```tsx
  * function MyComponent() {
  *   const { user, loading } = useAuth();
- *   
+ *
  *   if (loading) return <div>Loading...</div>;
  *   if (!user) return <div>Please sign in</div>;
- *   
+ *
  *   return <div>Welcome {user.displayName}!</div>;
  * }
  * ```
- * 
+ *
  * Google sign-in:
  * ```tsx
  * function LoginButton() {
  *   const { signInWithGoogle } = useAuth();
- *   
+ *
  *   return (
  *     <button onClick={signInWithGoogle}>
  *       Sign in with Google
@@ -85,31 +90,31 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
  *   );
  * }
  * ```
- * 
+ *
  * Email sign-in:
  * ```tsx
  * function EmailLogin() {
  *   const { signInWithEmail } = useAuth();
- *   
+ *
  *   const handleSubmit = async (e) => {
  *     e.preventDefault();
  *     await signInWithEmail(email, password);
  *   };
- *   
+ *
  *   return <form onSubmit={handleSubmit}>...</form>;
  * }
  * ```
- * 
+ *
  * Email sign-up:
  * ```tsx
  * function SignUpForm() {
  *   const { signUpWithEmail } = useAuth();
- *   
+ *
  *   const handleSubmit = async (e) => {
  *     e.preventDefault();
  *     await signUpWithEmail(email, password, name);
  *   };
- *   
+ *
  *   return <form onSubmit={handleSubmit}>...</form>;
  * }
  * ```
@@ -128,7 +133,7 @@ interface AuthProviderProps {
 
 /**
  * AuthProvider component that wraps the application and provides authentication state
- * 
+ *
  * Features:
  * - Subscribes to onAuthStateChanged for real-time auth state updates
  * - SSR-safe (checks typeof window)
@@ -144,39 +149,58 @@ export function AuthProvider({ children }: AuthProviderProps) {
    * Creates or updates user document in Firestore
    * Uses transaction with merge: true to avoid overwriting existing data
    */
+  /**
+   * Creates or updates a user document in Firestore
+   * Uses transaction to avoid race conditions
+   */
   const createUserDocument = async (user: User): Promise<void> => {
     const userRef = doc(db, "users", user.uid);
-    
+
     try {
       await runTransaction(db, async (transaction) => {
         const userDoc = await transaction.get(userRef);
-        
+
         if (!userDoc.exists()) {
           // Create new user document with task-specified fields
-          const userData: UserDocument = {
+          const userData = {
             uid: user.uid,
-            name: user.displayName || "",
+            displayName: user.displayName || "",
             email: user.email || "",
             photoURL: user.photoURL || null,
             createdAt: serverTimestamp(),
+            lastUpdatedAt: serverTimestamp(),
+            isActive: true,
             tags: [],
             bio: "",
             artisticName: "",
             location: "",
             profileCompleted: false,
+            preferences: {
+              notifications: {
+                email: true,
+                push: true,
+                marketing: false,
+              },
+              privacy: {
+                showEmail: false,
+                showLocation: true,
+                allowDirectMessages: true,
+              },
+            },
           };
-          
+
           transaction.set(userRef, userData);
           console.log("✅ Created new user document for:", user.uid);
         } else {
           // Update existing user with latest auth info, preserving existing data
           const updateData = {
-            name: user.displayName || "",
+            displayName: user.displayName || "",
             email: user.email || "",
             photoURL: user.photoURL || null,
+            lastUpdatedAt: serverTimestamp(),
           };
-          
-          transaction.set(userRef, updateData, { merge: true });
+
+          transaction.update(userRef, updateData);
           console.log("✅ Updated existing user document for:", user.uid);
         }
       });
@@ -194,7 +218,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       setLoading(true);
       const result = await signInWithPopup(auth, googleProvider);
-      
+
       // Create user document after successful sign-in
       await createUserDocument(result.user);
     } catch (error) {
@@ -208,11 +232,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
   /**
    * Sign in with email and password
    */
-  const signInWithEmail = async (email: string, password: string): Promise<void> => {
+  const signInWithEmail = async (
+    email: string,
+    password: string
+  ): Promise<void> => {
     try {
       setLoading(true);
       const result = await signInWithEmailAndPassword(auth, email, password);
-      
+
       // Ensure user document exists
       await createUserDocument(result.user);
     } catch (error) {
@@ -227,17 +254,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
    * Sign up with email and password
    * Creates user document with provided name
    */
-  const signUpWithEmail = async (email: string, password: string, name: string): Promise<void> => {
+  const signUpWithEmail = async (
+    email: string,
+    password: string,
+    name: string
+  ): Promise<void> => {
     try {
       setLoading(true);
-      const result = await createUserWithEmailAndPassword(auth, email, password);
-      
+      const result = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
       // Update display name
       await updateProfile(result.user, { displayName: name });
-      
+
       // Send email verification
       await sendEmailVerification(result.user);
-      
+
       // Create user document
       await createUserDocument(result.user);
     } catch (error) {
@@ -275,7 +310,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       try {
         setUser(user);
-        
+
         if (user) {
           // Ensure user document exists when user is authenticated
           await createUserDocument(user);

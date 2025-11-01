@@ -12,18 +12,18 @@ interface GoogleSignInButtonProps {
 
 /**
  * Reusable Google Sign-In button component
- * 
+ *
  * Usage:
  * ```tsx
  * import { GoogleSignInButton } from "@/components/ui/AuthButtons";
- * 
+ *
  * function MyComponent() {
  *   const handleGoogleSignIn = async () => {
  *     // Handle Google sign-in
  *   };
- *   
+ *
  *   return (
- *     <GoogleSignInButton 
+ *     <GoogleSignInButton
  *       onClick={handleGoogleSignIn}
  *       isRegister={false}
  *     />
@@ -74,8 +74,7 @@ export function GoogleSignInButton({
     >
       {loading
         ? `${isRegister ? "Cadastrando..." : "Entrando..."}`
-        : `${isRegister ? "Cadastrar" : "Entrar"} com Google`
-      }
+        : `${isRegister ? "Cadastrar" : "Entrar"} com Google`}
     </SecondaryButton>
   );
 }
