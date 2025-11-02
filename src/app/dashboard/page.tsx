@@ -85,8 +85,8 @@ function DashboardContent() {
             <p className="text-brand-black/70 dark:text-brand-white/70 text-sm mb-3">
               Gerencie seus projetos artísticos e colaborações
             </p>
-            <div className="text-2xl font-bold text-brand-navy-blue dark:text-brand-yellow">
-              3
+            <div className="text-lg font-bold text-brand-navy-blue dark:text-brand-yellow">
+              Em Breve
             </div>
           </motion.div>
 
@@ -108,8 +108,8 @@ function DashboardContent() {
             <p className="text-brand-black/70 dark:text-brand-white/70 text-sm mb-3">
               Acompanhe o desempenho dos seus projetos
             </p>
-            <div className="text-2xl font-bold text-brand-navy-blue dark:text-brand-yellow">
-              +24%
+            <div className="text-lg font-bold text-brand-navy-blue dark:text-brand-yellow">
+              Em Breve
             </div>
           </motion.div>
 
@@ -131,8 +131,8 @@ function DashboardContent() {
             <p className="text-brand-black/70 dark:text-brand-white/70 text-sm mb-3">
               Conecte-se com outros artistas
             </p>
-            <div className="text-2xl font-bold text-brand-navy-blue dark:text-brand-yellow">
-              127
+            <div className="text-lg font-bold text-brand-navy-blue dark:text-brand-yellow">
+              Em Breve
             </div>
           </motion.div>
         </div>
