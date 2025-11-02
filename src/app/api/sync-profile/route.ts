@@ -29,19 +29,22 @@ export async function POST(request: NextRequest) {
     const token = authHeader.split("Bearer ")[1];
     const adminAuth = getAdminAuth();
 
+    // Get the user data from request body first
+    const userData: UserData = await request.json();
+
     if (!adminAuth) {
-      return NextResponse.json(
-        { error: "Admin auth not available" },
-        { status: 500 }
-      );
+      console.warn("⚠️ Admin auth not available - sync will be skipped for user:", userData.uid);
+      // Return success to not block profile editing, but log the issue
+      return NextResponse.json({
+        message: "Profile sync skipped - admin auth not configured",
+        uid: userData.uid,
+        warning: "Admin SDK not available - please configure FIREBASE_SERVICE_ACCOUNT environment variable"
+      });
     }
 
     // Verify the Firebase token
     const decodedToken = await adminAuth.verifyIdToken(token);
     const authenticatedUid = decodedToken.uid;
-
-    // Get the user data from request body
-    const userData: UserData = await request.json();
 
     // Security check: Users can only sync their own profile
     if (userData.uid !== authenticatedUid) {
