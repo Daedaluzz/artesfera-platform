@@ -30,6 +30,7 @@ const db = getClientFirestore();
 
 interface ProfileFormData {
   name: string;
+  username: string;
   artisticName: string;
   bio: string;
   location: string;
@@ -105,12 +106,20 @@ const compressImage = (
 };
 
 export default function ProfileSetup() {
-  const { user, userDocument, loading: authLoading, syncPublicProfile } = useAuth();
+  const {
+    user,
+    userDocument,
+    loading: authLoading,
+    syncPublicProfile,
+    validateUsername,
+    checkUsernameAvailability,
+  } = useAuth();
   const router = useRouter();
 
   // Form state
   const [formData, setFormData] = useState<ProfileFormData>({
     name: user?.displayName || "",
+    username: "",
     artisticName: "",
     bio: "",
     location: "",
@@ -130,6 +139,17 @@ export default function ProfileSetup() {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [success, setSuccess] = useState<string | null>(null);
+  const [usernameValidation, setUsernameValidation] = useState<{
+    isValid: boolean;
+    isAvailable: boolean;
+    isChecking: boolean;
+    message: string;
+  }>({
+    isValid: true,
+    isAvailable: true,
+    isChecking: false,
+    message: "",
+  });
 
   // Refs
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -196,9 +216,66 @@ export default function ProfileSetup() {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
 
+    // Handle username validation
+    if (name === "username") {
+      handleUsernameValidation(value);
+    }
+
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  };
+
+  // Username validation handler
+  const handleUsernameValidation = async (usernameValue: string) => {
+    if (!usernameValue.trim()) {
+      setUsernameValidation({
+        isValid: true,
+        isAvailable: true,
+        isChecking: false,
+        message: "",
+      });
+      return;
+    }
+
+    // Check format first
+    const validation = validateUsername(usernameValue);
+    if (!validation.isValid) {
+      setUsernameValidation({
+        isValid: false,
+        isAvailable: false,
+        isChecking: false,
+        message: validation.error || "Username inválido",
+      });
+      return;
+    }
+
+    // Check availability if format is valid
+    setUsernameValidation((prev) => ({
+      ...prev,
+      isChecking: true,
+      message: "Verificando disponibilidade...",
+    }));
+
+    try {
+      const isAvailable = await checkUsernameAvailability(usernameValue);
+      setUsernameValidation({
+        isValid: true,
+        isAvailable,
+        isChecking: false,
+        message: isAvailable
+          ? "Username disponível!"
+          : "Este username já está em uso",
+      });
+    } catch (error) {
+      console.error("Error checking username availability:", error);
+      setUsernameValidation({
+        isValid: true,
+        isAvailable: false,
+        isChecking: false,
+        message: "Erro ao verificar disponibilidade",
+      });
     }
   };
 
@@ -237,6 +314,15 @@ export default function ProfileSetup() {
     // Only name is required
     if (!formData.name.trim()) {
       newErrors.name = "Nome é obrigatório";
+    }
+
+    // Validate username if provided (since we auto-generate if empty)
+    if (
+      formData.username &&
+      (!usernameValidation.isValid || !usernameValidation.isAvailable)
+    ) {
+      newErrors.username =
+        "Por favor, escolha um username válido e disponível.";
     }
 
     // Optional field validations (only validate if field has content)
@@ -296,6 +382,7 @@ export default function ProfileSetup() {
       // Prepare profile data
       const profileData = {
         displayName: formData.name,
+        username: formData.username || undefined, // Only save if provided
         artisticName: formData.artisticName,
         bio: formData.bio,
         location: formData.location,
@@ -347,7 +434,7 @@ export default function ProfileSetup() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-8 px-4">
+    <div className="min-h-screen px-4 sm:px-6 lg:px-8 py-8 bg-gradient-to-br from-white via-brand-cream to-brand-beige dark:from-brand-black dark:via-brand-navy-900 dark:to-brand-navy-800">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <motion.div
@@ -516,6 +603,69 @@ export default function ProfileSetup() {
                   </p>
                 )}
               </div>
+            </div>
+
+            {/* Username */}
+            <div>
+              <label
+                htmlFor="username"
+                className="block text-sm font-medium text-brand-black/80 dark:text-brand-white/80 mb-2"
+              >
+                @username (opcional)
+              </label>
+              <input
+                type="text"
+                id="username"
+                name="username"
+                value={formData.username}
+                onChange={handleInputChange}
+                disabled={isLoading}
+                className={`w-full px-4 py-3 rounded-[12px] backdrop-blur-[10px] bg-white/[0.1] dark:bg-white/[0.05] border shadow-[0_4px_16px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-1px_0_rgba(255,255,255,0.05)] text-brand-black dark:text-brand-white placeholder-brand-black/50 dark:placeholder-brand-white/50 focus:outline-none focus:ring-2 focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30 focus:border-brand-navy-blue/30 dark:focus:border-brand-yellow/30 transition-all duration-300 disabled:opacity-50 ${
+                  errors.username ||
+                  (!usernameValidation.isValid && formData.username) ||
+                  (!usernameValidation.isAvailable && formData.username)
+                    ? "border-red-500/50 focus:border-red-500/50 focus:ring-red-500/30"
+                    : usernameValidation.isValid &&
+                      usernameValidation.isAvailable &&
+                      formData.username
+                    ? "border-green-500/50 focus:border-green-500/50 focus:ring-green-500/30"
+                    : "border-white/[0.2] dark:border-white/[0.1]"
+                }`}
+                placeholder="seuusername"
+              />
+              <div className="flex justify-between mt-1">
+                {errors.username ? (
+                  <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    {errors.username}
+                  </p>
+                ) : usernameValidation.message ? (
+                  <p
+                    className={`text-xs flex items-center gap-1 ${
+                      usernameValidation.isChecking
+                        ? "text-brand-black/60 dark:text-brand-white/60"
+                        : usernameValidation.isValid &&
+                          usernameValidation.isAvailable
+                        ? "text-green-600 dark:text-green-400"
+                        : "text-red-600 dark:text-red-400"
+                    }`}
+                  >
+                    {usernameValidation.isChecking ? (
+                      <div className="animate-spin rounded-full h-3 w-3 border-b border-current" />
+                    ) : usernameValidation.isValid &&
+                      usernameValidation.isAvailable ? (
+                      <CheckCircle className="w-3 h-3" />
+                    ) : (
+                      <AlertCircle className="w-3 h-3" />
+                    )}
+                    {usernameValidation.message}
+                  </p>
+                ) : null}
+              </div>
+              <p className="text-xs text-brand-black/50 dark:text-brand-white/50 mt-1">
+                Seu username será usado para compartilhar seu perfil:
+                artesfera.com/{formData.username || "username"}
+              </p>
             </div>
 
             {/* Bio */}

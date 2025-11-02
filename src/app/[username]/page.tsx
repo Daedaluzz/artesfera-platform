@@ -61,18 +61,18 @@ export default function UsernameProfilePage() {
 
         // Handle both @username and username formats
         let cleanUsername = username;
-        
+
         console.log("Original username param:", username);
-        
+
         // First decode any URL encoding
         cleanUsername = decodeURIComponent(cleanUsername);
         console.log("After decoding:", cleanUsername);
-        
+
         // Remove @ symbol if present
         if (cleanUsername.startsWith("@")) {
           cleanUsername = cleanUsername.substring(1);
         }
-        
+
         console.log("Final clean username:", cleanUsername);
 
         // First try to get all documents to see what's in the collection
@@ -80,10 +80,18 @@ export default function UsernameProfilePage() {
         const testQuery = query(collection(db, "publicProfiles"));
         try {
           const testSnapshot = await getDocs(testQuery);
-          console.log("Collection access test:", testSnapshot.empty ? "Collection is empty" : `Collection has ${testSnapshot.docs.length} documents`);
-          
+          console.log(
+            "Collection access test:",
+            testSnapshot.empty
+              ? "Collection is empty"
+              : `Collection has ${testSnapshot.docs.length} documents`
+          );
+
           if (!testSnapshot.empty) {
-            console.log("Sample document usernames:", testSnapshot.docs.map(doc => doc.data().username));
+            console.log(
+              "Sample document usernames:",
+              testSnapshot.docs.map((doc) => doc.data().username)
+            );
           }
         } catch (testError) {
           console.error("Collection access test failed:", testError);
@@ -97,7 +105,12 @@ export default function UsernameProfilePage() {
         console.log("Querying for username:", cleanUsername.toLowerCase());
         const profilesSnapshot = await getDocs(profilesQuery);
 
-        console.log("Query result:", profilesSnapshot.empty ? "No documents found" : `Found ${profilesSnapshot.docs.length} documents`);
+        console.log(
+          "Query result:",
+          profilesSnapshot.empty
+            ? "No documents found"
+            : `Found ${profilesSnapshot.docs.length} documents`
+        );
 
         if (!profilesSnapshot.empty) {
           const profileDoc = profilesSnapshot.docs[0];
@@ -468,7 +481,7 @@ export default function UsernameProfilePage() {
             </p>
 
             <div className="flex gap-3 justify-center">
-              <PrimaryButton onClick={() => router.push("/register")}>
+              <PrimaryButton onClick={() => router.push("/login")}>
                 Criar Conta
               </PrimaryButton>
               <SecondaryButton onClick={() => router.push("/login")}>
