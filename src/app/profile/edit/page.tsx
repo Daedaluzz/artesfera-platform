@@ -72,7 +72,7 @@ const compressImage = (
   return new Promise((resolve, reject) => {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
-    
+
     if (!ctx) {
       reject(new Error("Não foi possível criar o contexto do canvas"));
       return;
@@ -98,7 +98,7 @@ const compressImage = (
 
         // Draw and compress
         ctx.drawImage(img, 0, 0, newWidth, newHeight);
-        
+
         canvas.toBlob(
           (blob) => {
             if (blob) {
@@ -235,44 +235,59 @@ export default function ProfileEdit() {
 
     try {
       // Validate file type
-      if (!file.type.startsWith('image/')) {
-        throw new Error('Por favor, selecione um arquivo de imagem válido.');
+      if (!file.type.startsWith("image/")) {
+        throw new Error("Por favor, selecione um arquivo de imagem válido.");
       }
 
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        throw new Error('A imagem deve ter no máximo 5MB.');
+        throw new Error("A imagem deve ter no máximo 5MB.");
       }
 
-      console.log('Starting image upload...', { fileSize: file.size, fileType: file.type });
+      console.log("Starting image upload...", {
+        fileSize: file.size,
+        fileType: file.type,
+      });
 
       // Compress image
       const compressedImage = await compressImage(file);
-      console.log('Image compressed:', { originalSize: file.size, compressedSize: compressedImage.size });
+      console.log("Image compressed:", {
+        originalSize: file.size,
+        compressedSize: compressedImage.size,
+      });
 
       // Create storage reference with a simpler path and clean filename
       const timestamp = Date.now();
-      const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_').substring(0, 50);
+      const cleanFileName = file.name
+        .replace(/[^a-zA-Z0-9.-]/g, "_")
+        .substring(0, 50);
       const fileName = `${timestamp}_${cleanFileName}`;
       const photoRef = ref(storage, `profile-photos/${user.uid}/${fileName}`);
 
-      console.log('Uploading to path:', `profile-photos/${user.uid}/${fileName}`);
+      console.log(
+        "Uploading to path:",
+        `profile-photos/${user.uid}/${fileName}`
+      );
 
       // Upload to Firebase Storage with metadata
       const metadata = {
-        contentType: 'image/jpeg',
+        contentType: "image/jpeg",
         customMetadata: {
           uploadedBy: user.uid,
-          uploadedAt: timestamp.toString()
-        }
+          uploadedAt: timestamp.toString(),
+        },
       };
 
-      const uploadResult = await uploadBytes(photoRef, compressedImage, metadata);
-      console.log('Upload successful:', uploadResult);
+      const uploadResult = await uploadBytes(
+        photoRef,
+        compressedImage,
+        metadata
+      );
+      console.log("Upload successful:", uploadResult);
 
       // Get download URL
       const photoURL = await getDownloadURL(uploadResult.ref);
-      console.log('Download URL obtained:', photoURL);
+      console.log("Download URL obtained:", photoURL);
 
       // Update user document in Firestore
       const userRef = doc(db, "users", user.uid);
@@ -285,7 +300,7 @@ export default function ProfileEdit() {
       await updateProfile(user, { photoURL });
 
       setSuccess("✅ Foto atualizada com sucesso!");
-      console.log('Profile update completed successfully');
+      console.log("Profile update completed successfully");
     } catch (error) {
       console.error("Error uploading photo:", error);
       if (error instanceof Error) {
@@ -297,7 +312,7 @@ export default function ProfileEdit() {
       setIsUploadingPhoto(false);
       // Clear the file input
       if (e.target) {
-        e.target.value = '';
+        e.target.value = "";
       }
     }
   };
