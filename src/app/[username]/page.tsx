@@ -41,8 +41,10 @@ export default function UsernameProfilePage() {
   const params = useParams();
   const router = useRouter();
   const username = params?.username as string;
-  
-  const [profileData, setProfileData] = useState<PublicUserProfile | null>(null);
+
+  const [profileData, setProfileData] = useState<PublicUserProfile | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -58,10 +60,10 @@ export default function UsernameProfilePage() {
 
         // Handle both @username and username formats
         let cleanUsername = username;
-        if (username.startsWith('%40')) {
+        if (username.startsWith("%40")) {
           // URL encoded @ symbol
           cleanUsername = decodeURIComponent(username).substring(1);
-        } else if (username.startsWith('@')) {
+        } else if (username.startsWith("@")) {
           cleanUsername = username.substring(1);
         }
 
@@ -242,7 +244,7 @@ export default function UsernameProfilePage() {
                   >
                     Compartilhar
                   </SecondaryButton>
-                  
+
                   {isOwnProfile && (
                     <PrimaryButton
                       leftIcon={<ExternalLink className="w-4 h-4" />}
@@ -366,7 +368,8 @@ export default function UsernameProfilePage() {
               Junte-se à ArtEsfera
             </h3>
             <p className="text-brand-black/60 dark:text-brand-white/60 mb-6">
-              Crie seu perfil e conecte-se com uma comunidade vibrante de artistas e criadores.
+              Crie seu perfil e conecte-se com uma comunidade vibrante de
+              artistas e criadores.
             </p>
 
             <div className="flex gap-3 justify-center">

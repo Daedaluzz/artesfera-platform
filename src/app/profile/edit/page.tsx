@@ -186,7 +186,8 @@ export default function ProfileEdit() {
         email: userDocument.email || user.email || "",
         phone: (userDocument as unknown as ExtendedUserDocument).phone || "",
         artisticName: userDocument.artisticName || "",
-        username: (userDocument as unknown as ExtendedUserDocument).username || "",
+        username:
+          (userDocument as unknown as ExtendedUserDocument).username || "",
         bio: userDocument.bio || "",
         location: userDocument.location || "",
         tags: userDocument.tags || [],
@@ -261,14 +262,15 @@ export default function ProfileEdit() {
     }
 
     // Check availability if format is valid
-    setUsernameValidation(prev => ({
+    setUsernameValidation((prev) => ({
       ...prev,
       isChecking: true,
       message: "Verificando disponibilidade...",
     }));
 
     try {
-      const currentUsername = (userDocument as unknown as ExtendedUserDocument)?.username;
+      const currentUsername = (userDocument as unknown as ExtendedUserDocument)
+        ?.username;
       // Skip availability check if it's the same as current username
       if (usernameValue.toLowerCase() === currentUsername?.toLowerCase()) {
         setUsernameValidation({
@@ -412,7 +414,10 @@ export default function ProfileEdit() {
     if (!user) return;
 
     // Validate username before saving
-    if (formData.username && (!usernameValidation.isValid || !usernameValidation.isAvailable)) {
+    if (
+      formData.username &&
+      (!usernameValidation.isValid || !usernameValidation.isAvailable)
+    ) {
       setError("❌ Por favor, escolha um username válido e disponível.");
       return;
     }
@@ -690,7 +695,8 @@ export default function ProfileEdit() {
                       value={formData.username}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-3 pl-8 rounded-[12px] backdrop-blur-[10px] bg-white/[0.1] dark:bg-white/[0.05] border shadow-[0_4px_16px_rgba(0,0,0,0.06)] text-brand-black dark:text-brand-white placeholder-brand-black/50 dark:placeholder-brand-white/50 focus:outline-none focus:ring-2 transition-all duration-300 ${
-                        usernameValidation.isValid && usernameValidation.isAvailable
+                        usernameValidation.isValid &&
+                        usernameValidation.isAvailable
                           ? "border-white/[0.2] dark:border-white/[0.1] focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30 focus:border-brand-navy-blue/30 dark:focus:border-brand-yellow/30"
                           : usernameValidation.isChecking
                           ? "border-blue-300/50 dark:border-blue-400/50"
@@ -707,7 +713,8 @@ export default function ProfileEdit() {
                     )}
                     {!usernameValidation.isChecking && formData.username && (
                       <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                        {usernameValidation.isValid && usernameValidation.isAvailable ? (
+                        {usernameValidation.isValid &&
+                        usernameValidation.isAvailable ? (
                           <CheckCircle className="w-4 h-4 text-green-500" />
                         ) : (
                           <AlertCircle className="w-4 h-4 text-red-500" />
@@ -718,7 +725,8 @@ export default function ProfileEdit() {
                   {usernameValidation.message && (
                     <p
                       className={`text-xs mt-1 ${
-                        usernameValidation.isValid && usernameValidation.isAvailable
+                        usernameValidation.isValid &&
+                        usernameValidation.isAvailable
                           ? "text-green-500"
                           : usernameValidation.isChecking
                           ? "text-blue-500"
@@ -729,7 +737,8 @@ export default function ProfileEdit() {
                     </p>
                   )}
                   <p className="text-xs text-brand-black/50 dark:text-brand-white/50 mt-1">
-                    Seu perfil será acessível em artesfera.tech/@{formData.username || "seuusername"}
+                    Seu perfil será acessível em artesfera.tech/@
+                    {formData.username || "seuusername"}
                   </p>
                 </div>
 

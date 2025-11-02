@@ -154,7 +154,8 @@ export default function Profile() {
         email: userDocument.email || user.email || "",
         phone: (userDocument as unknown as ExtendedUserDocument).phone || "",
         artisticName: userDocument.artisticName || "",
-        username: (userDocument as unknown as ExtendedUserDocument).username || "",
+        username:
+          (userDocument as unknown as ExtendedUserDocument).username || "",
         bio: userDocument.bio || "",
         location: userDocument.location || "",
         tags: userDocument.tags || [],
@@ -318,7 +319,8 @@ export default function Profile() {
         email: userDocument.email || user.email || "",
         phone: (userDocument as unknown as ExtendedUserDocument).phone || "",
         artisticName: userDocument.artisticName || "",
-        username: (userDocument as unknown as ExtendedUserDocument).username || "",
+        username:
+          (userDocument as unknown as ExtendedUserDocument).username || "",
         bio: userDocument.bio || "",
         location: userDocument.location || "",
         tags: userDocument.tags || [],
@@ -459,7 +461,7 @@ export default function Profile() {
                 <p className="text-brand-black/70 dark:text-brand-white/70">
                   {formData.artisticName || "Artista"}
                 </p>
-                
+
                 {/* Share Profile Button */}
                 {formData.username && (
                   <div className="mt-3 flex gap-2">
@@ -467,13 +469,15 @@ export default function Profile() {
                       onClick={() => {
                         const shareUrl = `${window.location.origin}/@${formData.username}`;
                         if (navigator.share) {
-                          navigator.share({
-                            title: `Perfil de ${formData.name} - ArtEsfera`,
-                            text: `Confira o perfil de ${formData.name} na ArtEsfera!`,
-                            url: shareUrl,
-                          }).catch(() => {
-                            navigator.clipboard.writeText(shareUrl);
-                          });
+                          navigator
+                            .share({
+                              title: `Perfil de ${formData.name} - ArtEsfera`,
+                              text: `Confira o perfil de ${formData.name} na ArtEsfera!`,
+                              url: shareUrl,
+                            })
+                            .catch(() => {
+                              navigator.clipboard.writeText(shareUrl);
+                            });
                         } else {
                           navigator.clipboard.writeText(shareUrl);
                         }

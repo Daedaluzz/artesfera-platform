@@ -19,22 +19,25 @@ To deploy the updated security rules that enable public profile viewing and comp
    ```
 
 3. **Deploy All Rules**:
+
    ```bash
    firebase deploy --only firestore:rules,storage:rules
    ```
 
    Or deploy individually:
+
    ```bash
    # Deploy Firestore rules
    firebase deploy --only firestore:rules
-   
-   # Deploy Storage rules  
+
+   # Deploy Storage rules
    firebase deploy --only storage:rules
    ```
 
 ### Option 2: Firebase Console (Manual)
 
 #### Firestore Rules
+
 1. Go to [Firebase Console](https://console.firebase.google.com/)
 2. Select your ArtEsfera project
 3. Navigate to **Firestore Database** → **Rules**
@@ -42,6 +45,7 @@ To deploy the updated security rules that enable public profile viewing and comp
 5. Click **Publish**
 
 #### Storage Rules
+
 1. In the same Firebase Console project
 2. Navigate to **Storage** → **Rules**
 3. Replace the existing rules with the content from `storage.rules` file
@@ -68,7 +72,7 @@ match /publicProfiles/{userId} {
 The updated rules provide comprehensive file security with:
 
 - **Helper Functions**: Authentication, ownership, file type, and size validation
-- **Private User Data**: Secure access to personal files and AI history  
+- **Private User Data**: Secure access to personal files and AI history
 - **Public Assets**: Firestore-validated access to artworks, projects, galleries
 - **Legacy Support**: Backward compatibility with existing file structures
 - **File Size Limits**: Appropriate limits for different content types

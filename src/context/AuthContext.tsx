@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
 import {
   User,
   onAuthStateChanged,
@@ -174,26 +180,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         if (!userDoc.exists()) {
           // Generate unique username for new user (simplified logic to avoid circular dependency)
-          const baseName = (user.displayName || user.email?.split('@')[0] || 'user')
+          const baseName = (
+            user.displayName ||
+            user.email?.split("@")[0] ||
+            "user"
+          )
             .toLowerCase()
-            .replace(/[^a-z0-9]/g, '')
+            .replace(/[^a-z0-9]/g, "")
             .substring(0, 15);
-          
+
           let username = baseName;
           let counter = 1;
-          
+
           // Simple availability check within transaction
-          while (counter < 100) { // Prevent infinite loop
+          while (counter < 100) {
+            // Prevent infinite loop
             const usernameQuery = query(
               collection(db, "users"),
               where("username", "==", username)
             );
             const usernameSnapshot = await getDocs(usernameQuery);
-            
+
             if (usernameSnapshot.empty) {
               break; // Username available
             }
-            
+
             username = `${baseName}${counter}`;
             counter++;
           }
@@ -354,7 +365,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (userSnap.exists()) {
         const userData = userSnap.data();
-        
+
         // Extract only public fields
         const publicProfileData = {
           uid: userData.uid,
@@ -372,7 +383,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // Store in public profiles collection
         const publicProfileRef = doc(db, "publicProfiles", userId);
         await setDoc(publicProfileRef, publicProfileData, { merge: true });
-        
+
         console.log("✅ Public profile synced successfully");
       }
     } catch (error) {
@@ -384,7 +395,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   /**
    * Validate username format and rules
    */
-  const validateUsername = (username: string): { isValid: boolean; error?: string } => {
+  const validateUsername = (
+    username: string
+  ): { isValid: boolean; error?: string } => {
     // Username requirements:
     // - 3-20 characters
     // - Only letters, numbers, underscores, and hyphens
@@ -397,37 +410,75 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     if (username.length < 3) {
-      return { isValid: false, error: "Username deve ter pelo menos 3 caracteres" };
+      return {
+        isValid: false,
+        error: "Username deve ter pelo menos 3 caracteres",
+      };
     }
 
     if (username.length > 20) {
-      return { isValid: false, error: "Username deve ter no máximo 20 caracteres" };
+      return {
+        isValid: false,
+        error: "Username deve ter no máximo 20 caracteres",
+      };
     }
 
     // Check for valid characters (letters, numbers, underscore, hyphen)
     const validPattern = /^[a-zA-Z0-9_-]+$/;
     if (!validPattern.test(username)) {
-      return { isValid: false, error: "Username pode conter apenas letras, números, _ e -" };
+      return {
+        isValid: false,
+        error: "Username pode conter apenas letras, números, _ e -",
+      };
     }
 
     // Must start with letter or number
     const startsWithAlphaNumeric = /^[a-zA-Z0-9]/;
     if (!startsWithAlphaNumeric.test(username)) {
-      return { isValid: false, error: "Username deve começar com letra ou número" };
+      return {
+        isValid: false,
+        error: "Username deve começar com letra ou número",
+      };
     }
 
     // No consecutive special characters
     const noConsecutiveSpecial = /^(?!.*[-_]{2,})[a-zA-Z0-9_-]+$/;
     if (!noConsecutiveSpecial.test(username)) {
-      return { isValid: false, error: "Username não pode ter _ ou - consecutivos" };
+      return {
+        isValid: false,
+        error: "Username não pode ter _ ou - consecutivos",
+      };
     }
 
     // Reserved usernames
     const reserved = [
-      "admin", "api", "www", "mail", "ftp", "localhost", "artesfera",
-      "support", "help", "info", "contact", "about", "terms", "privacy",
-      "login", "register", "signup", "signin", "profile", "user", "users",
-      "project", "projects", "gallery", "galleries", "daeva", "ai"
+      "admin",
+      "api",
+      "www",
+      "mail",
+      "ftp",
+      "localhost",
+      "artesfera",
+      "support",
+      "help",
+      "info",
+      "contact",
+      "about",
+      "terms",
+      "privacy",
+      "login",
+      "register",
+      "signup",
+      "signin",
+      "profile",
+      "user",
+      "users",
+      "project",
+      "projects",
+      "gallery",
+      "galleries",
+      "daeva",
+      "ai",
     ];
 
     if (reserved.includes(username.toLowerCase())) {
@@ -440,10 +491,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   /**
    * Check if username is available in the database
    */
-  const checkUsernameAvailability = async (username: string): Promise<boolean> => {
+  const checkUsernameAvailability = async (
+    username: string
+  ): Promise<boolean> => {
     try {
       const normalizedUsername = username.toLowerCase();
-      
+
       // Check in users collection
       const usersQuery = query(
         collection(db, "users"),
@@ -464,7 +517,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       console.error("❌ Error checking username availability:", error);
       throw error;
     }
-  };  // Listen to auth state changes (SSR-safe)
+  }; // Listen to auth state changes (SSR-safe)
   useEffect(() => {
     // Only run on client side
     if (typeof window === "undefined") {
