@@ -306,6 +306,7 @@ export default function UserPortfolioPage() {
         >
           <PortfolioGallery
             artworks={artworks}
+            username={username}
             isOwner={isOwner || false}
             loading={artworksLoading}
             onAddArtwork={handleAddArtwork}

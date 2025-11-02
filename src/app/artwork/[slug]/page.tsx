@@ -23,7 +23,15 @@ import { PrimaryButton } from "@/components/ui/primary-button";
 import { SecondaryButton } from "@/components/ui/secondary-button";
 import { Artwork } from "@/types/artwork";
 import artworkService, { youtubeUtils } from "@/services/artworkService";
-import { doc, getDoc } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  query,
+  collection,
+  where,
+  getDocs,
+  limit,
+} from "firebase/firestore";
 import { getClientFirestore } from "@/lib/firebase";
 
 const db = getClientFirestore();
@@ -36,11 +44,37 @@ interface ArtworkCreator {
   username?: string;
 }
 
+// Utility function to create URL slug
+export function createArtworkSlug(username: string, title: string): string {
+  const cleanTitle = title
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // Remove accents
+    .replace(/[^a-z0-9\s]/g, "") // Remove special characters
+    .replace(/\s+/g, "-") // Replace spaces with hyphens
+    .trim();
+
+  return `${username}-${cleanTitle}`;
+}
+
+// Utility function to parse slug back to username and title
+export function parseArtworkSlug(
+  slug: string
+): { username: string; titleSlug: string } | null {
+  const parts = slug.split("-");
+  if (parts.length < 2) return null;
+
+  const username = parts[0];
+  const titleSlug = parts.slice(1).join("-");
+
+  return { username, titleSlug };
+}
+
 export default function ArtworkDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuth();
-  const artworkId = params?.id as string;
+  const slug = params?.slug as string;
 
   // State management
   const [artwork, setArtwork] = useState<Artwork | null>(null);
@@ -55,38 +89,72 @@ export default function ArtworkDetailPage() {
   // Fetch artwork and creator data
   useEffect(() => {
     const fetchArtworkData = async () => {
-      if (!artworkId) return;
+      if (!slug) return;
 
       try {
         setLoading(true);
         setError(null);
 
-        // Fetch artwork
-        const artworkData = await artworkService.getById(artworkId);
+        // Parse the slug to get username and title
+        const parsedSlug = parseArtworkSlug(slug);
+        if (!parsedSlug) {
+          setError("URL inválida");
+          return;
+        }
 
-        if (!artworkData) {
+        const { username, titleSlug } = parsedSlug;
+
+        // First, get the user by username to get their userId
+        const userQuery = query(
+          collection(db, "publicProfiles"),
+          where("username", "==", username),
+          limit(1)
+        );
+        const userSnapshot = await getDocs(userQuery);
+
+        if (userSnapshot.empty) {
+          setError("Usuário não encontrado");
+          return;
+        }
+
+        const userData = userSnapshot.docs[0].data() as ArtworkCreator;
+        setCreator(userData);
+
+        // Now search for artwork by userId and title slug match
+        const artworksQuery = query(
+          collection(db, "artworks"),
+          where("userId", "==", userData.uid)
+        );
+        const artworksSnapshot = await getDocs(artworksQuery);
+
+        let foundArtwork: Artwork | null = null;
+
+        // Find artwork by matching title slug
+        for (const doc of artworksSnapshot.docs) {
+          const artworkData = { id: doc.id, ...doc.data() } as Artwork;
+          const artworkSlug = createArtworkSlug(username, artworkData.title);
+
+          if (artworkSlug === slug) {
+            foundArtwork = artworkData;
+            break;
+          }
+        }
+
+        if (!foundArtwork) {
           setError("Obra não encontrada");
           return;
         }
 
         // Check if artwork is public or if user is the owner
         if (
-          !artworkData.isPublic &&
-          (!user || user.uid !== artworkData.userId)
+          !foundArtwork.isPublic &&
+          (!user || user.uid !== foundArtwork.userId)
         ) {
           setError("Esta obra não está disponível publicamente");
           return;
         }
 
-        setArtwork(artworkData);
-
-        // Fetch creator data from public profiles
-        const creatorRef = doc(db, "publicProfiles", artworkData.userId);
-        const creatorSnap = await getDoc(creatorRef);
-
-        if (creatorSnap.exists()) {
-          setCreator(creatorSnap.data() as ArtworkCreator);
-        }
+        setArtwork(foundArtwork);
       } catch (err) {
         console.error("Error fetching artwork:", err);
         setError("Erro ao carregar obra");
@@ -96,7 +164,7 @@ export default function ArtworkDetailPage() {
     };
 
     fetchArtworkData();
-  }, [artworkId, user]);
+  }, [slug, user]);
 
   // Handle navigation
   const handleGoBack = () => {
@@ -109,7 +177,7 @@ export default function ArtworkDetailPage() {
 
   // Handle share
   const handleShare = async () => {
-    const shareUrl = `${window.location.origin}/artwork/${artworkId}`;
+    const shareUrl = `${window.location.origin}/artwork/${slug}`;
 
     if (navigator.share) {
       try {
@@ -325,7 +393,7 @@ export default function ArtworkDetailPage() {
                       <button
                         key={index}
                         onClick={() => setSelectedImageIndex(index)}
-                        className={`relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+                        className={`relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-200 cursor-pointer ${
                           index === selectedImageIndex
                             ? "border-brand-navy-blue dark:border-brand-yellow scale-105"
                             : "border-white/30 dark:border-white/20 hover:border-brand-navy-blue/50 dark:hover:border-brand-yellow/50"
@@ -494,7 +562,7 @@ export default function ArtworkDetailPage() {
                 {/* Close button */}
                 <button
                   onClick={() => setIsImageModalOpen(false)}
-                  className="absolute top-4 right-4 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors duration-200"
+                  className="absolute top-4 right-4 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors duration-200 cursor-pointer"
                 >
                   <X className="w-6 h-6" />
                 </button>

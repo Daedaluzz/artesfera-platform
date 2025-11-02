@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 
 interface PortfolioGalleryProps {
   artworks: Artwork[];
+  username?: string; // Username of the portfolio owner
   isOwner?: boolean;
   loading?: boolean;
   onAddArtwork?: () => void;
@@ -25,6 +26,7 @@ type SortMode = "newest" | "oldest" | "title" | "popular";
 
 export const PortfolioGallery: React.FC<PortfolioGalleryProps> = ({
   artworks,
+  username,
   isOwner = false,
   loading = false,
   onAddArtwork,
@@ -295,6 +297,7 @@ export const PortfolioGallery: React.FC<PortfolioGalleryProps> = ({
               >
                 <ArtworkCard
                   artwork={artwork}
+                  username={username}
                   isOwner={isOwner}
                   onEdit={() => onEditArtwork?.(artwork)}
                   onDelete={() => onDeleteArtwork?.(artwork)}

@@ -16,8 +16,22 @@ import { Artwork } from "@/types/artwork";
 import { TagList } from "@/components/TagBadge";
 import { cn } from "@/lib/utils";
 
+// Utility function to create URL slug
+function createArtworkSlug(username: string, title: string): string {
+  const cleanTitle = title
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // Remove accents
+    .replace(/[^a-z0-9\s]/g, "") // Remove special characters
+    .replace(/\s+/g, "-") // Replace spaces with hyphens
+    .trim();
+
+  return `${username}-${cleanTitle}`;
+}
+
 interface ArtworkCardProps {
   artwork: Artwork;
+  username?: string; // Username of the artwork owner
   isOwner?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
@@ -27,6 +41,7 @@ interface ArtworkCardProps {
 
 export const ArtworkCard: React.FC<ArtworkCardProps> = ({
   artwork,
+  username,
   isOwner = false,
   onEdit,
   onDelete,
@@ -34,6 +49,11 @@ export const ArtworkCard: React.FC<ArtworkCardProps> = ({
   showActions = true,
 }) => {
   const [showActionsMenu, setShowActionsMenu] = useState(false);
+
+  // Generate artwork URL
+  const artworkUrl = username
+    ? `/artwork/${createArtworkSlug(username, artwork.title)}`
+    : `/artwork/${artwork.id}`; // Fallback to ID-based URL
   const [imageError, setImageError] = useState(false);
 
   // Get the first image as thumbnail
@@ -101,7 +121,7 @@ export const ArtworkCard: React.FC<ArtworkCardProps> = ({
 
         {/* Hover overlay */}
         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-          <Link href={`/artwork/${artwork.id}`}>
+          <Link href={artworkUrl}>
             <motion.div
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
@@ -162,7 +182,7 @@ export const ArtworkCard: React.FC<ArtworkCardProps> = ({
       {/* Content Section */}
       <div className="p-4">
         {/* Title */}
-        <Link href={`/artwork/${artwork.id}`}>
+        <Link href={artworkUrl}>
           <h3 className="font-semibold text-lg text-brand-black dark:text-brand-white mb-2 line-clamp-2 hover:text-brand-navy-blue dark:hover:text-brand-yellow transition-colors duration-200">
             {artwork.title}
           </h3>
