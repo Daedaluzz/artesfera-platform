@@ -1,12 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
-import { getClientFirestore } from "@/lib/firebase";
-import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
-import { updateProfile } from "firebase/auth";
 import {
   Edit3,
   Mail,
@@ -16,14 +13,8 @@ import {
   Instagram,
   Youtube,
   Tag,
-  X,
-  CheckCircle,
-  AlertCircle,
 } from "lucide-react";
 import { PrimaryButton } from "@/components/ui/primary-button";
-
-// Initialize Firebase services
-const db = getClientFirestore();
 
 interface ExtendedUserDocument {
   uid: string;
@@ -46,8 +37,6 @@ interface ExtendedUserDocument {
 
 export default function ProfileExhibition() {
   const { user, userDocument, loading: authLoading } = useAuth();
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   // Show loading state
   if (authLoading || !user) {
@@ -85,33 +74,6 @@ export default function ProfileExhibition() {
           </div>
         </div>
 
-        {/* Success/Error Messages */}
-        <AnimatePresence>
-          {(error || success) && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="mb-6"
-            >
-              <div
-                className={`flex items-center gap-3 p-4 rounded-[16px] backdrop-blur-[15px] border ${
-                  error
-                    ? "bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400"
-                    : "bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400"
-                }`}
-              >
-                {error ? (
-                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                ) : (
-                  <CheckCircle className="w-5 h-5 flex-shrink-0" />
-                )}
-                <span>{error || success}</span>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
         {/* Profile Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -125,7 +87,7 @@ export default function ProfileExhibition() {
 
           <div className="flex flex-col md:flex-row items-center gap-8">
             {/* Profile Photo */}
-            <div className="relative group">
+            <div className="relative">
               <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-white/30 dark:border-white/20 shadow-lg">
                 {extendedUser?.photoURL ? (
                   <div className="relative w-full h-full">
@@ -147,32 +109,6 @@ export default function ProfileExhibition() {
                   </div>
                 )}
               </div>
-              
-              {/* Remove Photo Button - positioned outside the circle */}
-              {extendedUser?.photoURL && (
-                <button
-                  onClick={async () => {
-                    if (!user) return;
-                    try {
-                      const userRef = doc(db, "users", user.uid);
-                      await updateDoc(userRef, {
-                        photoURL: null,
-                        updatedAt: serverTimestamp(),
-                      });
-                      await updateProfile(user, { photoURL: null });
-                      setSuccess("✅ Foto removida com sucesso!");
-                      setTimeout(() => setSuccess(null), 3000);
-                    } catch (error) {
-                      console.error("Error removing photo:", error);
-                      setError("❌ Erro ao remover foto. Tente novamente.");
-                      setTimeout(() => setError(null), 3000);
-                    }
-                  }}
-                  className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600 shadow-lg border-2 border-white/50"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
             </div>
 
             {/* Profile Info */}

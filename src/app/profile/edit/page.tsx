@@ -18,15 +18,15 @@ import {
   Loader2,
   ArrowLeft,
 } from "lucide-react";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
-import { getClientFirestore } from "@/lib/firebase";
+import { getClientFirestore, getClientStorage } from "@/lib/firebase";
 import { updateProfile } from "firebase/auth";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { SecondaryButton } from "@/components/ui/secondary-button";
 
 // Initialize Firebase services
-const storage = getStorage();
+const storage = getClientStorage();
 const db = getClientFirestore();
 
 interface ExtendedUserDocument {
@@ -72,40 +72,56 @@ const compressImage = (
   return new Promise((resolve, reject) => {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
+    
+    if (!ctx) {
+      reject(new Error("Não foi possível criar o contexto do canvas"));
+      return;
+    }
+
     const img = document.createElement("img");
 
     img.onload = () => {
-      const { width, height } = img;
-      const aspectRatio = width / height;
+      try {
+        const { width, height } = img;
+        const aspectRatio = width / height;
 
-      let newWidth = maxWidth;
-      let newHeight = maxWidth / aspectRatio;
+        let newWidth = maxWidth;
+        let newHeight = maxWidth / aspectRatio;
 
-      if (height > width) {
-        newHeight = maxWidth;
-        newWidth = maxWidth * aspectRatio;
+        if (height > width) {
+          newHeight = maxWidth;
+          newWidth = maxWidth * aspectRatio;
+        }
+
+        canvas.width = newWidth;
+        canvas.height = newHeight;
+
+        // Draw and compress
+        ctx.drawImage(img, 0, 0, newWidth, newHeight);
+        
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              resolve(blob);
+            } else {
+              reject(new Error("Falha ao comprimir a imagem"));
+            }
+          },
+          "image/jpeg",
+          quality
+        );
+      } catch (uploadError) {
+        reject(new Error("Erro ao processar a imagem"));
+        console.error("Image processing error:", uploadError);
+      } finally {
+        // Clean up
+        URL.revokeObjectURL(img.src);
       }
-
-      canvas.width = newWidth;
-      canvas.height = newHeight;
-
-      // Draw and compress
-      ctx?.drawImage(img, 0, 0, newWidth, newHeight);
-      canvas.toBlob(
-        (blob) => {
-          if (blob) {
-            resolve(blob);
-          } else {
-            reject(new Error("Failed to compress image"));
-          }
-        },
-        "image/jpeg",
-        quality
-      );
     };
 
     img.onerror = () => {
-      reject(new Error("Failed to load image"));
+      reject(new Error("Falha ao carregar a imagem"));
+      URL.revokeObjectURL(img.src);
     };
 
     img.src = URL.createObjectURL(file);
@@ -218,18 +234,45 @@ export default function ProfileEdit() {
     setError(null);
 
     try {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        throw new Error('Por favor, selecione um arquivo de imagem válido.');
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error('A imagem deve ter no máximo 5MB.');
+      }
+
+      console.log('Starting image upload...', { fileSize: file.size, fileType: file.type });
+
       // Compress image
       const compressedImage = await compressImage(file);
+      console.log('Image compressed:', { originalSize: file.size, compressedSize: compressedImage.size });
 
-      // Create storage reference
-      const photoRef = ref(
-        storage,
-        `profile-photos/${user.uid}/${Date.now()}-${file.name}`
-      );
+      // Create storage reference with a simpler path and clean filename
+      const timestamp = Date.now();
+      const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_').substring(0, 50);
+      const fileName = `${timestamp}_${cleanFileName}`;
+      const photoRef = ref(storage, `profile-photos/${user.uid}/${fileName}`);
 
-      // Upload to Firebase Storage
-      await uploadBytes(photoRef, compressedImage);
-      const photoURL = await getDownloadURL(photoRef);
+      console.log('Uploading to path:', `profile-photos/${user.uid}/${fileName}`);
+
+      // Upload to Firebase Storage with metadata
+      const metadata = {
+        contentType: 'image/jpeg',
+        customMetadata: {
+          uploadedBy: user.uid,
+          uploadedAt: timestamp.toString()
+        }
+      };
+
+      const uploadResult = await uploadBytes(photoRef, compressedImage, metadata);
+      console.log('Upload successful:', uploadResult);
+
+      // Get download URL
+      const photoURL = await getDownloadURL(uploadResult.ref);
+      console.log('Download URL obtained:', photoURL);
 
       // Update user document in Firestore
       const userRef = doc(db, "users", user.uid);
@@ -242,11 +285,20 @@ export default function ProfileEdit() {
       await updateProfile(user, { photoURL });
 
       setSuccess("✅ Foto atualizada com sucesso!");
+      console.log('Profile update completed successfully');
     } catch (error) {
       console.error("Error uploading photo:", error);
-      setError("❌ Erro ao fazer upload da foto. Tente novamente.");
+      if (error instanceof Error) {
+        setError(`❌ ${error.message}`);
+      } else {
+        setError("❌ Erro ao fazer upload da foto. Tente novamente.");
+      }
     } finally {
       setIsUploadingPhoto(false);
+      // Clear the file input
+      if (e.target) {
+        e.target.value = '';
+      }
     }
   };
 
@@ -410,7 +462,7 @@ export default function ProfileEdit() {
                       setError("❌ Erro ao remover foto. Tente novamente.");
                     }
                   }}
-                  className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600 shadow-lg border-2 border-white/50"
+                  className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600 shadow-lg border-2 border-white/50 cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
