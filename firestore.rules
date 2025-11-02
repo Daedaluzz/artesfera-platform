@@ -23,12 +23,16 @@ service cloud.firestore {
     }
     
     // Helper function to check if the user is the owner of a specific document
-    // by checking an 'ownerId' (or 'artistId', etc.) field inside the document.
+    // by checking an 'ownerId', 'userId', or 'artistId' field inside the document.
     function isDocOwner() {
       // Check create (data doesn't exist yet, check incoming doc)
       return (request.resource.data.ownerId == request.auth.uid)
+        || (request.resource.data.userId == request.auth.uid)
+        || (request.resource.data.artistId == request.auth.uid)
       // Check update/delete (data exists, check existing doc)
-      || (resource.data.ownerId == request.auth.uid);
+        || (resource.data.ownerId == request.auth.uid)
+        || (resource.data.userId == request.auth.uid)
+        || (resource.data.artistId == request.auth.uid);
     }
     
     // Helper function to check if the user owns a saved item (uses userId field)

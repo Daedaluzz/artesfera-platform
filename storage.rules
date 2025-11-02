@@ -177,6 +177,14 @@ service firebase.storage {
                     isUnderSizeLimit(20);
     }
 
+    // Current artwork images structure - includes temp folders for form uploads
+    match /artwork-images/{userId}/{artworkId}/{imageId} {
+      allow read: if true; // Public access for gallery showcase
+      allow write: if isOwner(userId) && 
+                    isValidImageFile() && 
+                    isUnderSizeLimit(20);
+    }
+
     // Temporary uploads folder (auto-delete after 24 hours)
     match /temp/{userId}/{fileName} {
       allow read, write: if isOwner(userId) && isUnderSizeLimit(100);
