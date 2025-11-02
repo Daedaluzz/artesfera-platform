@@ -33,12 +33,16 @@ export async function POST(request: NextRequest) {
     const userData: UserData = await request.json();
 
     if (!adminAuth) {
-      console.warn("⚠️ Admin auth not available - sync will be skipped for user:", userData.uid);
+      console.warn(
+        "⚠️ Admin auth not available - sync will be skipped for user:",
+        userData.uid
+      );
       // Return success to not block profile editing, but log the issue
       return NextResponse.json({
         message: "Profile sync skipped - admin auth not configured",
         uid: userData.uid,
-        warning: "Admin SDK not available - please configure FIREBASE_SERVICE_ACCOUNT environment variable"
+        warning:
+          "Admin SDK not available - please configure FIREBASE_SERVICE_ACCOUNT environment variable",
       });
     }
 

@@ -293,7 +293,7 @@ export default function UserPortfolioPage() {
                   <div className="mt-2 space-y-1">
                     <motion.div
                       className={`text-brand-black/80 dark:text-brand-white/80 ${
-                        isBioExpanded ? '' : 'line-clamp-2'
+                        isBioExpanded ? "" : "line-clamp-2"
                       }`}
                       initial={false}
                       transition={{ duration: 0.3, ease: "easeInOut" }}
@@ -306,7 +306,7 @@ export default function UserPortfolioPage() {
                           onClick={() => setIsBioExpanded(!isBioExpanded)}
                           className="text-sm text-brand-navy-blue dark:text-brand-yellow hover:text-brand-navy-blue/80 dark:hover:text-brand-yellow/80 transition-colors duration-200 font-medium cursor-pointer"
                         >
-                          {isBioExpanded ? 'Mostrar menos' : 'Mostrar mais'}
+                          {isBioExpanded ? "Mostrar menos" : "Mostrar mais"}
                         </button>
                       </div>
                     )}

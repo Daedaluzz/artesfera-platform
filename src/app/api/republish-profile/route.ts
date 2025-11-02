@@ -30,10 +30,13 @@ export async function POST(request: NextRequest) {
     const adminDb = getAdminFirestore();
 
     if (!adminAuth || !adminDb) {
-      console.warn("⚠️ Admin services not available - republish will be skipped");
+      console.warn(
+        "⚠️ Admin services not available - republish will be skipped"
+      );
       return NextResponse.json({
         message: "Republish skipped - admin services not configured",
-        warning: "Admin SDK not available - please configure FIREBASE_SERVICE_ACCOUNT environment variable"
+        warning:
+          "Admin SDK not available - please configure FIREBASE_SERVICE_ACCOUNT environment variable",
       });
     }
 

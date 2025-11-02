@@ -8,9 +8,13 @@ export interface Artwork {
   images: string[]; // Array of Firebase Storage URLs (max 5)
   youtubeLinks: string[]; // Array of YouTube URLs
   tags: string[]; // Array of tags like "painting", "dance", "cinema"
+  category?: string; // Category for filtering (e.g., "Artes Visuais", "Música", etc.)
   createdAt: Date | string;
   updatedAt: Date | string;
   isPublic: boolean; // Allow users to control visibility
+  featured?: boolean; // Whether artwork is featured
+  views?: number; // View count for analytics
+  likes?: number; // Like count for social features
 }
 
 export interface CreateArtworkData {
@@ -19,7 +23,11 @@ export interface CreateArtworkData {
   images: string[];
   youtubeLinks: string[];
   tags: string[];
+  category?: string;
   isPublic: boolean;
+  featured?: boolean;
+  views?: number;
+  likes?: number;
 }
 
 export interface UpdateArtworkData extends Partial<CreateArtworkData> {
@@ -32,6 +40,7 @@ export interface ArtworkFormData {
   description: string;
   youtubeLinks: string[];
   tags: string[];
+  category?: string;
   isPublic: boolean;
 }
 
@@ -49,6 +58,7 @@ export interface ArtworkValidationErrors {
   images?: string;
   youtubeLinks?: string;
   tags?: string;
+  category?: string;
   isPublic?: string;
   general?: string;
 }
