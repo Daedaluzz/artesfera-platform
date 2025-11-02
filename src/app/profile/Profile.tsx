@@ -27,6 +27,7 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { getClientFirestore } from "@/lib/firebase";
 import { updateProfile } from "firebase/auth";
+import { autoSyncProfile } from "@/services/profileSyncService";
 
 // Initialize Firebase services
 const storage = getStorage();
@@ -266,6 +267,21 @@ export default function Profile() {
         updatedAt: serverTimestamp(),
       });
 
+      // Trigger public profile sync
+      await autoSyncProfile({
+        uid: user.uid,
+        name: formData.name,
+        email: user.email || "",
+        photoURL: downloadURL,
+        bio: formData.bio,
+        tags: formData.tags,
+        website: formData.socials?.website,
+        location: formData.location,
+        username: formData.username,
+        artisticName: formData.artisticName,
+        profileCompleted: true,
+      }, user);
+
       setSuccess("✅ Foto do perfil atualizada com sucesso!");
     } catch (error) {
       console.error("Error uploading photo:", error);
@@ -301,6 +317,21 @@ export default function Profile() {
           displayName: formData.name,
         });
       }
+
+      // Trigger public profile sync
+      await autoSyncProfile({
+        uid: user.uid,
+        name: formData.name,
+        email: user.email || "",
+        photoURL: user.photoURL || undefined,
+        bio: formData.bio,
+        tags: formData.tags,
+        website: formData.socials?.website,
+        location: formData.location,
+        username: formData.username,
+        artisticName: formData.artisticName,
+        profileCompleted: true,
+      }, user);
 
       setSuccess("✅ Perfil atualizado com sucesso!");
       setIsEditing(false);

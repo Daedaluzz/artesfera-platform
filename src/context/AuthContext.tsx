@@ -21,13 +21,13 @@ import {
 import {
   doc,
   getDoc,
-  setDoc,
   serverTimestamp,
   runTransaction,
   FieldValue,
   onSnapshot,
 } from "firebase/firestore";
 import { getClientAuth, getClientFirestore } from "@/lib/firebase";
+import { triggerProfileSync } from "@/services/profileSyncService";
 
 // Initialize Firebase services
 const auth = getClientAuth();
@@ -359,36 +359,45 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   /**
    * Sync user's public profile data
-   * Extracts public fields from private user document and stores in publicProfiles collection
+   * Uses secure server-side API to sync data from users to publicProfiles collection
    */
   const syncPublicProfile = async (userId: string): Promise<void> => {
     try {
+      // Get the current user's data from Firestore
       const userRef = doc(db, "users", userId);
       const userSnap = await getDoc(userRef);
 
-      if (userSnap.exists()) {
-        const userData = userSnap.data();
-
-        // Extract only public fields
-        const publicProfileData = {
-          uid: userData.uid,
-          name: userData.name || "",
-          photoURL: userData.photoURL || null,
-          artisticName: userData.artisticName || "",
-          username: userData.username || "",
-          bio: userData.bio || "",
-          location: userData.location || "",
-          tags: userData.tags || [],
-          socials: userData.socials || {},
-          updatedAt: new Date(),
-        };
-
-        // Store in public profiles collection
-        const publicProfileRef = doc(db, "publicProfiles", userId);
-        await setDoc(publicProfileRef, publicProfileData, { merge: true });
-
-        console.log("✅ Public profile synced successfully");
+      if (!userSnap.exists()) {
+        throw new Error("User document not found");
       }
+
+      const userData = userSnap.data();
+
+      // Only sync if we have a current authenticated user
+      if (!user) {
+        throw new Error("No authenticated user for sync");
+      }
+
+      // Use the secure server-side sync API
+      const success = await triggerProfileSync({
+        uid: userData.uid,
+        name: userData.name || "",
+        email: userData.email || "",
+        photoURL: userData.photoURL,
+        bio: userData.bio,
+        tags: userData.tags,
+        website: userData.socials?.website,
+        location: userData.location,
+        username: userData.username,
+        artisticName: userData.artisticName,
+        profileCompleted: userData.profileCompleted,
+      }, user);
+
+      if (!success) {
+        throw new Error("Profile sync failed");
+      }
+
+      console.log("✅ Public profile synced successfully via secure API");
     } catch (error) {
       console.error("❌ Error syncing public profile:", error);
       throw error;
