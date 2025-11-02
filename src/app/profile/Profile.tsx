@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -42,7 +43,7 @@ interface ExtendedUserDocument {
   name: string;
   email: string;
   photoURL: string | null;
-  createdAt: any;
+  createdAt: Date | string | undefined;
   tags: string[];
   bio: string;
   artisticName: string;
@@ -76,7 +77,7 @@ const compressImage = (file: File, maxWidth = 400, quality = 0.8): Promise<Blob>
   return new Promise((resolve, reject) => {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
-    const img = new Image();
+    const img = new HTMLImageElement();
 
     img.onload = () => {
       const { width, height } = img;
@@ -147,15 +148,15 @@ export default function Profile() {
       setFormData({
         name: userDocument.name || user.displayName || "",
         email: userDocument.email || user.email || "",
-        phone: (userDocument as ExtendedUserDocument).phone || "",
+        phone: (userDocument as unknown as ExtendedUserDocument).phone || "",
         artisticName: userDocument.artisticName || "",
         bio: userDocument.bio || "",
         location: userDocument.location || "",
         tags: userDocument.tags || [],
         socials: {
-          website: (userDocument as ExtendedUserDocument).socials?.website || "",
-          instagram: (userDocument as ExtendedUserDocument).socials?.instagram || "",
-          youtube: (userDocument as ExtendedUserDocument).socials?.youtube || "",
+          website: (userDocument as unknown as ExtendedUserDocument).socials?.website || "",
+          instagram: (userDocument as unknown as ExtendedUserDocument).socials?.instagram || "",
+          youtube: (userDocument as unknown as ExtendedUserDocument).socials?.youtube || "",
         },
       });
     }
@@ -304,15 +305,15 @@ export default function Profile() {
       setFormData({
         name: userDocument.name || user.displayName || "",
         email: userDocument.email || user.email || "",
-        phone: (userDocument as ExtendedUserDocument).phone || "",
+        phone: (userDocument as unknown as ExtendedUserDocument).phone || "",
         artisticName: userDocument.artisticName || "",
         bio: userDocument.bio || "",
         location: userDocument.location || "",
         tags: userDocument.tags || [],
         socials: {
-          website: (userDocument as ExtendedUserDocument).socials?.website || "",
-          instagram: (userDocument as ExtendedUserDocument).socials?.instagram || "",
-          youtube: (userDocument as ExtendedUserDocument).socials?.youtube || "",
+          website: (userDocument as unknown as ExtendedUserDocument).socials?.website || "",
+          instagram: (userDocument as unknown as ExtendedUserDocument).socials?.instagram || "",
+          youtube: (userDocument as unknown as ExtendedUserDocument).socials?.youtube || "",
         },
       });
     }
@@ -394,10 +395,12 @@ export default function Profile() {
               <div className="text-center mb-6">
                 <div className="relative w-24 h-24 mx-auto mb-4">
                   {user.photoURL ? (
-                    <img
+                    <Image
                       src={user.photoURL}
                       alt="Profile"
-                      className="w-24 h-24 rounded-full object-cover border-2 border-white/30 dark:border-white/20"
+                      width={96}
+                      height={96}
+                      className="rounded-full object-cover border-2 border-white/30 dark:border-white/20"
                     />
                   ) : (
                     <div className="w-24 h-24 rounded-full bg-gradient-to-r from-brand-navy-blue to-brand-navy-blue/80 dark:from-brand-yellow dark:to-brand-yellow/80 flex items-center justify-center text-white dark:text-brand-black text-2xl font-bold border-2 border-white/30 dark:border-white/20">

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { PrimaryButton } from "@/components/ui/primary-button";
@@ -58,11 +59,11 @@ const compressImage = (file: File, maxWidth = 800, quality = 0.8): Promise<Blob>
   return new Promise((resolve, reject) => {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
-    const img = new Image();
+    const htmlImg = new HTMLImageElement();
 
-    img.onload = () => {
+    htmlImg.onload = () => {
       // Calculate new dimensions
-      const { width, height } = img;
+      const { width, height } = htmlImg;
       const aspectRatio = width / height;
       
       let newWidth = maxWidth;
@@ -78,7 +79,7 @@ const compressImage = (file: File, maxWidth = 800, quality = 0.8): Promise<Blob>
       canvas.height = newHeight;
 
       // Draw and compress
-      ctx?.drawImage(img, 0, 0, newWidth, newHeight);
+      ctx?.drawImage(htmlImg, 0, 0, newWidth, newHeight);
       canvas.toBlob((blob) => {
         if (blob) {
           resolve(blob);
@@ -88,11 +89,11 @@ const compressImage = (file: File, maxWidth = 800, quality = 0.8): Promise<Blob>
       }, "image/jpeg", quality);
     };
 
-    img.onerror = () => {
+    htmlImg.onerror = () => {
       reject(new Error("Failed to load image"));
     };
 
-    img.src = URL.createObjectURL(file);
+    htmlImg.src = URL.createObjectURL(file);
   });
 };
 
@@ -380,10 +381,12 @@ export default function ProfileSetup() {
                   onClick={() => fileInputRef.current?.click()}
                 >
                   {imagePreview ? (
-                    <img
+                    <Image
                       src={imagePreview}
                       alt="Preview"
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
+                      sizes="128px"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
