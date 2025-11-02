@@ -316,11 +316,11 @@ export const ArtworkFormModal: React.FC<ArtworkFormModalProps> = ({
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className="relative w-full max-w-4xl h-[calc(100vh-16px)] sm:h-[calc(100vh-32px)] max-h-[800px] bg-white/[0.95] dark:bg-brand-black/90 backdrop-blur-[15px] border border-white/[0.4] dark:border-brand-navy-500/30 rounded-2xl overflow-hidden shadow-2xl flex flex-col"
+          className="relative w-full max-w-4xl h-[calc(100vh-16px)] sm:h-[calc(100vh-32px)] max-h-[800px] bg-white/[0.95] dark:bg-brand-black/15 backdrop-blur-[15px] border border-white/[0.4] dark:border-brand-navy-500/30 rounded-2xl overflow-hidden shadow-2xl flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 sm:p-6 border-b border-brand-navy-200/50 dark:border-white/[0.2] bg-white/[0.6] dark:bg-brand-navy-600/20">
+          <div className="flex items-center justify-between p-4 sm:p-6 border-b border-brand-navy-200/50 dark:border-white/[0.1] bg-white/[0.6] dark:bg-black/5">
             <h2 className="text-lg sm:text-xl font-semibold text-brand-black dark:text-brand-white">
               {artwork ? "Editar Obra" : "Adicionar Nova Obra"}
             </h2>
@@ -359,10 +359,10 @@ export const ArtworkFormModal: React.FC<ArtworkFormModalProps> = ({
                   value={formData.title}
                   onChange={(e) => handleInputChange("title", e.target.value)}
                   className={cn(
-                    "w-full px-4 py-3 rounded-xl backdrop-blur-md bg-white/[0.7] dark:bg-brand-navy-600/20 border text-brand-black dark:text-brand-white placeholder-brand-black/60 dark:placeholder-brand-white/60 focus:outline-none focus:ring-2 transition-all duration-200",
+                    "w-full px-4 py-3 rounded-xl backdrop-blur-md bg-white/[0.7] dark:bg-black/10 border text-brand-black dark:text-brand-white placeholder-brand-black/60 dark:placeholder-brand-white/50 focus:outline-none focus:ring-2 transition-all duration-200",
                     errors.title
                       ? "border-red-300 dark:border-red-700 focus:ring-red-300 dark:focus:ring-red-700"
-                      : "border-brand-navy-200/50 dark:border-white/[0.2] focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30"
+                      : "border-brand-navy-200/50 dark:border-white/[0.1] focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30"
                   )}
                   placeholder="Digite o título da obra..."
                   maxLength={100}
@@ -386,10 +386,10 @@ export const ArtworkFormModal: React.FC<ArtworkFormModalProps> = ({
                   }
                   rows={4}
                   className={cn(
-                    "w-full px-4 py-3 rounded-xl backdrop-blur-md bg-white/[0.7] dark:bg-brand-navy-600/20 border text-brand-black dark:text-brand-white placeholder-brand-black/60 dark:placeholder-brand-white/60 focus:outline-none focus:ring-2 transition-all duration-200 resize-none",
+                    "w-full px-4 py-3 rounded-xl backdrop-blur-md bg-white/[0.7] dark:bg-black/10 border text-brand-black dark:text-brand-white placeholder-brand-black/60 dark:placeholder-brand-white/50 focus:outline-none focus:ring-2 transition-all duration-200 resize-none",
                     errors.description
                       ? "border-red-300 dark:border-red-700 focus:ring-red-300 dark:focus:ring-red-700"
-                      : "border-brand-navy-200/50 dark:border-white/[0.2] focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30"
+                      : "border-brand-navy-200/50 dark:border-white/[0.1] focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30"
                   )}
                   placeholder="Descreva sua obra, técnicas utilizadas, inspiração..."
                   maxLength={2000}
@@ -531,7 +531,7 @@ export const ArtworkFormModal: React.FC<ArtworkFormModalProps> = ({
                         onChange={(e) =>
                           handleYouTubeChange(index, e.target.value)
                         }
-                        className="flex-1 px-4 py-3 rounded-xl backdrop-blur-md bg-white/[0.7] dark:bg-brand-navy-600/20 border border-brand-navy-200/50 dark:border-white/[0.2] text-brand-black dark:text-brand-white placeholder-brand-black/60 dark:placeholder-brand-white/60 focus:outline-none focus:ring-2 focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30 transition-all duration-200"
+                        className="flex-1 px-4 py-3 rounded-xl backdrop-blur-md bg-white/[0.7] dark:bg-black/10 border border-brand-navy-200/50 dark:border-white/[0.1] text-brand-black dark:text-brand-white placeholder-brand-black/60 dark:placeholder-brand-white/50 focus:outline-none focus:ring-2 focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30 transition-all duration-200"
                         placeholder="https://youtube.com/watch?v=..."
                       />
                       {formData.youtubeLinks.length > 1 && (
@@ -574,7 +574,7 @@ export const ArtworkFormModal: React.FC<ArtworkFormModalProps> = ({
                     onKeyPress={(e) =>
                       e.key === "Enter" && (e.preventDefault(), handleAddTag())
                     }
-                    className="flex-1 px-4 py-2 rounded-lg backdrop-blur-md bg-white/[0.7] dark:bg-brand-navy-600/20 border border-brand-navy-200/50 dark:border-white/[0.2] text-brand-black dark:text-brand-white placeholder-brand-black/60 dark:placeholder-brand-white/60 focus:outline-none focus:ring-2 focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30 transition-all duration-200"
+                    className="flex-1 px-4 py-2 rounded-lg backdrop-blur-md bg-white/[0.7] dark:bg-black/10 border border-brand-navy-200/50 dark:border-white/[0.1] text-brand-black dark:text-brand-white placeholder-brand-black/60 dark:placeholder-brand-white/50 focus:outline-none focus:ring-2 focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30 transition-all duration-200"
                     placeholder="Digite uma tag..."
                     maxLength={PORTFOLIO_CONFIG.maxTagLength}
                   />
@@ -627,7 +627,7 @@ export const ArtworkFormModal: React.FC<ArtworkFormModalProps> = ({
           </div>
 
           {/* Fixed Footer */}
-          <div className="flex-shrink-0 flex flex-col sm:flex-row items-center justify-between gap-3 p-4 sm:p-6 border-t border-brand-navy-200/50 dark:border-white/[0.2] bg-white/[0.6] dark:bg-brand-navy-600/20">
+          <div className="flex-shrink-0 flex flex-col sm:flex-row items-center justify-between gap-3 p-4 sm:p-6 border-t border-brand-navy-200/50 dark:border-white/[0.1] bg-white/[0.6] dark:bg-black/5">
             <SecondaryButton
               type="button"
               onClick={onClose}
