@@ -7,7 +7,6 @@
 
 import { getClientFirestore } from "@/lib/firebase";
 import { collection, getDocs, doc, getDoc } from "firebase/firestore";
-import { triggerProfileSync, ProfileSyncData } from "./profileSyncService";
 
 const db = getClientFirestore();
 
@@ -35,23 +34,6 @@ export async function checkAndSyncUser(uid: string): Promise<boolean> {
       console.log("❌ User document not found:", uid);
       return false;
     }
-    
-    const userData = userDoc.data();
-    
-    // Prepare sync data
-    const syncData: ProfileSyncData = {
-      uid: userData.uid,
-      name: userData.name || "",
-      email: userData.email || "",
-      photoURL: userData.photoURL,
-      bio: userData.bio,
-      tags: userData.tags,
-      website: userData.socials?.website,
-      location: userData.location,
-      username: userData.username,
-      artisticName: userData.artisticName,
-      profileCompleted: userData.profileCompleted,
-    };
     
     // Note: This function is for admin use and doesn't require auth user
     // In production, make sure this is only called by authenticated admins
@@ -133,6 +115,8 @@ export async function debugSyncStatus(): Promise<void> {
 
 // Export for browser console debugging
 if (typeof window !== "undefined") {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (window as any).debugSyncStatus = debugSyncStatus;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (window as any).getUsersNeedingSync = getUsersNeedingSync;
 }

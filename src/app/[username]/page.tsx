@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
@@ -59,11 +59,11 @@ export default function UsernameProfilePage() {
   const isOwnProfile = user && profileData && user.uid === profileData.uid;
 
   // List of reserved routes that should redirect to actual pages
-  const reservedRoutes = [
+  const reservedRoutes = useMemo(() => [
     'contact', 'about', 'gallery', 'projects', 'login', 'register', 
     'profile', 'dashboard', 'api', 'admin', 'support', 'help', 
     'terms', 'privacy', 'daeva'
-  ];
+  ], []);
 
   useEffect(() => {
     const fetchProfileByUsername = async () => {
@@ -152,7 +152,7 @@ export default function UsernameProfilePage() {
     };
 
     fetchProfileByUsername();
-  }, [username]);
+  }, [username, reservedRoutes]);
 
   // Fetch portfolio artworks when profile data is available
   useEffect(() => {
@@ -240,7 +240,7 @@ export default function UsernameProfilePage() {
               Página não encontrada
             </h3>
             <p className="text-brand-black/60 dark:text-brand-white/60 mb-6">
-              A página "/{username}" que você está procurando pode ter sido movida ou não existe.
+              A página &ldquo;/{username}&rdquo; que você está procurando pode ter sido movida ou não existe.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <PrimaryButton onClick={() => router.push("/")}>

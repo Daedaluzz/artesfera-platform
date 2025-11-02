@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -50,7 +50,7 @@ export default function UserPortfolioPage() {
   const isOwner = user && profileData && user.uid === profileData.uid;
 
   // List of reserved routes that should redirect to actual pages
-  const reservedRoutes = [
+  const reservedRoutes = useMemo(() => [
     "contact",
     "about",
     "gallery",
@@ -66,7 +66,7 @@ export default function UserPortfolioPage() {
     "terms",
     "privacy",
     "daeva",
-  ];
+  ], []);
 
   // Fetch profile data by username
   useEffect(() => {
@@ -123,7 +123,7 @@ export default function UserPortfolioPage() {
     };
 
     fetchProfileByUsername();
-  }, [username]);
+  }, [username, reservedRoutes]);
 
   // Fetch artworks when profile is loaded
   useEffect(() => {
@@ -249,7 +249,7 @@ export default function UserPortfolioPage() {
               Página não encontrada
             </h3>
             <p className="text-brand-black/60 dark:text-brand-white/60 mb-6">
-              A página "/{username}/portfolio" que você está procurando pode ter
+              A página &ldquo;/{username}/portfolio&rdquo; que você está procurando pode ter
               sido movida ou não existe.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">

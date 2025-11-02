@@ -163,7 +163,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
    * Sync user's public profile data
    * Uses secure server-side API to sync data from users to publicProfiles collection
    */
-  const syncPublicProfile = async (userId: string, authUser?: User): Promise<void> => {
+  const syncPublicProfile = useCallback(async (userId: string, authUser?: User): Promise<void> => {
     try {
       // Get the current user's data from Firestore
       const userRef = doc(db, "users", userId);
@@ -208,7 +208,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       console.error("❌ Error syncing public profile:", error);
       throw error;
     }
-  };
+  }, [user]); // Add user as dependency
 
   /**
    * Creates or updates user document in Firestore
@@ -334,7 +334,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       console.error("❌ Error creating/updating user document:", error);
       throw error;
     }
-  }, []); // No dependencies needed since we moved the logic inside
+  }, [syncPublicProfile]); // Add syncPublicProfile as dependency
 
   /**
    * Sign in with Google OAuth
@@ -616,7 +616,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     });
 
     return unsubscribe;
-  }, [createUserDocument]); // Add createUserDocument as dependency
+  }, [createUserDocument, syncPublicProfile]); // Add syncPublicProfile as dependency
 
   // Context value matching task requirements
   const value: AuthContextType = {
