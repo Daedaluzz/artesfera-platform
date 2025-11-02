@@ -5,10 +5,10 @@ import { motion } from "framer-motion";
 import { SecondaryButton } from "@/components/ui/secondary-button";
 import { GalleryCard } from "@/components/GalleryCard";
 import { TagFilter } from "@/components/TagFilter";
-import { 
-  publicGalleryService, 
-  PublicArtworkWithOwner, 
-  GalleryFilters 
+import {
+  publicGalleryService,
+  PublicArtworkWithOwner,
+  GalleryFilters,
 } from "@/services/publicGalleryService";
 import { cacheService } from "@/services/cacheService";
 import { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
@@ -21,57 +21,66 @@ export default function Gallery() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
-  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<DocumentData> | undefined>();
+  const [lastDoc, setLastDoc] = useState<
+    QueryDocumentSnapshot<DocumentData> | undefined
+  >();
   const [likedArtworks, setLikedArtworks] = useState<string[]>([]);
   const [currentFilters, setCurrentFilters] = useState<GalleryFilters>({
-    sortBy: 'createdAt',
-    sortOrder: 'desc'
+    sortBy: "createdAt",
+    sortOrder: "desc",
   });
 
   // Stable filters string to prevent unnecessary re-renders
-  const filtersString = useMemo(() => JSON.stringify(currentFilters), [currentFilters]);
+  const filtersString = useMemo(
+    () => JSON.stringify(currentFilters),
+    [currentFilters]
+  );
 
   // Fetch artworks function with stable dependencies
-  const loadArtworks = useCallback(async (isInitial = false) => {
-    try {
-      if (isInitial) {
-        setLoading(true);
-        setError(null);
-        setLastDoc(undefined);
-      } else {
-        setLoadingMore(true);
+  const loadArtworks = useCallback(
+    async (isInitial = false) => {
+      try {
+        if (isInitial) {
+          setLoading(true);
+          setError(null);
+          setLastDoc(undefined);
+        } else {
+          setLoadingMore(true);
+        }
+
+        console.log("🎨 Loading artworks with filters:", currentFilters);
+
+        const response = await publicGalleryService.getPublicArtworks(
+          currentFilters,
+          isInitial ? undefined : lastDoc
+        );
+
+        if (isInitial) {
+          setArtworks(response.artworks);
+        } else {
+          setArtworks((prev) => [...prev, ...response.artworks]);
+        }
+
+        setHasMore(response.hasMore);
+        setLastDoc(response.lastDoc);
+
+        console.log(
+          `✅ Loaded ${response.artworks.length} artworks. Has more: ${response.hasMore}`
+        );
+      } catch (err) {
+        console.error("❌ Error loading artworks:", err);
+        setError("Erro ao carregar obras. Tente novamente.");
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
       }
-
-      console.log('🎨 Loading artworks with filters:', currentFilters);
-
-      const response = await publicGalleryService.getPublicArtworks(
-        currentFilters,
-        isInitial ? undefined : lastDoc
-      );
-
-      if (isInitial) {
-        setArtworks(response.artworks);
-      } else {
-        setArtworks(prev => [...prev, ...response.artworks]);
-      }
-
-      setHasMore(response.hasMore);
-      setLastDoc(response.lastDoc);
-
-      console.log(`✅ Loaded ${response.artworks.length} artworks. Has more: ${response.hasMore}`);
-
-    } catch (err) {
-      console.error('❌ Error loading artworks:', err);
-      setError('Erro ao carregar obras. Tente novamente.');
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
-  }, [currentFilters, lastDoc]);
+    },
+    [currentFilters, lastDoc]
+  );
 
   // Debounced filter change handler
-  const debouncedLoadArtworks = useMemo(() => 
-    cacheService.debounce(() => loadArtworks(true), 500),
+  const debouncedLoadArtworks = useMemo(
+    () => cacheService.debounce(() => loadArtworks(true), 500),
     [loadArtworks]
   );
 
@@ -82,7 +91,7 @@ export default function Gallery() {
   }, [filtersString]); // Use stable string instead of object
 
   const handleFiltersChange = useCallback((newFilters: GalleryFilters) => {
-    console.log('🔄 Filters changed:', newFilters);
+    console.log("🔄 Filters changed:", newFilters);
     setCurrentFilters(newFilters);
   }, []);
 
@@ -93,9 +102,9 @@ export default function Gallery() {
   }, [loadingMore, hasMore, loadArtworks]);
 
   const handleLike = useCallback((artworkId: string) => {
-    setLikedArtworks(prev =>
+    setLikedArtworks((prev) =>
       prev.includes(artworkId)
-        ? prev.filter(id => id !== artworkId)
+        ? prev.filter((id) => id !== artworkId)
         : [...prev, artworkId]
     );
     // TODO: Implement actual like functionality with Firebase
@@ -103,23 +112,32 @@ export default function Gallery() {
 
   const handleShare = useCallback(async (artwork: PublicArtworkWithOwner) => {
     try {
-      const artworkUrl = artwork.owner?.username && artwork.title
-        ? `${window.location.origin}/artwork/${artwork.owner.username}-${artwork.title.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')}`
-        : `${window.location.origin}/artwork/${artwork.id}`;
+      const artworkUrl =
+        artwork.owner?.username && artwork.title
+          ? `${window.location.origin}/artwork/${
+              artwork.owner.username
+            }-${artwork.title
+              .toLowerCase()
+              .replace(/[^a-z0-9]/g, "-")
+              .replace(/-+/g, "-")
+              .replace(/^-|-$/g, "")}`
+          : `${window.location.origin}/artwork/${artwork.id}`;
 
       if (navigator.share) {
         await navigator.share({
           title: artwork.title,
-          text: `Confira esta obra de ${artwork.owner?.displayName || 'Artista Anônimo'} na ArtEsfera`,
+          text: `Confira esta obra de ${
+            artwork.owner?.displayName || "Artista Anônimo"
+          } na ArtEsfera`,
           url: artworkUrl,
         });
       } else {
         await navigator.clipboard.writeText(artworkUrl);
         // TODO: Add toast notification for copy success
-        console.log('Link copiado para a área de transferência');
+        console.log("Link copiado para a área de transferência");
       }
     } catch (error) {
-      console.error('Error sharing artwork:', error);
+      console.error("Error sharing artwork:", error);
     }
   }, []);
   return (
@@ -145,7 +163,7 @@ export default function Gallery() {
       </motion.div>
 
       {/* Dynamic Tag Filter */}
-      <TagFilter 
+      <TagFilter
         onFiltersChange={handleFiltersChange}
         currentFilters={currentFilters}
       />
@@ -203,9 +221,14 @@ export default function Gallery() {
             Nenhuma obra encontrada
           </h3>
           <p className="text-brand-black/70 dark:text-brand-white/70 mb-4">
-            Não encontramos obras com os filtros selecionados. Tente ajustar os filtros ou volte mais tarde.
+            Não encontramos obras com os filtros selecionados. Tente ajustar os
+            filtros ou volte mais tarde.
           </p>
-          <SecondaryButton onClick={() => setCurrentFilters({ sortBy: 'createdAt', sortOrder: 'desc' })}>
+          <SecondaryButton
+            onClick={() =>
+              setCurrentFilters({ sortBy: "createdAt", sortOrder: "desc" })
+            }
+          >
             Limpar Filtros
           </SecondaryButton>
         </motion.div>
@@ -234,7 +257,7 @@ export default function Gallery() {
           {/* Load More Button */}
           {hasMore && (
             <div className="text-center">
-              <SecondaryButton 
+              <SecondaryButton
                 onClick={handleLoadMore}
                 disabled={loadingMore}
                 className="relative"
@@ -245,7 +268,7 @@ export default function Gallery() {
                     Carregando...
                   </>
                 ) : (
-                  'Carregar Mais Obras'
+                  "Carregar Mais Obras"
                 )}
               </SecondaryButton>
             </div>
@@ -258,8 +281,8 @@ export default function Gallery() {
             transition={{ delay: 0.5 }}
             className="text-center mt-8 text-sm text-brand-black/60 dark:text-brand-white/60"
           >
-            Mostrando {artworks.length} obra{artworks.length !== 1 ? 's' : ''} 
-            {Object.keys(currentFilters).length > 1 && ' com filtros aplicados'}
+            Mostrando {artworks.length} obra{artworks.length !== 1 ? "s" : ""}
+            {Object.keys(currentFilters).length > 1 && " com filtros aplicados"}
           </motion.div>
         </>
       )}

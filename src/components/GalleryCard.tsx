@@ -1,6 +1,6 @@
 /**
  * GalleryCard Component
- * 
+ *
  * Card component for displaying artworks in the public gallery
  * Similar to portfolio cards but includes owner information
  */
@@ -11,14 +11,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { 
-  Heart, 
-  Eye, 
-  Share2, 
-  Calendar, 
-  ExternalLink,
-  User
-} from "lucide-react";
+import { Heart, Eye, Share2, Calendar, ExternalLink, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { PublicArtworkWithOwner } from "@/services/publicGalleryService";
 import { useAuth } from "@/context/AuthContext";
@@ -30,11 +23,11 @@ interface GalleryCardProps {
   isLiked?: boolean;
 }
 
-export function GalleryCard({ 
-  artwork, 
-  onLike, 
-  onShare, 
-  isLiked = false 
+export function GalleryCard({
+  artwork,
+  onLike,
+  onShare,
+  isLiked = false,
 }: GalleryCardProps) {
   const { user } = useAuth();
   const [imageLoading, setImageLoading] = useState(true);
@@ -42,20 +35,22 @@ export function GalleryCard({
 
   // Generate artwork URL (slug-based if possible)
   const generateSlug = (title: string) => {
-    return title.toLowerCase()
-      .replace(/[^a-z0-9]/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '');
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
   };
 
-  const artworkUrl = artwork.owner?.username && artwork.title
-    ? `/artwork/${artwork.owner.username}-${generateSlug(artwork.title)}`
-    : `/artwork/${artwork.id}`;
+  const artworkUrl =
+    artwork.owner?.username && artwork.title
+      ? `/artwork/${artwork.owner.username}-${generateSlug(artwork.title)}`
+      : `/artwork/${artwork.id}`;
 
   // Generate owner profile URL
   const ownerProfileUrl = artwork.owner?.username
     ? `/${artwork.owner.username}`
-    : `/profile/${artwork.owner?.uid}`;
+    : `/${artwork.owner?.uid?.slice(0, 8) || 'unknown'}`;
 
   const handleLike = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -73,31 +68,38 @@ export function GalleryCard({
     }
   };
 
-  const formatDate = (date: Date | string | { toDate?: () => Date } | null | undefined) => {
+  const formatDate = (
+    date: Date | string | { toDate?: () => Date } | null | undefined
+  ) => {
     try {
-      if (!date) return 'Data não disponível';
-      
+      if (!date) return "Data não disponível";
+
       let dateObj: Date;
-      
-      if (typeof date === 'object' && date !== null && 'toDate' in date && typeof date.toDate === 'function') {
+
+      if (
+        typeof date === "object" &&
+        date !== null &&
+        "toDate" in date &&
+        typeof date.toDate === "function"
+      ) {
         // Firestore Timestamp
         dateObj = date.toDate();
-      } else if (typeof date === 'string') {
+      } else if (typeof date === "string") {
         dateObj = new Date(date);
       } else if (date instanceof Date) {
         dateObj = date;
       } else {
-        return 'Data não disponível';
+        return "Data não disponível";
       }
-      
+
       if (isNaN(dateObj.getTime())) {
-        return 'Data não disponível';
+        return "Data não disponível";
       }
-      
+
       return dateObj.getFullYear().toString();
     } catch (error) {
-      console.error('Error formatting date:', error);
-      return 'Data não disponível';
+      console.error("Error formatting date:", error);
+      return "Data não disponível";
     }
   };
 
@@ -113,11 +115,11 @@ export function GalleryCard({
         <div className="relative aspect-square overflow-hidden">
           {!imageError ? (
             <Image
-              src={artwork.images?.[0] || '/placeholder-artwork.jpg'}
+              src={artwork.images?.[0] || "/placeholder-artwork.jpg"}
               alt={artwork.title}
               fill
               className={`object-cover transition-all duration-500 group-hover:scale-110 ${
-                imageLoading ? 'blur-sm' : 'blur-0'
+                imageLoading ? "blur-sm" : "blur-0"
               }`}
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
               onLoad={() => setImageLoading(false)}
@@ -130,10 +132,10 @@ export function GalleryCard({
             <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 flex items-center justify-center">
               <div className="text-center text-gray-400 dark:text-gray-600">
                 <div className="w-16 h-16 mx-auto mb-2 bg-gray-300 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                  <Image 
-                    width={24} 
-                    height={24} 
-                    alt="No image" 
+                  <Image
+                    width={24}
+                    height={24}
+                    alt="No image"
                     src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'%3E%3Cpath stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z'/%3E%3C/svg%3E"
                   />
                 </div>
@@ -166,9 +168,7 @@ export function GalleryCard({
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     className={`p-2 rounded-full backdrop-blur-[10px] bg-white/20 border border-white/30 transition-colors cursor-pointer ${
-                      isLiked
-                        ? "text-red-500"
-                        : "text-white hover:text-red-400"
+                      isLiked ? "text-red-500" : "text-white hover:text-red-400"
                     }`}
                   >
                     <Heart
@@ -209,7 +209,7 @@ export function GalleryCard({
         <div className="p-5">
           {/* Owner Info */}
           <div className="flex items-center gap-3 mb-4">
-            <Link 
+            <Link
               href={ownerProfileUrl}
               className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity"
               onClick={(e) => e.stopPropagation()}
@@ -231,7 +231,7 @@ export function GalleryCard({
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-brand-black dark:text-brand-white truncate">
-                  {artwork.owner?.displayName || 'Artista Anônimo'}
+                  {artwork.owner?.displayName || "Artista Anônimo"}
                 </p>
                 {artwork.owner?.username && (
                   <p className="text-xs text-brand-black/60 dark:text-brand-white/60 truncate">
@@ -252,7 +252,9 @@ export function GalleryCard({
             {artwork.category && (
               <>
                 <span>{artwork.category}</span>
-                <span className="text-xs text-brand-black/40 dark:text-brand-white/40">•</span>
+                <span className="text-xs text-brand-black/40 dark:text-brand-white/40">
+                  •
+                </span>
               </>
             )}
             <Calendar className="w-3 h-3" />

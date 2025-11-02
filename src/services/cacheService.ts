@@ -1,6 +1,6 @@
 /**
  * Cache Service
- * 
+ *
  * Implements memory caching with TTL to reduce Firestore requests and costs
  * Provides throttling and debouncing for API requests
  */
@@ -21,7 +21,7 @@ class CacheService {
   private requestTimestamps = new Map<string, number>();
   private config: CacheConfig = {
     defaultTTL: 2 * 60 * 1000, // 2 minutes default
-    maxEntries: 100
+    maxEntries: 100,
   };
 
   /**
@@ -29,13 +29,13 @@ class CacheService {
    */
   get<T>(key: string): T | null {
     const entry = this.cache.get(key) as CacheEntry<T> | undefined;
-    
+
     if (!entry) {
       return null;
     }
 
     const now = Date.now();
-    
+
     // Check if cache entry is still valid
     if (now - entry.timestamp > entry.ttl) {
       this.cache.delete(key);
@@ -53,7 +53,7 @@ class CacheService {
     // Clean up old entries if cache is full
     if (this.cache.size >= this.config.maxEntries) {
       this.cleanupExpiredEntries();
-      
+
       // If still full, remove oldest entry
       if (this.cache.size >= this.config.maxEntries) {
         const oldestKey = this.cache.keys().next().value as string;
@@ -66,7 +66,7 @@ class CacheService {
     const entry: CacheEntry<T> = {
       data,
       timestamp: Date.now(),
-      ttl: ttl || this.config.defaultTTL
+      ttl: ttl || this.config.defaultTTL,
     };
 
     this.cache.set(key, entry as CacheEntry<unknown>);
@@ -87,7 +87,7 @@ class CacheService {
   clear(): void {
     this.cache.clear();
     this.requestTimestamps.clear();
-    console.log('💾 Cache CLEARED');
+    console.log("💾 Cache CLEARED");
   }
 
   /**
@@ -103,8 +103,8 @@ class CacheService {
       }
     }
 
-    expiredKeys.forEach(key => this.cache.delete(key));
-    
+    expiredKeys.forEach((key) => this.cache.delete(key));
+
     if (expiredKeys.length > 0) {
       console.log(`💾 Cache cleaned up ${expiredKeys.length} expired entries`);
     }
@@ -124,9 +124,11 @@ class CacheService {
     }
 
     const timeSinceLastRequest = now - lastRequestTime;
-    
+
     if (timeSinceLastRequest < minInterval) {
-      console.log(`🚫 Request THROTTLED for key: ${key}, ${timeSinceLastRequest}ms since last request`);
+      console.log(
+        `🚫 Request THROTTLED for key: ${key}, ${timeSinceLastRequest}ms since last request`
+      );
       return true;
     }
 
@@ -142,7 +144,7 @@ class CacheService {
     delay: number
   ): (...args: TArgs) => void {
     let timeoutId: NodeJS.Timeout;
-    
+
     return (...args: TArgs) => {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => func(...args), delay);
@@ -169,7 +171,7 @@ class CacheService {
       totalEntries: this.cache.size,
       validEntries,
       expiredEntries,
-      requestTimestamps: this.requestTimestamps.size
+      requestTimestamps: this.requestTimestamps.size,
     };
   }
 }

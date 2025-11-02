@@ -1,11 +1,21 @@
 /**
  * Public Gallery Service
- * 
+ *
  * Service for fetching public artworks from all users for the main gallery page
  * Includes filtering, pagination, search functionality, and caching
  */
 
-import { collection, query, where, orderBy, limit, startAfter, getDocs, DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  limit,
+  startAfter,
+  getDocs,
+  DocumentData,
+  QueryDocumentSnapshot,
+} from "firebase/firestore";
 import { getClientFirestore } from "@/lib/firebase";
 import { Artwork } from "@/types/artwork";
 import { cacheService } from "./cacheService";
@@ -24,8 +34,8 @@ export interface PublicArtworkWithOwner extends Artwork {
 export interface GalleryFilters {
   tags?: string[];
   category?: string;
-  sortBy?: 'createdAt' | 'views' | 'likes' | 'title';
-  sortOrder?: 'asc' | 'desc';
+  sortBy?: "createdAt" | "views" | "likes" | "title";
+  sortOrder?: "asc" | "desc";
 }
 
 export interface GalleryResponse {
@@ -50,8 +60,10 @@ class PublicGalleryService {
     lastDocument?: QueryDocumentSnapshot<DocumentData>
   ): Promise<GalleryResponse> {
     // Create cache key based on filters and pagination
-    const cacheKey = `artworks_${JSON.stringify(filters)}_${lastDocument?.id || 'initial'}`;
-    
+    const cacheKey = `artworks_${JSON.stringify(filters)}_${
+      lastDocument?.id || "initial"
+    }`;
+
     // Check cache first
     const cachedResult = cacheService.get<GalleryResponse>(cacheKey);
     if (cachedResult) {
@@ -59,18 +71,27 @@ class PublicGalleryService {
     }
 
     // Check throttling
-    if (cacheService.shouldThrottleRequest(`artworks_${JSON.stringify(filters)}`, this.MIN_REQUEST_INTERVAL)) {
+    if (
+      cacheService.shouldThrottleRequest(
+        `artworks_${JSON.stringify(filters)}`,
+        this.MIN_REQUEST_INTERVAL
+      )
+    ) {
       // Return cached data from a similar query if available
-      const fallbackKey = `artworks_${JSON.stringify({ ...filters, sortBy: 'createdAt', sortOrder: 'desc' })}_initial`;
+      const fallbackKey = `artworks_${JSON.stringify({
+        ...filters,
+        sortBy: "createdAt",
+        sortOrder: "desc",
+      })}_initial`;
       const fallback = cacheService.get<GalleryResponse>(fallbackKey);
       if (fallback) {
-        console.log('🔄 Using fallback cache data due to throttling');
+        console.log("🔄 Using fallback cache data due to throttling");
         return fallback;
       }
     }
 
     try {
-      console.log('🎨 Fetching public artworks with filters:', filters);
+      console.log("🎨 Fetching public artworks with filters:", filters);
 
       // Build the base query - only public artworks
       let artworksQuery = query(
@@ -79,7 +100,7 @@ class PublicGalleryService {
       );
 
       // Add category filter if specified
-      if (filters.category && filters.category !== 'Todos') {
+      if (filters.category && filters.category !== "Todos") {
         artworksQuery = query(
           artworksQuery,
           where("category", "==", filters.category)
@@ -95,12 +116,9 @@ class PublicGalleryService {
       }
 
       // Add sorting
-      const sortField = filters.sortBy || 'createdAt';
-      const sortDirection = filters.sortOrder || 'desc';
-      artworksQuery = query(
-        artworksQuery,
-        orderBy(sortField, sortDirection)
-      );
+      const sortField = filters.sortBy || "createdAt";
+      const sortDirection = filters.sortOrder || "desc";
+      artworksQuery = query(artworksQuery, orderBy(sortField, sortDirection));
 
       // Add pagination
       if (lastDocument) {
@@ -121,35 +139,35 @@ class PublicGalleryService {
       const artworksWithOwners = await Promise.all(
         artworkDocs.map(async (doc) => {
           const artworkData = { id: doc.id, ...doc.data() } as Artwork;
-          
+
           // Fetch owner info from publicProfiles with caching
           const ownerInfo = await this.getArtworkOwnerInfo(artworkData.userId);
-          
+
           return {
             ...artworkData,
-            owner: ownerInfo
+            owner: ownerInfo,
           } as PublicArtworkWithOwner;
         })
       );
 
-      const lastDoc = hasMore && artworkDocs.length > 0 
-        ? artworkDocs[artworkDocs.length - 1] 
-        : undefined;
+      const lastDoc =
+        hasMore && artworkDocs.length > 0
+          ? artworkDocs[artworkDocs.length - 1]
+          : undefined;
 
       const result: GalleryResponse = {
         artworks: artworksWithOwners,
         lastDoc,
-        hasMore
+        hasMore,
       };
 
       // Cache the result
       cacheService.set(cacheKey, result, this.CACHE_TTL_ARTWORKS);
 
       return result;
-
     } catch (error) {
-      console.error('❌ Error fetching public artworks:', error);
-      throw new Error('Failed to fetch gallery artworks');
+      console.error("❌ Error fetching public artworks:", error);
+      throw new Error("Failed to fetch gallery artworks");
     }
   }
 
@@ -169,38 +187,37 @@ class PublicGalleryService {
         collection(db, "publicProfiles"),
         where("uid", "==", userId)
       );
-      
+
       const ownerSnapshot = await getDocs(ownerQuery);
-      
+
       let ownerInfo;
       if (!ownerSnapshot.empty) {
         const ownerData = ownerSnapshot.docs[0].data();
         ownerInfo = {
           uid: ownerData.uid,
-          displayName: ownerData.displayName || 'Artista Anônimo',
+          displayName: ownerData.displayName || "Artista Anônimo",
           username: ownerData.username,
-          photoURL: ownerData.photoURL
+          photoURL: ownerData.photoURL,
         };
       } else {
         ownerInfo = {
           uid: userId,
-          displayName: 'Artista Anônimo',
+          displayName: "Artista Anônimo",
           username: undefined,
-          photoURL: undefined
+          photoURL: undefined,
         };
       }
 
       // Cache owner info for longer since it changes less frequently
       cacheService.set(cacheKey, ownerInfo, this.CACHE_TTL_METADATA);
       return ownerInfo;
-
     } catch (error) {
-      console.error('❌ Error fetching owner info for user:', userId, error);
+      console.error("❌ Error fetching owner info for user:", userId, error);
       return {
         uid: userId,
-        displayName: 'Artista Anônimo',
+        displayName: "Artista Anônimo",
         username: undefined,
-        photoURL: undefined
+        photoURL: undefined,
       };
     }
   }
@@ -209,8 +226,8 @@ class PublicGalleryService {
    * Get all unique tags from public artworks for filtering
    */
   async getAvailableTags(): Promise<string[]> {
-    const cacheKey = 'available_tags';
-    
+    const cacheKey = "available_tags";
+
     // Check cache first
     const cachedTags = cacheService.get<string[]>(cacheKey);
     if (cachedTags) {
@@ -218,13 +235,13 @@ class PublicGalleryService {
     }
 
     // Check throttling for metadata requests
-    if (cacheService.shouldThrottleRequest('metadata_tags', 2000)) {
-      console.log('🚫 Tags request throttled, returning empty array');
+    if (cacheService.shouldThrottleRequest("metadata_tags", 2000)) {
+      console.log("🚫 Tags request throttled, returning empty array");
       return [];
     }
 
     try {
-      console.log('🏷️ Fetching available tags from public artworks');
+      console.log("🏷️ Fetching available tags from public artworks");
 
       const artworksQuery = query(
         collection(db, "artworks"),
@@ -253,7 +270,7 @@ class PublicGalleryService {
 
       return uniqueTags;
     } catch (error) {
-      console.error('❌ Error fetching available tags:', error);
+      console.error("❌ Error fetching available tags:", error);
       return [];
     }
   }
@@ -261,23 +278,26 @@ class PublicGalleryService {
   /**
    * Get categories with counts for filtering
    */
-  async getAvailableCategories(): Promise<{ category: string; count: number }[]> {
-    const cacheKey = 'available_categories';
-    
+  async getAvailableCategories(): Promise<
+    { category: string; count: number }[]
+  > {
+    const cacheKey = "available_categories";
+
     // Check cache first
-    const cachedCategories = cacheService.get<{ category: string; count: number }[]>(cacheKey);
+    const cachedCategories =
+      cacheService.get<{ category: string; count: number }[]>(cacheKey);
     if (cachedCategories) {
       return cachedCategories;
     }
 
     // Check throttling for metadata requests
-    if (cacheService.shouldThrottleRequest('metadata_categories', 2000)) {
-      console.log('🚫 Categories request throttled, returning empty array');
+    if (cacheService.shouldThrottleRequest("metadata_categories", 2000)) {
+      console.log("🚫 Categories request throttled, returning empty array");
       return [];
     }
 
     try {
-      console.log('📂 Fetching available categories from public artworks');
+      console.log("📂 Fetching available categories from public artworks");
 
       const artworksQuery = query(
         collection(db, "artworks"),
@@ -300,13 +320,13 @@ class PublicGalleryService {
         .sort((a, b) => b.count - a.count);
 
       console.log(`📊 Found ${categories.length} categories`);
-      
+
       // Cache for longer since categories don't change frequently
       cacheService.set(cacheKey, categories, this.CACHE_TTL_METADATA);
-      
+
       return categories;
     } catch (error) {
-      console.error('❌ Error fetching available categories:', error);
+      console.error("❌ Error fetching available categories:", error);
       return [];
     }
   }
@@ -320,12 +340,12 @@ class PublicGalleryService {
     lastDocument?: QueryDocumentSnapshot<DocumentData>
   ): Promise<GalleryResponse> {
     try {
-      console.log('🔍 Searching artworks for term:', searchTerm);
+      console.log("🔍 Searching artworks for term:", searchTerm);
 
       // For now, we'll fetch all public artworks and filter client-side
       // In production, you might want to use Algolia or another search service
       const response = await this.getPublicArtworks(filters, lastDocument);
-      
+
       if (!searchTerm.trim()) {
         return response;
       }
@@ -335,7 +355,9 @@ class PublicGalleryService {
         return (
           artwork.title?.toLowerCase().includes(searchTermLower) ||
           artwork.description?.toLowerCase().includes(searchTermLower) ||
-          artwork.tags?.some(tag => tag.toLowerCase().includes(searchTermLower)) ||
+          artwork.tags?.some((tag) =>
+            tag.toLowerCase().includes(searchTermLower)
+          ) ||
           artwork.owner?.displayName?.toLowerCase().includes(searchTermLower) ||
           artwork.owner?.username?.toLowerCase().includes(searchTermLower)
         );
@@ -343,11 +365,11 @@ class PublicGalleryService {
 
       return {
         ...response,
-        artworks: filteredArtworks
+        artworks: filteredArtworks,
       };
     } catch (error) {
-      console.error('❌ Error searching artworks:', error);
-      throw new Error('Failed to search artworks');
+      console.error("❌ Error searching artworks:", error);
+      throw new Error("Failed to search artworks");
     }
   }
 }

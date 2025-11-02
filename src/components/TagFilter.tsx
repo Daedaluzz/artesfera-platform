@@ -1,6 +1,6 @@
 /**
  * Dynamic Tag Filter Component
- * 
+ *
  * Advanced filtering component for the public gallery that works with user-generated tags
  */
 
@@ -10,7 +10,10 @@ import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, X, Filter, Tag, ChevronDown, ChevronUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { publicGalleryService, GalleryFilters } from "@/services/publicGalleryService";
+import {
+  publicGalleryService,
+  GalleryFilters,
+} from "@/services/publicGalleryService";
 
 interface TagFilterProps {
   onFiltersChange: (filters: GalleryFilters) => void;
@@ -19,12 +22,22 @@ interface TagFilterProps {
 
 export function TagFilter({ onFiltersChange, currentFilters }: TagFilterProps) {
   const [availableTags, setAvailableTags] = useState<string[]>([]);
-  const [availableCategories, setAvailableCategories] = useState<{ category: string; count: number }[]>([]);
+  const [availableCategories, setAvailableCategories] = useState<
+    { category: string; count: number }[]
+  >([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedTags, setSelectedTags] = useState<string[]>(currentFilters.tags || []);
-  const [selectedCategory, setSelectedCategory] = useState<string>(currentFilters.category || "Todos");
-  const [sortBy, setSortBy] = useState<'createdAt' | 'views' | 'likes' | 'title'>(currentFilters.sortBy || "createdAt");
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>(currentFilters.sortOrder || "desc");
+  const [selectedTags, setSelectedTags] = useState<string[]>(
+    currentFilters.tags || []
+  );
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    currentFilters.category || "Todos"
+  );
+  const [sortBy, setSortBy] = useState<
+    "createdAt" | "views" | "likes" | "title"
+  >(currentFilters.sortBy || "createdAt");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">(
+    currentFilters.sortOrder || "desc"
+  );
   const [showAllTags, setShowAllTags] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -38,15 +51,15 @@ export function TagFilter({ onFiltersChange, currentFilters }: TagFilterProps) {
         setLoading(true);
         const [tags, categories] = await Promise.all([
           publicGalleryService.getAvailableTags(),
-          publicGalleryService.getAvailableCategories()
+          publicGalleryService.getAvailableCategories(),
         ]);
-        
+
         if (mounted) {
           setAvailableTags(tags);
           setAvailableCategories(categories);
         }
       } catch (error) {
-        console.error('Error loading filter data:', error);
+        console.error("Error loading filter data:", error);
       } finally {
         if (mounted) {
           setLoading(false);
@@ -62,7 +75,7 @@ export function TagFilter({ onFiltersChange, currentFilters }: TagFilterProps) {
   }, []); // Empty dependency array - only load once
 
   // Filter tags based on search term
-  const filteredTags = availableTags.filter(tag =>
+  const filteredTags = availableTags.filter((tag) =>
     tag.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -76,7 +89,7 @@ export function TagFilter({ onFiltersChange, currentFilters }: TagFilterProps) {
         tags: selectedTags.length > 0 ? selectedTags : undefined,
         category: selectedCategory !== "Todos" ? selectedCategory : undefined,
         sortBy: sortBy,
-        sortOrder: sortOrder
+        sortOrder: sortOrder,
       };
 
       onFiltersChange(newFilters);
@@ -86,10 +99,8 @@ export function TagFilter({ onFiltersChange, currentFilters }: TagFilterProps) {
   }, [selectedTags, selectedCategory, sortBy, sortOrder, onFiltersChange]);
 
   const handleTagToggle = useCallback((tag: string) => {
-    setSelectedTags(prev => 
-      prev.includes(tag) 
-        ? prev.filter(t => t !== tag)
-        : [...prev, tag]
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
     );
   }, []);
 
@@ -105,16 +116,23 @@ export function TagFilter({ onFiltersChange, currentFilters }: TagFilterProps) {
     setSearchTerm("");
   }, []);
 
-  const hasActiveFilters = selectedTags.length > 0 || selectedCategory !== "Todos" || 
-                         sortBy !== "createdAt" || sortOrder !== "desc";
+  const hasActiveFilters =
+    selectedTags.length > 0 ||
+    selectedCategory !== "Todos" ||
+    sortBy !== "createdAt" ||
+    sortOrder !== "desc";
 
-  const sortOptions: { value: 'createdAt' | 'views' | 'likes' | 'title'; label: string; order: 'asc' | 'desc' }[] = [
+  const sortOptions: {
+    value: "createdAt" | "views" | "likes" | "title";
+    label: string;
+    order: "asc" | "desc";
+  }[] = [
     { value: "createdAt", label: "Mais Recentes", order: "desc" },
     { value: "createdAt", label: "Mais Antigos", order: "asc" },
     { value: "title", label: "A-Z", order: "asc" },
     { value: "title", label: "Z-A", order: "desc" },
     { value: "views", label: "Mais Visualizados", order: "desc" },
-    { value: "likes", label: "Mais Curtidos", order: "desc" }
+    { value: "likes", label: "Mais Curtidos", order: "desc" },
   ];
 
   return (
@@ -125,7 +143,6 @@ export function TagFilter({ onFiltersChange, currentFilters }: TagFilterProps) {
       className="mb-8"
     >
       <div className="relative rounded-[20px] backdrop-blur-[15px] bg-white/[0.2] dark:bg-black/20 border border-white/[0.3] dark:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.5),inset_0_-1px_0_rgba(255,255,255,0.1),inset_0_0_20px_10px_rgba(255,255,255,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-1px_0_rgba(255,255,255,0.05),inset_0_0_20px_10px_rgba(255,255,255,0.04)]">
-        
         {/* Filter Header */}
         <div className="p-6 border-b border-white/20 dark:border-white/10">
           <div className="flex items-center justify-between">
@@ -136,7 +153,8 @@ export function TagFilter({ onFiltersChange, currentFilters }: TagFilterProps) {
               </h3>
               {hasActiveFilters && (
                 <Badge className="bg-brand-navy-blue/20 dark:bg-brand-yellow/20 text-brand-navy-blue dark:text-brand-yellow border-0">
-                  {selectedTags.length + (selectedCategory !== "Todos" ? 1 : 0)} filtros ativos
+                  {selectedTags.length + (selectedCategory !== "Todos" ? 1 : 0)}{" "}
+                  filtros ativos
                 </Badge>
               )}
             </div>
@@ -178,7 +196,6 @@ export function TagFilter({ onFiltersChange, currentFilters }: TagFilterProps) {
               className="overflow-hidden"
             >
               <div className="p-6 space-y-6">
-                
                 {/* Categories */}
                 <div>
                   <h4 className="text-sm font-semibold text-brand-black dark:text-brand-white mb-3 flex items-center gap-2">
@@ -253,7 +270,7 @@ export function TagFilter({ onFiltersChange, currentFilters }: TagFilterProps) {
                       </button>
                     )}
                   </div>
-                  
+
                   {loading ? (
                     <div className="flex flex-wrap gap-2">
                       {Array.from({ length: 12 }).map((_, i) => (
@@ -338,7 +355,6 @@ export function TagFilter({ onFiltersChange, currentFilters }: TagFilterProps) {
                     ))}
                   </div>
                 </div>
-
               </div>
             </motion.div>
           )}
