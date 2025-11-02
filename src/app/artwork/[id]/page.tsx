@@ -23,7 +23,15 @@ import { PrimaryButton } from "@/components/ui/primary-button";
 import { SecondaryButton } from "@/components/ui/secondary-button";
 import { Artwork } from "@/types/artwork";
 import artworkService, { youtubeUtils } from "@/services/artworkService";
-import { doc, getDoc, query, collection, where, getDocs, limit } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  query,
+  collection,
+  where,
+  getDocs,
+  limit,
+} from "firebase/firestore";
 import { getClientFirestore } from "@/lib/firebase";
 
 const db = getClientFirestore();
@@ -45,18 +53,20 @@ function createArtworkSlug(username: string, title: string): string {
     .replace(/[^a-z0-9\s]/g, "") // Remove special characters
     .replace(/\s+/g, "-") // Replace spaces with hyphens
     .trim();
-  
+
   return `${username}-${cleanTitle}`;
 }
 
 // Utility function to parse slug back to username and title
-function parseArtworkSlug(slug: string): { username: string; titleSlug: string } | null {
+function parseArtworkSlug(
+  slug: string
+): { username: string; titleSlug: string } | null {
   const parts = slug.split("-");
   if (parts.length < 2) return null;
-  
+
   const username = parts[0];
   const titleSlug = parts.slice(1).join("-");
-  
+
   return { username, titleSlug };
 }
 
@@ -87,7 +97,7 @@ export default function ArtworkDetailPage() {
 
         // First try to parse as slug (username-title format)
         const parsedSlug = parseArtworkSlug(slug);
-        
+
         if (parsedSlug) {
           // Handle slug-based lookup
           const { username } = parsedSlug;
@@ -121,7 +131,7 @@ export default function ArtworkDetailPage() {
           for (const doc of artworksSnapshot.docs) {
             const artworkData = { id: doc.id, ...doc.data() } as Artwork;
             const artworkSlug = createArtworkSlug(username, artworkData.title);
-            
+
             if (artworkSlug === slug) {
               foundArtwork = artworkData;
               break;
@@ -171,7 +181,6 @@ export default function ArtworkDetailPage() {
             setCreator(creatorSnap.data() as ArtworkCreator);
           }
         }
-
       } catch (err) {
         console.error("Error fetching artwork:", err);
         setError("Erro ao carregar obra");
@@ -496,20 +505,32 @@ export default function ArtworkDetailPage() {
               <div className="flex items-center gap-4 text-sm text-brand-black/70 dark:text-brand-white/70">
                 <span className="flex items-center gap-1">
                   <Calendar className="w-4 h-4" />
-                  {artwork.createdAt ? (() => {
-                    try {
-                      const dateValue = artwork.createdAt;
-                      if (typeof dateValue === 'string') {
-                        return new Date(dateValue).toLocaleDateString("pt-BR");
-                      } else if (dateValue && typeof dateValue === 'object' && 'toDate' in dateValue) {
-                        return new Date((dateValue as { toDate(): Date }).toDate()).toLocaleDateString("pt-BR");
-                      } else {
-                        return new Date(dateValue).toLocaleDateString("pt-BR");
-                      }
-                    } catch {
-                      return 'Data não disponível';
-                    }
-                  })() : 'Data não disponível'}
+                  {artwork.createdAt
+                    ? (() => {
+                        try {
+                          const dateValue = artwork.createdAt;
+                          if (typeof dateValue === "string") {
+                            return new Date(dateValue).toLocaleDateString(
+                              "pt-BR"
+                            );
+                          } else if (
+                            dateValue &&
+                            typeof dateValue === "object" &&
+                            "toDate" in dateValue
+                          ) {
+                            return new Date(
+                              (dateValue as { toDate(): Date }).toDate()
+                            ).toLocaleDateString("pt-BR");
+                          } else {
+                            return new Date(dateValue).toLocaleDateString(
+                              "pt-BR"
+                            );
+                          }
+                        } catch {
+                          return "Data não disponível";
+                        }
+                      })()
+                    : "Data não disponível"}
                 </span>
               </div>
             </div>
