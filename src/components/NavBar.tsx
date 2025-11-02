@@ -108,7 +108,7 @@ export default function NavBar() {
                     </NavigationMenuItem>
                   );
                 })}
-                
+
                 {/* Dashboard link - only show when authenticated */}
                 {user && (
                   <NavigationMenuItem className="h-full">
@@ -128,7 +128,9 @@ export default function NavBar() {
                             : "text-brand-black dark:text-brand-white",
                           "text-shadow-[0_0_15px_rgba(255,255,255,0.4),0_2px_6px_rgba(0,0,0,0.15),0_0_30px_rgba(255,255,255,0.2)] dark:text-shadow-[0_0_20px_rgba(255,255,255,0.3),0_2px_10px_rgba(0,0,0,0.6),0_0_40px_rgba(255,255,255,0.15)]"
                         )}
-                        aria-current={pathname === "/dashboard" ? "page" : undefined}
+                        aria-current={
+                          pathname === "/dashboard" ? "page" : undefined
+                        }
                       >
                         <span className="relative z-10">Dashboard</span>
                       </Link>
@@ -250,7 +252,7 @@ export default function NavBar() {
                     </Link>
                   );
                 })}
-                
+
                 {/* Dashboard link - only show when authenticated */}
                 {user && (
                   <Link
