@@ -6,6 +6,8 @@ These security rules provide comprehensive access control for the ArtEsfera plat
 
 ## Complete Rules Configuration
 
+Copy the rules from `storage.rules` file in the project root, or use the configuration below:
+
 ```javascript
 rules_version = '2';
 

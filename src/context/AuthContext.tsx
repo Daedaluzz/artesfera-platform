@@ -297,7 +297,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       await firebaseSignOut(auth);
       setUser(null);
       setUserDocument(null);
-      
+
       // Redirect to home page after logout to prevent permission errors
       if (typeof window !== "undefined") {
         window.location.href = "/";
@@ -321,7 +321,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (userSnap.exists()) {
         const userData = userSnap.data();
-        
+
         // Extract only public fields
         const publicProfileData = {
           uid: userData.uid,
@@ -338,7 +338,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // Store in public profiles collection
         const publicProfileRef = doc(db, "publicProfiles", userId);
         await setDoc(publicProfileRef, publicProfileData, { merge: true });
-        
+
         console.log("✅ Public profile synced successfully");
       }
     } catch (error) {

@@ -13,12 +13,14 @@ This document describes the updated profile system architecture that enables bot
 **Security Rule**: `allow read, write: if isOwner(userId);`
 
 **Contains**:
+
 - Complete user profile including sensitive information
 - Email address and phone number
 - Private settings and preferences
 - Full edit history and metadata
 
 **Use Cases**:
+
 - User viewing/editing their own profile
 - System operations requiring full user data
 - Private profile management
@@ -27,7 +29,8 @@ This document describes the updated profile system architecture that enables bot
 
 **Purpose**: Curated subset of user information for public viewing
 **Access**: All authenticated users can read, only owner can write
-**Security Rule**: 
+**Security Rule**:
+
 ```javascript
 match /publicProfiles/{userId} {
   allow read: if isAuthenticated();
@@ -36,6 +39,7 @@ match /publicProfiles/{userId} {
 ```
 
 **Contains**:
+
 - `uid`: User identifier
 - `name`: Display name
 - `artisticName`: Artist handle/username
@@ -47,6 +51,7 @@ match /publicProfiles/{userId} {
 - `updatedAt`: Last sync timestamp
 
 **Use Cases**:
+
 - Other users viewing public profiles
 - Artist discovery and networking
 - Profile sharing via direct links
@@ -90,6 +95,7 @@ const syncPublicProfile = async (userId: string): Promise<void> => {
 **Component**: `ProfileExhibition.tsx`
 **Data Source**: Private user document (`/users/{userId}`)
 **Features**:
+
 - Complete profile information display
 - Edit button and profile management
 - Private contact information (email, phone)
@@ -101,6 +107,7 @@ const syncPublicProfile = async (userId: string): Promise<void> => {
 **Component**: `/profile/[userId]/page.tsx`
 **Data Source**: Public profile document (`/publicProfiles/{userId}`)
 **Features**:
+
 - Public information only
 - Social links and portfolio access
 - No private contact information
@@ -109,18 +116,21 @@ const syncPublicProfile = async (userId: string): Promise<void> => {
 ## 🔐 Security Features
 
 ### **Privacy Protection**
+
 - ✅ Sensitive data (email, phone) never exposed in public profiles
 - ✅ Users control what information becomes public
 - ✅ Private profiles require ownership verification
 - ✅ Public profiles only show curated, safe information
 
 ### **Access Control**
+
 - ✅ Authentication required for all profile viewing
 - ✅ Ownership verification for profile editing
 - ✅ Automatic logout redirect prevents permission errors
 - ✅ Cross-collection consistency between private and public data
 
 ### **Data Integrity**
+
 - ✅ Public profiles auto-sync with private data changes
 - ✅ Merge operations prevent data overwriting
 - ✅ Timestamp tracking for sync operations
@@ -133,12 +143,13 @@ const syncPublicProfile = async (userId: string): Promise<void> => {
 **Problem**: Users clicking "Sair" (logout) while on profile page experienced infinite loading due to permission-denied errors.
 
 **Solution**: Enhanced `signOut()` function with automatic redirect:
+
 ```typescript
 const signOut = async (): Promise<void> => {
   await firebaseSignOut(auth);
   setUser(null);
   setUserDocument(null);
-  
+
   // Redirect to home page after logout to prevent permission errors
   if (typeof window !== "undefined") {
     window.location.href = "/";
@@ -149,11 +160,13 @@ const signOut = async (): Promise<void> => {
 ### **Profile Component Enhancement**
 
 **Authentication Handling**:
+
 - Proper loading states during authentication
 - Automatic redirect to login for unauthenticated users
 - Error handling for permission issues
 
 **Route Structure**:
+
 - `/profile` - Own profile (private data)
 - `/profile/[userId]` - Public profile view (public data only)
 - `/profile/edit` - Profile editing (private data + sync)
@@ -161,6 +174,7 @@ const signOut = async (): Promise<void> => {
 ### **Firebase Rules Updates**
 
 **Added Public Profile Collection**:
+
 ```javascript
 // Public user profile information
 match /publicProfiles/{userId} {
@@ -170,6 +184,7 @@ match /publicProfiles/{userId} {
 ```
 
 **Enhanced User Collection**:
+
 ```javascript
 // Private user data - only owner access
 match /users/{userId} {
@@ -180,18 +195,21 @@ match /users/{userId} {
 ## 📱 User Experience
 
 ### **Public Profile Discovery**
+
 1. Users can share profile links: `artesfera.com/profile/[userId]`
 2. Other authenticated users can view public profiles
 3. Profile displays artistic name, bio, location, interests, and social links
 4. Clean, social media-style interface for easy browsing
 
 ### **Privacy-First Design**
+
 1. Email and phone numbers never appear in public profiles
 2. Users control public information through their private profile edits
 3. Automatic sync ensures public profiles stay current
 4. Clear visual distinction between own profile and public profile views
 
 ### **Seamless Navigation**
+
 1. Logout from any profile page safely redirects to home
 2. Edit buttons only appear on own profile
 3. Back navigation for public profile viewing
@@ -200,12 +218,14 @@ match /users/{userId} {
 ## 🔄 Migration Path
 
 ### **Existing Users**
+
 - Private profiles in `/users/{userId}` remain unchanged
 - Public profiles will be created on next profile edit
 - No data loss or breaking changes
 - Gradual rollout of public profile features
 
 ### **New Users**
+
 - Both private and public profiles created on registration
 - Automatic sync enabled from first profile completion
 - Full feature access immediately available
@@ -213,11 +233,13 @@ match /users/{userId} {
 ## 🛠️ Maintenance
 
 ### **Monitoring**
+
 - Track sync operation success rates
 - Monitor public profile access patterns
 - Watch for permission errors or security issues
 
 ### **Updates**
+
 - Public profile fields can be adjusted by updating sync function
 - Security rules can be refined based on usage patterns
 - New social features can leverage existing public profile structure

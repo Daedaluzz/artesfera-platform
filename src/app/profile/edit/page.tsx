@@ -129,7 +129,12 @@ const compressImage = (
 };
 
 export default function ProfileEdit() {
-  const { user, userDocument, loading: authLoading, syncPublicProfile } = useAuth();
+  const {
+    user,
+    userDocument,
+    loading: authLoading,
+    syncPublicProfile,
+  } = useAuth();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 

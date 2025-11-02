@@ -58,8 +58,10 @@ export default function UserProfilePage() {
   const params = useParams();
   const router = useRouter();
   const userId = params?.userId as string;
-  
-  const [profileData, setProfileData] = useState<PublicUserProfile | ExtendedUserDocument | null>(null);
+
+  const [profileData, setProfileData] = useState<
+    PublicUserProfile | ExtendedUserDocument | null
+  >(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -149,9 +151,7 @@ export default function UserProfilePage() {
           <h3 className="text-xl font-semibold text-brand-black dark:text-brand-white mb-2">
             {error}
           </h3>
-          <PrimaryButton onClick={() => router.back()}>
-            Voltar
-          </PrimaryButton>
+          <PrimaryButton onClick={() => router.back()}>Voltar</PrimaryButton>
         </motion.div>
       </div>
     );
