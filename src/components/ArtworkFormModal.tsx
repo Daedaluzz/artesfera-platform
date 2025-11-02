@@ -319,39 +319,34 @@ export const ArtworkFormModal: React.FC<ArtworkFormModalProps> = ({
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className="relative w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col"
+          className="relative w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] bg-white/[0.15] dark:bg-brand-black/15 backdrop-blur-[15px] border border-white/[0.25] dark:border-brand-navy-500/30 rounded-2xl overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="relative backdrop-blur-[15px] bg-white/[0.15] dark:bg-brand-black/15 border border-white/[0.25] dark:border-brand-navy-500/30 rounded-2xl flex flex-col h-full">
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-white/[0.2] dark:border-white/[0.1] flex-shrink-0"
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 sm:p-6 border-b border-white/[0.2] dark:border-white/[0.1] bg-white/[0.05] dark:bg-black/5">
+            <h2 className="text-lg sm:text-xl font-semibold text-brand-black dark:text-brand-white">
+              {artwork ? "Editar Obra" : "Adicionar Nova Obra"}
+            </h2>
+            <button
+              onClick={onClose}
+              className="p-2 rounded-lg hover:bg-white/[0.1] dark:hover:bg-black/10 transition-colors duration-200"
             >
-              <h2 className="text-lg sm:text-xl font-semibold text-brand-black dark:text-brand-white">
-                {artwork ? "Editar Obra" : "Adicionar Nova Obra"}
-              </h2>
-              <button
-                onClick={onClose}
-                className="p-2 rounded-lg hover:bg-white/[0.1] dark:hover:bg-black/10 transition-colors duration-200"
-              >
-                <X className="w-5 h-5 text-brand-black dark:text-brand-white" />
-              </button>
-            </div>
+              <X className="w-5 h-5 text-brand-black dark:text-brand-white" />
+            </button>
+          </div>
 
-            {/* Form - Scrollable Content */}
-            <form
-              onSubmit={handleSubmit}
-              className="flex-1 overflow-hidden flex flex-col"
-            >
-              <div className="p-4 sm:p-6 space-y-6 overflow-y-auto flex-1">
-                {/* General Error */}
-                {errors.general && (
-                  <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
-                    <span className="text-red-600 dark:text-red-400 text-sm">
-                      {errors.general}
-                    </span>
-                  </div>
-                )}
+          {/* Scrollable Form Content */}
+          <div className="overflow-y-auto max-h-[calc(95vh-140px)] sm:max-h-[calc(90vh-140px)]">
+            <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-6" id="artwork-form">
+              {/* General Error */}
+              {errors.general && (
+                <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
+                  <span className="text-red-600 dark:text-red-400 text-sm">
+                    {errors.general}
+                  </span>
+                </div>
+              )}
 
               {/* Title */}
               <div>
@@ -627,41 +622,46 @@ export const ArtworkFormModal: React.FC<ArtworkFormModalProps> = ({
                   </span>
                 </label>
               </div>
-              </div>
-
-              {/* Footer - Fixed at bottom */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 sm:p-6 border-t border-white/[0.2] dark:border-white/[0.1] flex-shrink-0">
-                <SecondaryButton
-                  type="button"
-                  onClick={onClose}
-                  disabled={isSubmitting}
-                  fullWidth
-                  className="sm:w-auto"
-                >
-                  Cancelar
-                </SecondaryButton>
-
-                <PrimaryButton
-                  type="submit"
-                  disabled={isSubmitting}
-                  fullWidth
-                  className="sm:w-auto"
-                  leftIcon={
-                    isSubmitting ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : undefined
-                  }
-                >
-                  {isSubmitting
-                    ? artwork
-                      ? "Salvando..."
-                      : "Criando..."
-                    : artwork
-                    ? "Salvar Alterações"
-                    : "Criar Obra"}
-                </PrimaryButton>
-              </div>
             </form>
+          </div>
+
+          {/* Fixed Footer */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 sm:p-6 border-t border-white/[0.2] dark:border-white/[0.1] bg-white/[0.05] dark:bg-black/5">
+            <SecondaryButton
+              type="button"
+              onClick={onClose}
+              disabled={isSubmitting}
+              fullWidth
+              className="sm:w-auto"
+            >
+              Cancelar
+            </SecondaryButton>
+
+            <PrimaryButton
+              type="button"
+              onClick={() => {
+                const form = document.getElementById('artwork-form') as HTMLFormElement;
+                if (form) {
+                  form.requestSubmit();
+                }
+              }}
+              disabled={isSubmitting}
+              fullWidth
+              className="sm:w-auto"
+              leftIcon={
+                isSubmitting ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : undefined
+              }
+            >
+              {isSubmitting
+                ? artwork
+                  ? "Salvando..."
+                  : "Criando..."
+                : artwork
+                ? "Salvar Alterações"
+                : "Criar Obra"}
+            </PrimaryButton>
           </div>
         </motion.div>
       </motion.div>
