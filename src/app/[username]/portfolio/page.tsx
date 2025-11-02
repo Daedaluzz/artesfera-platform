@@ -19,7 +19,7 @@ const db = getClientFirestore();
 
 interface PublicUserProfile {
   uid: string;
-  name: string;
+  displayName: string;
   photoURL: string | null;
   artisticName?: string;
   bio?: string;
@@ -339,7 +339,7 @@ export default function UserPortfolioPage() {
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-brand-navy-blue/10 to-brand-yellow/10 dark:from-brand-yellow/10 dark:to-brand-navy-blue/10 flex items-center justify-center">
                     <span className="text-lg font-bold text-brand-navy-blue dark:text-brand-yellow">
-                      {profileData.name?.[0]?.toUpperCase() || "U"}
+                      {profileData.displayName?.[0]?.toUpperCase() || "U"}
                     </span>
                   </div>
                 )}
@@ -348,7 +348,7 @@ export default function UserPortfolioPage() {
               {/* Profile Info */}
               <div className="flex-1 min-w-0">
                 <h1 className="text-2xl font-bold text-brand-black dark:text-brand-white">
-                  Portfólio de {profileData.artisticName || profileData.name}
+                  Portfólio de {profileData.artisticName || profileData.displayName}
                 </h1>
                 <p className="text-brand-black/70 dark:text-brand-white/70">
                   @{profileData.username || "username"}

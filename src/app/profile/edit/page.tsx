@@ -17,6 +17,7 @@ import {
   CheckCircle,
   Loader2,
   ArrowLeft,
+  Trash2,
 } from "lucide-react";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
@@ -24,6 +25,7 @@ import { getClientFirestore, getClientStorage } from "@/lib/firebase";
 import { updateProfile } from "firebase/auth";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { SecondaryButton } from "@/components/ui/secondary-button";
+import userService from "@/services/userService";
 
 // Initialize Firebase services
 const storage = getClientStorage();
@@ -138,6 +140,7 @@ export default function ProfileEdit() {
     syncPublicProfile,
     validateUsername,
     checkUsernameAvailability,
+    signOut,
   } = useAuth();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -149,6 +152,9 @@ export default function ProfileEdit() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [newTag, setNewTag] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [usernameValidation, setUsernameValidation] = useState<{
     isValid: boolean;
     isAvailable: boolean;
@@ -477,6 +483,46 @@ export default function ProfileEdit() {
   const handleCancel = () => {
     const username = userDocument?.username || user?.uid.slice(0, 8);
     router.push(`/${username}`);
+  };
+
+  const handleDeleteProfile = async () => {
+    if (!user || !userDocument) return;
+
+    // Verify confirmation text
+    if (deleteConfirmText !== "DELETAR") {
+      setError("❌ Digite 'DELETAR' para confirmar a exclusão do perfil.");
+      return;
+    }
+
+    setIsDeleting(true);
+    setError(null);
+
+    try {
+      // Use userService to delete user and all related data
+      await userService.delete(user.uid);
+
+      // Sign out the user after successful deletion
+      await signOut();
+      
+      // Redirect to home page
+      router.push("/");
+    } catch (error) {
+      console.error("Error deleting profile:", error);
+      setError("❌ Erro ao deletar perfil. Tente novamente.");
+      setIsDeleting(false);
+    }
+  };
+
+  const handleShowDeleteConfirm = () => {
+    setShowDeleteConfirm(true);
+    setDeleteConfirmText("");
+    setError(null);
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteConfirm(false);
+    setDeleteConfirmText("");
+    setError(null);
   };
 
   // Show loading state
@@ -938,7 +984,7 @@ export default function ProfileEdit() {
             <SecondaryButton
               fullWidth
               onClick={handleCancel}
-              disabled={isSaving}
+              disabled={isSaving || isDeleting}
             >
               Cancelar
             </SecondaryButton>
@@ -946,7 +992,7 @@ export default function ProfileEdit() {
             <PrimaryButton
               fullWidth
               onClick={handleSave}
-              disabled={isSaving || !formData.name.trim()}
+              disabled={isSaving || isDeleting || !formData.name.trim()}
               leftIcon={
                 isSaving ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
@@ -958,7 +1004,103 @@ export default function ProfileEdit() {
               {isSaving ? "Salvando..." : "Salvar Alterações"}
             </PrimaryButton>
           </div>
+
+          {/* Danger Zone */}
+          <div className="mt-8 pt-6 border-t border-red-500/20">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-red-600 dark:text-red-400 mb-2">
+                Zona de Perigo
+              </h3>
+              <p className="text-sm text-brand-black/60 dark:text-brand-white/60">
+                Esta ação é irreversível. Todos os seus dados, obras e perfil serão permanentemente excluídos.
+              </p>
+            </div>
+            
+            <SecondaryButton
+              onClick={handleShowDeleteConfirm}
+              disabled={isSaving || isDeleting}
+              leftIcon={<Trash2 className="w-4 h-4" />}
+              className="border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-500/10"
+            >
+              Deletar Perfil Permanentemente
+            </SecondaryButton>
+          </div>
         </motion.div>
+
+        {/* Delete Confirmation Modal */}
+        <AnimatePresence>
+          {showDeleteConfirm && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="relative backdrop-blur-[15px] bg-white/[0.95] dark:bg-brand-black/[0.95] border border-white/[0.25] dark:border-brand-navy-500/30 rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl"
+              >
+                <div className="text-center mb-6">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                    <Trash2 className="w-8 h-8 text-red-600 dark:text-red-400" />
+                  </div>
+                  <h3 className="text-xl font-bold text-brand-black dark:text-brand-white mb-2">
+                    Deletar Perfil
+                  </h3>
+                  <p className="text-brand-black/70 dark:text-brand-white/70 text-sm">
+                    Esta ação é <strong>irreversível</strong>. Todos os seus dados serão permanentemente excluídos:
+                  </p>
+                </div>
+
+                <div className="mb-6">
+                  <ul className="text-sm text-brand-black/60 dark:text-brand-white/60 space-y-1">
+                    <li>• Perfil público e privado</li>
+                    <li>• Todas as suas obras de arte</li>
+                    <li>• Username e configurações</li>
+                    <li>• Imagens e arquivos</li>
+                    <li>• Histórico e dados</li>
+                  </ul>
+                </div>
+
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-brand-black dark:text-brand-white mb-2">
+                    Digite <strong>DELETAR</strong> para confirmar:
+                  </label>
+                  <input
+                    type="text"
+                    value={deleteConfirmText}
+                    onChange={(e) => setDeleteConfirmText(e.target.value)}
+                    className="w-full px-4 py-3 rounded-[12px] backdrop-blur-[10px] bg-white/[0.1] dark:bg-white/[0.05] border border-white/[0.2] dark:border-white/[0.1] text-brand-black dark:text-brand-white placeholder-brand-black/50 dark:placeholder-brand-white/50 focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500/30 transition-all duration-300"
+                    placeholder="DELETAR"
+                    disabled={isDeleting}
+                  />
+                </div>
+
+                <div className="flex gap-3">
+                  <SecondaryButton
+                    fullWidth
+                    onClick={handleCancelDelete}
+                    disabled={isDeleting}
+                  >
+                    Cancelar
+                  </SecondaryButton>
+                  <PrimaryButton
+                    fullWidth
+                    onClick={handleDeleteProfile}
+                    disabled={isDeleting || deleteConfirmText !== "DELETAR"}
+                    leftIcon={
+                      isDeleting ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )
+                    }
+                    className="bg-red-600 hover:bg-red-700 border-red-600 hover:border-red-700"
+                  >
+                    {isDeleting ? "Deletando..." : "Deletar Definitivamente"}
+                  </PrimaryButton>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

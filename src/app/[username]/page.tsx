@@ -28,7 +28,7 @@ import { Artwork } from "@/types/artwork";
 
 interface PublicUserProfile {
   uid: string;
-  name: string;
+  displayName: string;
   photoURL: string | null;
   artisticName?: string;
   username?: string;
@@ -185,12 +185,12 @@ export default function UsernameProfilePage() {
     if (!profileData) return;
 
     const shareUrl = `${window.location.origin}/${profileData.username}`;
-    const shareText = `Confira o perfil de @${profileData.name} na ArtEsfera!`;
+    const shareText = `Confira o perfil de @${profileData.displayName} na ArtEsfera!`;
 
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Perfil de ${profileData.name} - ArtEsfera`,
+          title: `Perfil de ${profileData.displayName} - ArtEsfera`,
           text: shareText,
           url: shareUrl,
         });
@@ -345,7 +345,7 @@ export default function UsernameProfilePage() {
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-brand-navy-blue/10 to-brand-yellow/10 dark:from-brand-yellow/10 dark:to-brand-navy-blue/10 flex items-center justify-center">
                     <span className="text-3xl md:text-4xl font-bold text-brand-navy-blue dark:text-brand-yellow flex items-center justify-center w-full h-full">
-                      {profileData?.name?.[0]?.toUpperCase() || "U"}
+                      {profileData?.displayName?.[0]?.toUpperCase() || "U"}
                     </span>
                   </div>
                 )}
@@ -357,7 +357,7 @@ export default function UsernameProfilePage() {
               <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
                 <div>
                   <h1 className="text-3xl md:text-4xl font-bold text-brand-black dark:text-brand-white mb-2">
-                    {profileData?.name || "Usuário"}
+                    {profileData?.displayName || "Usuário"}
                   </h1>
                   {profileData?.username && (
                     <p className="text-lg text-brand-navy-blue dark:text-brand-yellow font-medium">
