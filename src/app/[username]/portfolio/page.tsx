@@ -10,7 +10,6 @@ import { PortfolioGallery } from "@/components/PortfolioGallery";
 import { ArtworkFormModal } from "@/components/ArtworkFormModal";
 import { SecondaryButton } from "@/components/ui/secondary-button";
 import { PrimaryButton } from "@/components/ui/primary-button";
-import { PrimaryButton } from "@/components/ui/primary-button";
 import { Artwork } from "@/types/artwork";
 import artworkService from "@/services/artworkService";
 import { collection, query, where, getDocs } from "firebase/firestore";
@@ -52,9 +51,21 @@ export default function UserPortfolioPage() {
 
   // List of reserved routes that should redirect to actual pages
   const reservedRoutes = [
-    'contact', 'about', 'gallery', 'projects', 'login', 'register', 
-    'profile', 'dashboard', 'api', 'admin', 'support', 'help', 
-    'terms', 'privacy', 'daeva'
+    "contact",
+    "about",
+    "gallery",
+    "projects",
+    "login",
+    "register",
+    "profile",
+    "dashboard",
+    "api",
+    "admin",
+    "support",
+    "help",
+    "terms",
+    "privacy",
+    "daeva",
   ];
 
   // Fetch profile data by username
@@ -238,7 +249,8 @@ export default function UserPortfolioPage() {
               Página não encontrada
             </h3>
             <p className="text-brand-black/60 dark:text-brand-white/60 mb-6">
-              A página "/{username}/portfolio" que você está procurando pode ter sido movida ou não existe.
+              A página "/{username}/portfolio" que você está procurando pode ter
+              sido movida ou não existe.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <PrimaryButton onClick={() => router.push("/")}>

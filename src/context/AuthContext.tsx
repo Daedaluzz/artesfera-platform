@@ -229,7 +229,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         if (!userDoc.exists()) {
           isNewUser = true;
-          shouldSync = true;
+          shouldSync = true; // New users always need sync
           // Generate unique username for new user (simplified logic to avoid circular dependency)
           const baseName = (
             user.displayName ||
@@ -314,28 +314,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       // Check if existing user needs sync (for users created before sync feature)
       if (!isNewUser) {
-        try {
-          const publicProfileRef = doc(db, "publicProfiles", user.uid);
-          const publicProfileDoc = await getDoc(publicProfileRef);
-          
-          if (!publicProfileDoc.exists()) {
-            console.log("🔄 Existing user missing public profile, triggering sync:", user.uid);
-            shouldSync = true;
-          }
-        } catch (error) {
-          console.error("❌ Error checking public profile existence:", error);
-          // Don't fail the whole process, just log the error
-        }
+        console.log("� Existing user logged in:", user.uid);
+        // Mandatory sync check is now handled in auth state change listener
+        // This prevents duplicate sync attempts
       }
 
-      // Trigger sync for new users or existing users without public profiles
-      if (shouldSync) {
+      // Trigger sync for new users only (existing users handled in auth state listener)
+      if (shouldSync && isNewUser) {
         try {
-          console.log("🔄 Auto-syncing public profile for user:", user.uid);
+          console.log("🔄 Auto-syncing public profile for new user:", user.uid);
           await syncPublicProfile(user.uid, user);
-          console.log("✅ Auto-sync completed for user:", user.uid);
+          console.log("✅ Auto-sync completed for new user:", user.uid);
         } catch (syncError) {
-          console.error("❌ Auto-sync failed for user:", syncError);
+          console.error("❌ Auto-sync failed for new user:", syncError);
           // Don't throw error here - user creation succeeded, sync can be retried later
         }
       }
@@ -570,6 +561,36 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (user) {
           // Ensure user document exists when user is authenticated
           await createUserDocument(user);
+
+          // Force sync check for all users on login (handles legacy users)
+          try {
+            console.log("🔄 Checking profile sync for user on login:", user.uid);
+            const publicProfileRef = doc(db, "publicProfiles", user.uid);
+            const publicProfileDoc = await getDoc(publicProfileRef);
+            
+            if (!publicProfileDoc.exists()) {
+              console.log("🔧 User missing public profile, triggering mandatory sync:", user.uid);
+              await syncPublicProfile(user.uid, user);
+              console.log("✅ Mandatory sync completed for user:", user.uid);
+            } else {
+              // Check if username exists in public profile (might be missing in old profiles)
+              const publicData = publicProfileDoc.data();
+              const userDocRef = doc(db, "users", user.uid);
+              const userDoc = await getDoc(userDocRef);
+              
+              if (userDoc.exists()) {
+                const userData = userDoc.data();
+                if (userData.username && !publicData.username) {
+                  console.log("🔧 Public profile missing username, updating:", user.uid);
+                  await syncPublicProfile(user.uid, user);
+                  console.log("✅ Username sync completed for user:", user.uid);
+                }
+              }
+            }
+          } catch (syncError) {
+            console.error("❌ Mandatory sync check failed:", syncError);
+            // Don't block login if sync fails
+          }
 
           // Set up real-time listener for user document
           const userDocRef = doc(db, "users", user.uid);
