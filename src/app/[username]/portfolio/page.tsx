@@ -17,8 +17,6 @@ import {
   query,
   where,
   getDocs,
-  doc,
-  getDoc,
 } from "firebase/firestore";
 import { getClientFirestore } from "@/lib/firebase";
 
@@ -71,35 +69,27 @@ export default function UserPortfolioPage() {
 
         console.log("Fetching profile for username:", cleanUsername);
 
-        // First, get userId from username mapping
-        const usernameQuery = query(
-          collection(db, "usernames"),
-          where("__name__", "==", cleanUsername)
+        // Query publicProfiles collection by username (same as main profile page)
+        const profilesQuery = query(
+          collection(db, "publicProfiles"),
+          where("username", "==", cleanUsername.toLowerCase())
+        );
+        console.log("Querying for username:", cleanUsername.toLowerCase());
+        const profilesSnapshot = await getDocs(profilesQuery);
+
+        console.log(
+          "Query result:",
+          profilesSnapshot.empty
+            ? "No documents found"
+            : `Found ${profilesSnapshot.docs.length} documents`
         );
 
-        const usernameSnapshot = await getDocs(usernameQuery);
-
-        if (usernameSnapshot.empty) {
-          console.log("Username not found:", cleanUsername);
-          setError("Perfil não encontrado");
-          return;
-        }
-
-        const usernameDoc = usernameSnapshot.docs[0];
-        const userId = usernameDoc.data().userId;
-
-        console.log("Found userId:", userId);
-
-        // Then get the public profile data
-        const publicProfileRef = doc(db, "publicProfiles", userId);
-        const publicProfileSnap = await getDoc(publicProfileRef);
-
-        if (publicProfileSnap.exists()) {
-          const profile = publicProfileSnap.data() as PublicUserProfile;
-          console.log("Profile data:", profile);
-          setProfileData(profile);
+        if (!profilesSnapshot.empty) {
+          const profileDoc = profilesSnapshot.docs[0];
+          console.log("Profile data:", profileDoc.data());
+          setProfileData(profileDoc.data() as PublicUserProfile);
         } else {
-          console.log("Public profile not found for userId:", userId);
+          console.log("No profile found for username:", cleanUsername);
           setError("Perfil não encontrado");
         }
       } catch (err) {

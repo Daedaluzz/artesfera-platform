@@ -16,10 +16,15 @@ import {
   Share2,
   ExternalLink,
   Edit3,
+  Palette,
+  Eye,
+  Plus,
 } from "lucide-react";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { SecondaryButton } from "@/components/ui/secondary-button";
 import { useParams, useRouter } from "next/navigation";
+import artworkService from "@/services/artworkService";
+import { Artwork } from "@/types/artwork";
 
 interface PublicUserProfile {
   uid: string;
@@ -48,6 +53,8 @@ export default function UsernameProfilePage() {
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [portfolioArtworks, setPortfolioArtworks] = useState<Artwork[]>([]);
+  const [portfolioLoading, setPortfolioLoading] = useState(false);
 
   const isOwnProfile = user && profileData && user.uid === profileData.uid;
 
@@ -130,6 +137,33 @@ export default function UsernameProfilePage() {
 
     fetchProfileByUsername();
   }, [username]);
+
+  // Fetch portfolio artworks when profile data is available
+  useEffect(() => {
+    const fetchPortfolioPreview = async () => {
+      if (!profileData?.uid) return;
+
+      try {
+        setPortfolioLoading(true);
+        
+        // Get latest 6 artworks for preview (public only for others, all for own profile)
+        const userArtworks = await artworkService.getUserArtworks(
+          profileData.uid,
+          isOwnProfile || false
+        );
+        
+        // Take only first 6 for preview
+        setPortfolioArtworks(userArtworks.slice(0, 6));
+      } catch (err) {
+        console.error("Error fetching portfolio preview:", err);
+        // Don't set error state for portfolio, just show empty
+      } finally {
+        setPortfolioLoading(false);
+      }
+    };
+
+    fetchPortfolioPreview();
+  }, [profileData, isOwnProfile]);
 
   const handleShare = async () => {
     if (!profileData) return;
@@ -458,6 +492,119 @@ export default function UsernameProfilePage() {
                 </span>
               ))}
             </div>
+          </motion.div>
+        )}
+
+        {/* Portfolio Preview Section */}
+        {profileData?.username && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.15 }}
+            className="relative backdrop-blur-[15px] bg-white/[0.15] dark:bg-black/15 border border-white/[0.25] dark:border-white/15 rounded-[20px] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1),inset_0_0_20px_10px_rgba(255,255,255,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.25),inset_0_-1px_0_rgba(255,255,255,0.05),inset_0_0_20px_10px_rgba(255,255,255,0.04)] overflow-hidden mb-6"
+          >
+            <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent rounded-full" />
+            <div className="absolute top-4 left-0 w-px h-[calc(100%-2rem)] bg-gradient-to-b from-white/40 via-transparent to-white/10 rounded-full" />
+
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <Palette className="w-5 h-5 text-brand-navy-blue dark:text-brand-yellow" />
+                <h2 className="text-xl font-semibold text-brand-black dark:text-brand-white">
+                  Portfólio
+                </h2>
+              </div>
+
+              <a
+                href={`/${profileData.username}/portfolio`}
+                className="flex items-center gap-2 px-4 py-2 rounded-[12px] backdrop-blur-[10px] bg-white/[0.1] dark:bg-white/[0.05] border border-white/[0.2] dark:border-white/[0.1] text-brand-navy-blue dark:text-brand-yellow hover:bg-white/20 dark:hover:bg-white/10 transition-all duration-300 text-sm font-medium"
+              >
+                <Eye className="w-4 h-4" />
+                Ver tudo
+              </a>
+            </div>
+
+            {portfolioLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-navy-blue dark:border-brand-yellow"></div>
+              </div>
+            ) : portfolioArtworks.length > 0 ? (
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                  {portfolioArtworks.map((artwork) => (
+                    <a
+                      key={artwork.id}
+                      href={`/${profileData.username}/portfolio`}
+                      className="group relative aspect-square rounded-[12px] overflow-hidden backdrop-blur-[10px] bg-white/[0.05] dark:bg-black/5 border border-white/[0.1] dark:border-white/[0.05] hover:border-brand-navy-blue/30 dark:hover:border-brand-yellow/30 transition-all duration-300"
+                    >
+                      {artwork.images && artwork.images.length > 0 ? (
+                        <Image
+                          src={artwork.images[0]}
+                          alt={artwork.title}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          sizes="(max-width: 768px) 50vw, 33vw"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-brand-navy-blue/10 to-brand-yellow/10 dark:from-brand-yellow/10 dark:to-brand-navy-blue/10 flex items-center justify-center">
+                          <Palette className="w-8 h-8 text-brand-navy-blue/50 dark:text-brand-yellow/50" />
+                        </div>
+                      )}
+                      
+                      {/* Hover overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="absolute bottom-2 left-2 right-2">
+                          <p className="text-white text-sm font-medium truncate">
+                            {artwork.title}
+                          </p>
+                          {artwork.tags && artwork.tags.length > 0 && (
+                            <p className="text-white/80 text-xs truncate mt-1">
+                              {artwork.tags[0]}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+
+                <div className="text-center">
+                  <p className="text-brand-black/60 dark:text-brand-white/60 text-sm mb-3">
+                    {portfolioArtworks.length === 6 ? "Últimas 6 obras" : `${portfolioArtworks.length} obras`}
+                  </p>
+                  <a
+                    href={`/${profileData.username}/portfolio`}
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-[14px] backdrop-blur-[10px] bg-gradient-to-r from-brand-navy-blue/20 to-brand-navy-blue/10 dark:from-brand-yellow/20 dark:to-brand-yellow/10 border border-brand-navy-blue/30 dark:border-brand-yellow/30 text-brand-navy-blue dark:text-brand-yellow hover:from-brand-navy-blue/30 hover:to-brand-navy-blue/20 dark:hover:from-brand-yellow/30 dark:hover:to-brand-yellow/20 transition-all duration-300 font-medium"
+                  >
+                    <Palette className="w-4 h-4" />
+                    Explorar Portfólio Completo
+                  </a>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-brand-navy-blue/10 dark:bg-brand-yellow/10 flex items-center justify-center">
+                  <Palette className="w-8 h-8 text-brand-navy-blue/50 dark:text-brand-yellow/50" />
+                </div>
+                <h3 className="text-lg font-medium text-brand-black dark:text-brand-white mb-2">
+                  {isOwnProfile ? "Seu portfólio está vazio" : "Nenhuma obra ainda"}
+                </h3>
+                <p className="text-brand-black/60 dark:text-brand-white/60 mb-4">
+                  {isOwnProfile 
+                    ? "Comece adicionando suas primeiras obras de arte ao seu portfólio."
+                    : "Este artista ainda não compartilhou nenhuma obra em seu portfólio."
+                  }
+                </p>
+                {isOwnProfile && (
+                  <a
+                    href={`/${profileData.username}/portfolio`}
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-[14px] backdrop-blur-[10px] bg-gradient-to-r from-brand-navy-blue/20 to-brand-navy-blue/10 dark:from-brand-yellow/20 dark:to-brand-yellow/10 border border-brand-navy-blue/30 dark:border-brand-yellow/30 text-brand-navy-blue dark:text-brand-yellow hover:from-brand-navy-blue/30 hover:to-brand-navy-blue/20 dark:hover:from-brand-yellow/30 dark:hover:to-brand-yellow/20 transition-all duration-300 font-medium"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Adicionar Primeira Obra
+                  </a>
+                )}
+              </div>
+            )}
           </motion.div>
         )}
 
