@@ -83,15 +83,27 @@ service cloud.firestore {
     // Public user profile information - Allow public read access to specific fields
     // This enables viewing other users' profiles with public information only
     // Contains: name, artisticName, bio, location, tags, socials, photoURL, username
+    // Collection-level rule for queries/listing
+    match /publicProfiles {
+      allow list: if true; // Allow queries for username-based profile lookups
+    }
+    
+    // Document-level rule for individual profile documents
     match /publicProfiles/{userId} {
-      allow read: if true; // Public read access for username profile viewing
+      allow get: if true; // Public read access for username profile viewing
       allow write: if isOwner(userId);
     }
 
     // Username mapping for uniqueness and @username lookups
     // Maps username -> userId for quick lookups and uniqueness enforcement
+    // Collection-level rule for queries/listing
+    match /usernames {
+      allow list: if true; // Allow queries for username availability checking
+    }
+    
+    // Document-level rule for individual username documents
     match /usernames/{username} {
-      allow read: if true; // Public read access for username availability checking
+      allow get: if true; // Allow reading individual username documents
       allow write: if isAuthenticated(); // Users can claim usernames during registration/edit
     }
 
