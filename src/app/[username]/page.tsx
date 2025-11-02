@@ -58,6 +58,13 @@ export default function UsernameProfilePage() {
 
   const isOwnProfile = user && profileData && user.uid === profileData.uid;
 
+  // List of reserved routes that should redirect to actual pages
+  const reservedRoutes = [
+    'contact', 'about', 'gallery', 'projects', 'login', 'register', 
+    'profile', 'dashboard', 'api', 'admin', 'support', 'help', 
+    'terms', 'privacy', 'daeva'
+  ];
+
   useEffect(() => {
     const fetchProfileByUsername = async () => {
       if (!username) return;
@@ -81,6 +88,13 @@ export default function UsernameProfilePage() {
         }
 
         console.log("Final clean username:", cleanUsername);
+
+        // Check if this is a reserved route that should redirect
+        if (reservedRoutes.includes(cleanUsername.toLowerCase())) {
+          console.log("Reserved route detected:", cleanUsername);
+          setError("reserved-route");
+          return;
+        }
 
         // First try to get all documents to see what's in the collection
         console.log("Testing collection access...");
@@ -210,6 +224,43 @@ export default function UsernameProfilePage() {
 
   // Show error state
   if (error) {
+    // Handle reserved route redirects
+    if (error === "reserved-route") {
+      return (
+        <div className="min-h-screen flex items-center justify-center px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center"
+          >
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center">
+              <ArrowLeft className="w-8 h-8 text-orange-600 dark:text-orange-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-brand-black dark:text-brand-white mb-2">
+              Página não encontrada
+            </h3>
+            <p className="text-brand-black/60 dark:text-brand-white/60 mb-6">
+              A página "/{username}" que você está procurando pode ter sido movida ou não existe.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <PrimaryButton onClick={() => router.push("/")}>
+                Ir para Início
+              </PrimaryButton>
+              <SecondaryButton onClick={() => router.push("/gallery")}>
+                Explorar Galeria
+              </SecondaryButton>
+              {username === "contact" && (
+                <SecondaryButton onClick={() => window.location.href = "mailto:contato@artesfera.com"}>
+                  Entrar em Contato
+                </SecondaryButton>
+              )}
+            </div>
+          </motion.div>
+        </div>
+      );
+    }
+
+    // Handle profile not found
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
         <motion.div
@@ -221,14 +272,22 @@ export default function UsernameProfilePage() {
             <ArrowLeft className="w-8 h-8 text-red-600 dark:text-red-400" />
           </div>
           <h3 className="text-xl font-semibold text-brand-black dark:text-brand-white mb-2">
-            {error}
+            Perfil não encontrado
           </h3>
           <p className="text-brand-black/60 dark:text-brand-white/60 mb-6">
-            O username @{username} não foi encontrado.
+            O username @{username} não foi encontrado na nossa comunidade.
           </p>
-          <PrimaryButton onClick={() => router.push("/")}>
-            Voltar ao Início
-          </PrimaryButton>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <PrimaryButton onClick={() => router.push("/")}>
+              Voltar ao Início
+            </PrimaryButton>
+            <SecondaryButton onClick={() => router.push("/gallery")}>
+              Explorar Artistas
+            </SecondaryButton>
+            <SecondaryButton onClick={() => router.push("/register")}>
+              Criar Conta
+            </SecondaryButton>
+          </div>
         </motion.div>
       </div>
     );

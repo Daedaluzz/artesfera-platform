@@ -10,6 +10,7 @@ import { PortfolioGallery } from "@/components/PortfolioGallery";
 import { ArtworkFormModal } from "@/components/ArtworkFormModal";
 import { SecondaryButton } from "@/components/ui/secondary-button";
 import { PrimaryButton } from "@/components/ui/primary-button";
+import { PrimaryButton } from "@/components/ui/primary-button";
 import { Artwork } from "@/types/artwork";
 import artworkService from "@/services/artworkService";
 import { collection, query, where, getDocs } from "firebase/firestore";
@@ -49,6 +50,13 @@ export default function UserPortfolioPage() {
   // Check if current user is the owner of this profile
   const isOwner = user && profileData && user.uid === profileData.uid;
 
+  // List of reserved routes that should redirect to actual pages
+  const reservedRoutes = [
+    'contact', 'about', 'gallery', 'projects', 'login', 'register', 
+    'profile', 'dashboard', 'api', 'admin', 'support', 'help', 
+    'terms', 'privacy', 'daeva'
+  ];
+
   // Fetch profile data by username
   useEffect(() => {
     const fetchProfileByUsername = async () => {
@@ -64,6 +72,13 @@ export default function UserPortfolioPage() {
           : username;
 
         console.log("Fetching profile for username:", cleanUsername);
+
+        // Check if this is a reserved route that should redirect
+        if (reservedRoutes.includes(cleanUsername.toLowerCase())) {
+          console.log("Reserved route detected in portfolio:", cleanUsername);
+          setError("reserved-route");
+          return;
+        }
 
         // Query publicProfiles collection by username (same as main profile page)
         const profilesQuery = query(
@@ -207,6 +222,38 @@ export default function UserPortfolioPage() {
 
   // Error state
   if (error || !profileData) {
+    // Handle reserved route redirects
+    if (error === "reserved-route") {
+      return (
+        <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-white via-brand-cream to-brand-beige dark:from-brand-black dark:via-brand-navy-900 dark:to-brand-navy-800">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center"
+          >
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center">
+              <ArrowLeft className="w-8 h-8 text-orange-600 dark:text-orange-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-brand-black dark:text-brand-white mb-2">
+              Página não encontrada
+            </h3>
+            <p className="text-brand-black/60 dark:text-brand-white/60 mb-6">
+              A página "/{username}/portfolio" que você está procurando pode ter sido movida ou não existe.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <PrimaryButton onClick={() => router.push("/")}>
+                Ir para Início
+              </PrimaryButton>
+              <SecondaryButton onClick={() => router.push("/gallery")}>
+                Explorar Galeria
+              </SecondaryButton>
+            </div>
+          </motion.div>
+        </div>
+      );
+    }
+
+    // Handle profile not found
     return (
       <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-white via-brand-cream to-brand-beige dark:from-brand-black dark:via-brand-navy-900 dark:to-brand-navy-800">
         <motion.div
@@ -218,17 +265,22 @@ export default function UserPortfolioPage() {
             <User className="w-8 h-8 text-red-600 dark:text-red-400" />
           </div>
           <h1 className="text-2xl font-bold text-brand-black dark:text-brand-white mb-2">
-            {error || "Perfil não encontrado"}
+            Portfólio não encontrado
           </h1>
           <p className="text-brand-black/70 dark:text-brand-white/70 mb-6">
-            O perfil que você está procurando não existe ou foi removido.
+            O portfólio @{username} não foi encontrado ou foi removido.
           </p>
-          <SecondaryButton
-            leftIcon={<ArrowLeft className="w-4 h-4" />}
-            onClick={() => router.push("/")}
-          >
-            Voltar ao Início
-          </SecondaryButton>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <PrimaryButton onClick={() => router.push("/")}>
+              Voltar ao Início
+            </PrimaryButton>
+            <SecondaryButton onClick={() => router.push("/gallery")}>
+              Explorar Artistas
+            </SecondaryButton>
+            <SecondaryButton onClick={() => router.push("/register")}>
+              Criar Conta
+            </SecondaryButton>
+          </div>
         </motion.div>
       </div>
     );
