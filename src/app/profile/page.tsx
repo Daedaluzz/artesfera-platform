@@ -18,11 +18,11 @@ const ProfilePage = () => {
       }
 
       if (userDocument?.username) {
-        // Redirect to username-based profile
-        router.push(`/@${userDocument.username}`);
+        // Redirect to username-based profile (without @ symbol in URL)
+        router.push(`/${userDocument.username}`);
       } else {
         // Fallback to user ID if username not set (shouldn't happen in normal flow)
-        router.push(`/@${user.uid.slice(0, 8)}`);
+        router.push(`/${user.uid.slice(0, 8)}`);
       }
     }
   }, [authLoading, user, userDocument, router]);

@@ -61,11 +61,32 @@ export default function UsernameProfilePage() {
 
         // Handle both @username and username formats
         let cleanUsername = username;
-        if (username.startsWith("%40")) {
-          // URL encoded @ symbol
-          cleanUsername = decodeURIComponent(username).substring(1);
-        } else if (username.startsWith("@")) {
-          cleanUsername = username.substring(1);
+        
+        console.log("Original username param:", username);
+        
+        // First decode any URL encoding
+        cleanUsername = decodeURIComponent(cleanUsername);
+        console.log("After decoding:", cleanUsername);
+        
+        // Remove @ symbol if present
+        if (cleanUsername.startsWith("@")) {
+          cleanUsername = cleanUsername.substring(1);
+        }
+        
+        console.log("Final clean username:", cleanUsername);
+
+        // First try to get all documents to see what's in the collection
+        console.log("Testing collection access...");
+        const testQuery = query(collection(db, "publicProfiles"));
+        try {
+          const testSnapshot = await getDocs(testQuery);
+          console.log("Collection access test:", testSnapshot.empty ? "Collection is empty" : `Collection has ${testSnapshot.docs.length} documents`);
+          
+          if (!testSnapshot.empty) {
+            console.log("Sample document usernames:", testSnapshot.docs.map(doc => doc.data().username));
+          }
+        } catch (testError) {
+          console.error("Collection access test failed:", testError);
         }
 
         // Query publicProfiles collection by username
@@ -73,12 +94,17 @@ export default function UsernameProfilePage() {
           collection(db, "publicProfiles"),
           where("username", "==", cleanUsername.toLowerCase())
         );
+        console.log("Querying for username:", cleanUsername.toLowerCase());
         const profilesSnapshot = await getDocs(profilesQuery);
+
+        console.log("Query result:", profilesSnapshot.empty ? "No documents found" : `Found ${profilesSnapshot.docs.length} documents`);
 
         if (!profilesSnapshot.empty) {
           const profileDoc = profilesSnapshot.docs[0];
+          console.log("Profile data:", profileDoc.data());
           setProfileData(profileDoc.data() as PublicUserProfile);
         } else {
+          console.log("No profile found for username:", cleanUsername);
           setError("Perfil não encontrado");
         }
       } catch (err) {
@@ -95,8 +121,8 @@ export default function UsernameProfilePage() {
   const handleShare = async () => {
     if (!profileData) return;
 
-    const shareUrl = `${window.location.origin}/@${profileData.username}`;
-    const shareText = `Confira o perfil de ${profileData.name} na ArtEsfera!`;
+    const shareUrl = `${window.location.origin}/${profileData.username}`;
+    const shareText = `Confira o perfil de @${profileData.name} na ArtEsfera!`;
 
     if (navigator.share) {
       try {

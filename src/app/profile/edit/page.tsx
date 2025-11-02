@@ -453,7 +453,7 @@ export default function ProfileEdit() {
       // Redirect back to username profile after success
       const username = formData.username || userDocument?.username || user.uid.slice(0, 8);
       setTimeout(() => {
-        router.push(`/@${username}`);
+        router.push(`/${username}`);
       }, 2000);
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -465,7 +465,7 @@ export default function ProfileEdit() {
 
   const handleCancel = () => {
     const username = userDocument?.username || user?.uid.slice(0, 8);
-    router.push(`/@${username}`);
+    router.push(`/${username}`);
   };
 
   // Show loading state

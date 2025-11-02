@@ -91,12 +91,12 @@ service cloud.firestore {
     // Contains: name, artisticName, bio, location, tags, socials, photoURL, username
     // Collection-level rule for queries/listing
     match /publicProfiles {
-      allow list: if true; // Allow queries for username-based profile lookups
+      allow read, list: if true; // Allow queries and reads for username-based profile lookups
     }
     
     // Document-level rule for individual profile documents
     match /publicProfiles/{userId} {
-      allow get: if true; // Public read access for username profile viewing
+      allow read: if true; // Public read access for username profile viewing
       allow write: if isOwner(userId);
     }
 
@@ -104,12 +104,12 @@ service cloud.firestore {
     // Maps username -> userId for quick lookups and uniqueness enforcement
     // Collection-level rule for queries/listing
     match /usernames {
-      allow list: if true; // Allow queries for username availability checking
+      allow read, list: if true; // Allow queries for username availability checking
     }
     
     // Document-level rule for individual username documents
     match /usernames/{username} {
-      allow get: if true; // Allow reading individual username documents
+      allow read: if true; // Allow reading individual username documents
       allow write: if isAuthenticated(); // Users can claim usernames during registration/edit
     }
 
