@@ -129,7 +129,7 @@ const compressImage = (
 };
 
 export default function ProfileEdit() {
-  const { user, userDocument, loading: authLoading } = useAuth();
+  const { user, userDocument, loading: authLoading, syncPublicProfile } = useAuth();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -341,6 +341,9 @@ export default function ProfileEdit() {
       if (formData.name !== user.displayName) {
         await updateProfile(user, { displayName: formData.name });
       }
+
+      // Sync public profile data
+      await syncPublicProfile(user.uid);
 
       setSuccess("✅ Perfil atualizado com sucesso!");
 

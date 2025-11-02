@@ -84,10 +84,17 @@ service cloud.firestore {
     // LEGACY/CURRENT COLLECTIONS (for compatibility)
     // ========================================
 
-    // Current user documents structure
-    // This rule is perfect.
+    // Current user documents structure - Private full access
     match /users/{userId} {
       allow read, write: if isOwner(userId);
+    }
+
+    // Public user profile information - Allow public read access to specific fields
+    // This enables viewing other users' profiles with public information only
+    // Contains: name, artisticName, bio, location, tags, socials, photoURL
+    match /publicProfiles/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
     }
 
     // Current artworks structure

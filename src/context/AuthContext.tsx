@@ -14,6 +14,8 @@ import {
 } from "firebase/auth";
 import {
   doc,
+  getDoc,
+  setDoc,
   serverTimestamp,
   runTransaction,
   FieldValue,
@@ -58,6 +60,7 @@ interface AuthContextType {
     password: string,
     name: string
   ) => Promise<void>;
+  syncPublicProfile: (userId: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -293,11 +296,54 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setLoading(true);
       await firebaseSignOut(auth);
       setUser(null);
+      setUserDocument(null);
+      
+      // Redirect to home page after logout to prevent permission errors
+      if (typeof window !== "undefined") {
+        window.location.href = "/";
+      }
     } catch (error) {
       console.error("❌ Error signing out:", error);
       throw error;
     } finally {
       setLoading(false);
+    }
+  };
+
+  /**
+   * Sync user's public profile data
+   * Extracts public fields from private user document and stores in publicProfiles collection
+   */
+  const syncPublicProfile = async (userId: string): Promise<void> => {
+    try {
+      const userRef = doc(db, "users", userId);
+      const userSnap = await getDoc(userRef);
+
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+        
+        // Extract only public fields
+        const publicProfileData = {
+          uid: userData.uid,
+          name: userData.name || "",
+          photoURL: userData.photoURL || null,
+          artisticName: userData.artisticName || "",
+          bio: userData.bio || "",
+          location: userData.location || "",
+          tags: userData.tags || [],
+          socials: userData.socials || {},
+          updatedAt: new Date(),
+        };
+
+        // Store in public profiles collection
+        const publicProfileRef = doc(db, "publicProfiles", userId);
+        await setDoc(publicProfileRef, publicProfileData, { merge: true });
+        
+        console.log("✅ Public profile synced successfully");
+      }
+    } catch (error) {
+      console.error("❌ Error syncing public profile:", error);
+      throw error;
     }
   };
 
@@ -352,6 +398,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     signOut,
     signInWithEmail,
     signUpWithEmail,
+    syncPublicProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
