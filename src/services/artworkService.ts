@@ -9,9 +9,7 @@ import {
   query,
   where,
   orderBy,
-  limit,
   serverTimestamp,
-  Timestamp,
 } from "firebase/firestore";
 import {
   ref,
@@ -132,8 +130,7 @@ export const imageUtils = {
   uploadImage: async (
     file: File,
     userId: string,
-    artworkId: string,
-    onProgress?: (progress: number) => void
+    artworkId: string
   ): Promise<string> => {
     const validation = imageUtils.validateImage(file);
     if (!validation.valid) {

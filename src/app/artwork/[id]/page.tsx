@@ -10,10 +10,8 @@ import {
   Edit,
   Trash2,
   Share2,
-  Heart,
   Eye,
   Calendar,
-  User,
   Play,
   ChevronLeft,
   ChevronRight,
@@ -120,7 +118,7 @@ export default function ArtworkDetailPage() {
           text: artwork?.description,
           url: shareUrl,
         });
-      } catch (err) {
+      } catch {
         // User cancelled or error occurred
       }
     } else {
@@ -427,12 +425,14 @@ export default function ArtworkDetailPage() {
 
                 <Link href={`/${creator.username}`} className="block">
                   <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/[0.1] dark:hover:bg-black/10 transition-colors duration-200">
-                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/30 dark:border-white/20 flex-shrink-0">
+                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/30 dark:border-white/20 flex-shrink-0 relative">
                       {creator.photoURL ? (
-                        <img
+                        <Image
                           src={creator.photoURL}
                           alt={creator.name}
-                          className="w-full h-full object-cover"
+                          fill
+                          className="object-cover"
+                          sizes="48px"
                         />
                       ) : (
                         <div className="w-full h-full bg-gradient-to-br from-brand-navy-blue/10 to-brand-yellow/10 dark:from-brand-yellow/10 dark:to-brand-navy-blue/10 flex items-center justify-center">

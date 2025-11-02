@@ -1,17 +1,14 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
-  Upload,
   Plus,
   Trash2,
-  Image as ImageIcon,
-  Play,
   Loader2,
   AlertCircle,
-  CheckCircle,
 } from "lucide-react";
 import {
   Artwork,
@@ -134,7 +131,7 @@ export const ArtworkFormModal: React.FC<ArtworkFormModalProps> = ({
   };
 
   // Handle input changes
-  const handleInputChange = (field: keyof ArtworkFormData, value: any) => {
+  const handleInputChange = (field: keyof ArtworkFormData, value: string | string[] | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {
@@ -425,15 +422,17 @@ export const ArtworkFormModal: React.FC<ArtworkFormModalProps> = ({
                       key={`existing-${index}`}
                       className="relative aspect-square rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800"
                     >
-                      <img
+                      <Image
                         src={image}
                         alt={`Imagem ${index + 1}`}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 50vw, 33vw"
                       />
                       <button
                         type="button"
                         onClick={() => handleRemoveExistingImage(index)}
-                        className="absolute top-2 right-2 p-1 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors duration-200"
+                        className="absolute top-2 right-2 p-1 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors duration-200 z-10"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -448,15 +447,17 @@ export const ArtworkFormModal: React.FC<ArtworkFormModalProps> = ({
                     >
                       {upload.url ? (
                         <>
-                          <img
+                          <Image
                             src={upload.url}
                             alt={`Upload ${index + 1}`}
-                            className="w-full h-full object-cover"
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 50vw, 33vw"
                           />
                           <button
                             type="button"
                             onClick={() => handleRemoveUploadedImage(index)}
-                            className="absolute top-2 right-2 p-1 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors duration-200"
+                            className="absolute top-2 right-2 p-1 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors duration-200 z-10"
                           >
                             <X className="w-3 h-3" />
                           </button>

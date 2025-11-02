@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowLeft, User } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -276,12 +277,14 @@ export default function UserPortfolioPage() {
           <div className="relative backdrop-blur-[15px] bg-white/[0.15] dark:bg-brand-black/15 border border-white/[0.25] dark:border-brand-navy-500/30 rounded-2xl p-6">
             <div className="flex items-center gap-6">
               {/* Profile Photo */}
-              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white/30 dark:border-white/20 shadow-lg flex-shrink-0">
+              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white/30 dark:border-white/20 shadow-lg flex-shrink-0 relative">
                 {profileData.photoURL ? (
-                  <img
+                  <Image
                     src={profileData.photoURL}
                     alt="Profile"
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
+                    sizes="64px"
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-brand-navy-blue/10 to-brand-yellow/10 dark:from-brand-yellow/10 dark:to-brand-navy-blue/10 flex items-center justify-center">
