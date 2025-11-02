@@ -87,7 +87,7 @@ service firebase.storage {
     // PORTFOLIO / ARTWORKS
     // ALIGNS WITH FIRESTORE: /artesfera/public/artworks/{artworkId}
     match /artesfera/public/artworks/{artworkId}/{allFiles=**} {
-      allow read: if isAuthenticated();
+      allow read: if true; // Public access for gallery showcase
       // Write allowed IF user is the owner in Firestore
       allow write: if isAuthenticated() &&
                     isUnderSizeLimit(50) &&
@@ -99,7 +99,7 @@ service firebase.storage {
     // PROJECT COLLABORATION
     // ALIGNS WITH FIRESTORE: /artesfera/public/projects/{projectId}
     match /artesfera/public/projects/{projectId}/{allFiles=**} {
-      allow read: if isAuthenticated();
+      allow read: if true; // Public access for recruitment showcase
       // Write allowed IF user is owner OR a member in Firestore
       allow write: if isAuthenticated() && 
                     isUnderSizeLimit(100) && (
@@ -158,9 +158,9 @@ service firebase.storage {
     // LEGACY/CURRENT COLLECTIONS (for compatibility)
     // ===========================================
 
-    // Legacy projects support
+    // Legacy projects support - Public access for recruitment showcase
     match /projects/{projectId}/files/{fileName} {
-      allow read: if true; // Public read for legacy compatibility
+      allow read: if true; // Public access for recruitment showcase
       // Write access checks legacy /projects collection in Firestore
       allow write: if isAuthenticated() &&
                     isUnderSizeLimit(50) &&
@@ -169,9 +169,9 @@ service firebase.storage {
                     ).data.ownerId == request.auth.uid;
     }
 
-    // Legacy artworks support
+    // Legacy artworks support - Public access for gallery showcase
     match /artworks/{userId}/images/{imageId} {
-      allow read: if true; // Public read for legacy compatibility
+      allow read: if true; // Public access for gallery showcase
       allow write: if isOwner(userId) && 
                     isValidImageFile() && 
                     isUnderSizeLimit(20);

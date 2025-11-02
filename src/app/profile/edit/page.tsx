@@ -40,6 +40,7 @@ interface ExtendedUserDocument {
   artisticName: string;
   location: string;
   profileCompleted: boolean;
+  username?: string;
   phone?: string;
   socials?: {
     website?: string;
@@ -53,6 +54,7 @@ interface FormData {
   email: string;
   phone: string;
   artisticName: string;
+  username: string;
   bio: string;
   location: string;
   tags: string[];
@@ -134,6 +136,8 @@ export default function ProfileEdit() {
     userDocument,
     loading: authLoading,
     syncPublicProfile,
+    validateUsername,
+    checkUsernameAvailability,
   } = useAuth();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -145,6 +149,17 @@ export default function ProfileEdit() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [newTag, setNewTag] = useState("");
+  const [usernameValidation, setUsernameValidation] = useState<{
+    isValid: boolean;
+    isAvailable: boolean;
+    isChecking: boolean;
+    message: string;
+  }>({
+    isValid: true,
+    isAvailable: true,
+    isChecking: false,
+    message: "",
+  });
 
   // Form data state
   const [formData, setFormData] = useState<FormData>({
@@ -152,6 +167,7 @@ export default function ProfileEdit() {
     email: "",
     phone: "",
     artisticName: "",
+    username: "",
     bio: "",
     location: "",
     tags: [],
@@ -170,6 +186,7 @@ export default function ProfileEdit() {
         email: userDocument.email || user.email || "",
         phone: (userDocument as unknown as ExtendedUserDocument).phone || "",
         artisticName: userDocument.artisticName || "",
+        username: (userDocument as unknown as ExtendedUserDocument).username || "",
         bio: userDocument.bio || "",
         location: userDocument.location || "",
         tags: userDocument.tags || [],
@@ -207,11 +224,80 @@ export default function ProfileEdit() {
         ...prev,
         [name]: value,
       }));
+
+      // Handle username validation
+      if (name === "username") {
+        handleUsernameValidation(value);
+      }
     }
 
     // Clear messages when user starts typing
     if (error) setError(null);
     if (success) setSuccess(null);
+  };
+
+  // Username validation handler
+  const handleUsernameValidation = async (usernameValue: string) => {
+    if (!usernameValue.trim()) {
+      setUsernameValidation({
+        isValid: true,
+        isAvailable: true,
+        isChecking: false,
+        message: "",
+      });
+      return;
+    }
+
+    // Check format first
+    const validation = validateUsername(usernameValue);
+    if (!validation.isValid) {
+      setUsernameValidation({
+        isValid: false,
+        isAvailable: false,
+        isChecking: false,
+        message: validation.error || "Username inválido",
+      });
+      return;
+    }
+
+    // Check availability if format is valid
+    setUsernameValidation(prev => ({
+      ...prev,
+      isChecking: true,
+      message: "Verificando disponibilidade...",
+    }));
+
+    try {
+      const currentUsername = (userDocument as unknown as ExtendedUserDocument)?.username;
+      // Skip availability check if it's the same as current username
+      if (usernameValue.toLowerCase() === currentUsername?.toLowerCase()) {
+        setUsernameValidation({
+          isValid: true,
+          isAvailable: true,
+          isChecking: false,
+          message: "Este é seu username atual",
+        });
+        return;
+      }
+
+      const isAvailable = await checkUsernameAvailability(usernameValue);
+      setUsernameValidation({
+        isValid: true,
+        isAvailable,
+        isChecking: false,
+        message: isAvailable
+          ? "Username disponível!"
+          : "Este username já está em uso",
+      });
+    } catch (error) {
+      console.error("Error checking username availability:", error);
+      setUsernameValidation({
+        isValid: true,
+        isAvailable: false,
+        isChecking: false,
+        message: "Erro ao verificar disponibilidade",
+      });
+    }
   };
 
   const handleAddTag = () => {
@@ -325,6 +411,12 @@ export default function ProfileEdit() {
   const handleSave = async () => {
     if (!user) return;
 
+    // Validate username before saving
+    if (formData.username && (!usernameValidation.isValid || !usernameValidation.isAvailable)) {
+      setError("❌ Por favor, escolha um username válido e disponível.");
+      return;
+    }
+
     setIsSaving(true);
     setError(null);
 
@@ -333,6 +425,7 @@ export default function ProfileEdit() {
       await updateDoc(userRef, {
         name: formData.name,
         artisticName: formData.artisticName,
+        username: formData.username || undefined, // Only save if provided
         bio: formData.bio,
         location: formData.location,
         phone: formData.phone,
@@ -347,7 +440,7 @@ export default function ProfileEdit() {
         await updateProfile(user, { displayName: formData.name });
       }
 
-      // Sync public profile data
+      // Sync public profile data (this will handle username updates in the public collection)
       await syncPublicProfile(user.uid);
 
       setSuccess("✅ Perfil atualizado com sucesso!");
@@ -580,6 +673,64 @@ export default function ProfileEdit() {
                     className="w-full px-4 py-3 rounded-[12px] backdrop-blur-[10px] bg-white/[0.1] dark:bg-white/[0.05] border border-white/[0.2] dark:border-white/[0.1] shadow-[0_4px_16px_rgba(0,0,0,0.06)] text-brand-black dark:text-brand-white placeholder-brand-black/50 dark:placeholder-brand-white/50 focus:outline-none focus:ring-2 focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30 focus:border-brand-navy-blue/30 dark:focus:border-brand-yellow/30 transition-all duration-300"
                     placeholder="Como você é conhecido artisticamente"
                   />
+                </div>
+
+                {/* Username */}
+                <div>
+                  <label className="block text-sm font-medium text-brand-black/80 dark:text-brand-white/80 mb-2">
+                    Username
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-brand-black/50 dark:text-brand-white/50 pointer-events-none">
+                      @
+                    </span>
+                    <input
+                      type="text"
+                      name="username"
+                      value={formData.username}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-3 pl-8 rounded-[12px] backdrop-blur-[10px] bg-white/[0.1] dark:bg-white/[0.05] border shadow-[0_4px_16px_rgba(0,0,0,0.06)] text-brand-black dark:text-brand-white placeholder-brand-black/50 dark:placeholder-brand-white/50 focus:outline-none focus:ring-2 transition-all duration-300 ${
+                        usernameValidation.isValid && usernameValidation.isAvailable
+                          ? "border-white/[0.2] dark:border-white/[0.1] focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30 focus:border-brand-navy-blue/30 dark:focus:border-brand-yellow/30"
+                          : usernameValidation.isChecking
+                          ? "border-blue-300/50 dark:border-blue-400/50"
+                          : "border-red-300/50 dark:border-red-400/50 focus:ring-red-300/30 focus:border-red-300/50"
+                      }`}
+                      placeholder="seuusername"
+                      pattern="[a-zA-Z0-9_.-]+"
+                      title="Apenas letras, números, pontos, hífens e underscores são permitidos"
+                    />
+                    {usernameValidation.isChecking && (
+                      <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                        <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+                      </div>
+                    )}
+                    {!usernameValidation.isChecking && formData.username && (
+                      <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                        {usernameValidation.isValid && usernameValidation.isAvailable ? (
+                          <CheckCircle className="w-4 h-4 text-green-500" />
+                        ) : (
+                          <AlertCircle className="w-4 h-4 text-red-500" />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  {usernameValidation.message && (
+                    <p
+                      className={`text-xs mt-1 ${
+                        usernameValidation.isValid && usernameValidation.isAvailable
+                          ? "text-green-500"
+                          : usernameValidation.isChecking
+                          ? "text-blue-500"
+                          : "text-red-500"
+                      }`}
+                    >
+                      {usernameValidation.message}
+                    </p>
+                  )}
+                  <p className="text-xs text-brand-black/50 dark:text-brand-white/50 mt-1">
+                    Seu perfil será acessível em artesfera.tech/@{formData.username || "seuusername"}
+                  </p>
                 </div>
 
                 {/* Email */}

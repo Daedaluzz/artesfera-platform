@@ -56,17 +56,17 @@ service cloud.firestore {
       allow write: if isOwner(userId);
     }
 
-    // Public artworks - anyone can read, only artist can write
+    // Public artworks - anyone can read (public gallery showcase), only artist can write
     match /artesfera/public/artworks/{artworkId} {
-      allow read: if isAuthenticated();
+      allow read: if true; // Public access for gallery showcase
       // FIXED: Writes (create, update, delete) now require
       // the user's UID to match an 'ownerId' field in the document.
       allow write: if isAuthenticated() && isDocOwner();
     }
 
-    // Public projects - anyone can read, authenticated users can write
+    // Public projects - anyone can read (public recruitment board), authenticated users can write
     match /artesfera/public/projects/{projectId} {
-      allow read: if isAuthenticated();
+      allow read: if true; // Public access for project recruitment showcase
       // FIXED: Writes also require ownership.
       allow write: if isAuthenticated() && isDocOwner();
     }
@@ -82,21 +82,29 @@ service cloud.firestore {
 
     // Public user profile information - Allow public read access to specific fields
     // This enables viewing other users' profiles with public information only
+    // Contains: name, artisticName, bio, location, tags, socials, photoURL, username
     match /publicProfiles/{userId} {
       allow read: if isAuthenticated();
       allow write: if isOwner(userId);
     }
 
-    // Current artworks structure
-    match /artworks/{artworkId} {
+    // Username mapping for uniqueness and @username lookups
+    // Maps username -> userId for quick lookups and uniqueness enforcement
+    match /usernames/{username} {
       allow read: if isAuthenticated();
+      allow write: if isAuthenticated(); // Users can claim usernames during registration/edit
+    }
+
+    // Current artworks structure - Public access for gallery showcase
+    match /artworks/{artworkId} {
+      allow read: if true; // Public access for gallery showcase
       // FIXED: Writes also require ownership.
       allow write: if isAuthenticated() && isDocOwner();
     }
 
-    // Current projects structure
+    // Current projects structure - Public access for recruitment showcase  
     match /projects/{projectId} {
-      allow read: if isAuthenticated();
+      allow read: if true; // Public access for recruitment showcase
       // FIXED: Writes also require ownership.
       allow write: if isAuthenticated() && isDocOwner();
     }
