@@ -1,9 +1,12 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
+import { getClientFirestore } from "@/lib/firebase";
+import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { updateProfile } from "firebase/auth";
 import {
   Edit3,
   Mail,
@@ -13,8 +16,14 @@ import {
   Instagram,
   Youtube,
   Tag,
+  X,
+  CheckCircle,
+  AlertCircle,
 } from "lucide-react";
 import { PrimaryButton } from "@/components/ui/primary-button";
+
+// Initialize Firebase services
+const db = getClientFirestore();
 
 interface ExtendedUserDocument {
   uid: string;
@@ -37,6 +46,8 @@ interface ExtendedUserDocument {
 
 export default function ProfileExhibition() {
   const { user, userDocument, loading: authLoading } = useAuth();
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   // Show loading state
   if (authLoading || !user) {
@@ -57,8 +68,50 @@ export default function ProfileExhibition() {
   const extendedUser = userDocument as unknown as ExtendedUserDocument;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-black py-8 px-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header Section */}
+        <div className="pt-24 pb-12">
+          <div className="text-center mb-16">
+            <h1 className="text-4xl md:text-6xl font-bold font-serif mb-6 text-brand-black dark:text-brand-white">
+              Meu{" "}
+              <span className="text-brand-navy-blue dark:text-brand-yellow">
+                Perfil
+              </span>
+            </h1>
+            <p className="text-xl md:text-2xl text-brand-black/70 dark:text-brand-white/70 max-w-3xl mx-auto">
+              Sua presença na comunidade artística da ArtEsfera
+            </p>
+          </div>
+        </div>
+
+        {/* Success/Error Messages */}
+        <AnimatePresence>
+          {(error || success) && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="mb-6"
+            >
+              <div
+                className={`flex items-center gap-3 p-4 rounded-[16px] backdrop-blur-[15px] border ${
+                  error
+                    ? "bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400"
+                    : "bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400"
+                }`}
+              >
+                {error ? (
+                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                ) : (
+                  <CheckCircle className="w-5 h-5 flex-shrink-0" />
+                )}
+                <span>{error || success}</span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Profile Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -72,28 +125,54 @@ export default function ProfileExhibition() {
 
           <div className="flex flex-col md:flex-row items-center gap-8">
             {/* Profile Photo */}
-            <div className="relative">
+            <div className="relative group">
               <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-white/30 dark:border-white/20 shadow-lg">
                 {extendedUser?.photoURL ? (
-                  <Image
-                    src={extendedUser.photoURL}
-                    alt="Profile"
-                    width={160}
-                    height={160}
-                    className="w-full h-full object-cover"
-                  />
+                  <div className="relative w-full h-full">
+                    <Image
+                      src={extendedUser.photoURL}
+                      alt="Profile"
+                      width={160}
+                      height={160}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-brand-navy-blue/10 to-brand-yellow/10 dark:from-brand-yellow/10 dark:to-brand-navy-blue/10 flex items-center justify-center">
-                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-brand-navy-blue/20 dark:bg-brand-yellow/20 flex items-center justify-center">
-                      <span className="text-3xl md:text-4xl font-bold text-brand-navy-blue dark:text-brand-yellow">
-                        {user.displayName?.[0]?.toUpperCase() ||
-                          extendedUser?.name?.[0]?.toUpperCase() ||
-                          "U"}
-                      </span>
-                    </div>
+                    <span className="text-3xl md:text-4xl font-bold text-brand-navy-blue dark:text-brand-yellow flex items-center justify-center w-full h-full">
+                      {user.displayName?.[0]?.toUpperCase() ||
+                        extendedUser?.name?.[0]?.toUpperCase() ||
+                        "U"}
+                    </span>
                   </div>
                 )}
               </div>
+              
+              {/* Remove Photo Button - positioned outside the circle */}
+              {extendedUser?.photoURL && (
+                <button
+                  onClick={async () => {
+                    if (!user) return;
+                    try {
+                      const userRef = doc(db, "users", user.uid);
+                      await updateDoc(userRef, {
+                        photoURL: null,
+                        updatedAt: serverTimestamp(),
+                      });
+                      await updateProfile(user, { photoURL: null });
+                      setSuccess("✅ Foto removida com sucesso!");
+                      setTimeout(() => setSuccess(null), 3000);
+                    } catch (error) {
+                      console.error("Error removing photo:", error);
+                      setError("❌ Erro ao remover foto. Tente novamente.");
+                      setTimeout(() => setError(null), 3000);
+                    }
+                  }}
+                  className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600 shadow-lg border-2 border-white/50"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
 
             {/* Profile Info */}

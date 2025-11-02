@@ -72,10 +72,10 @@ const compressImage = (
   return new Promise((resolve, reject) => {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
-    const htmlImg = new HTMLImageElement();
+    const img = document.createElement("img");
 
-    htmlImg.onload = () => {
-      const { width, height } = htmlImg;
+    img.onload = () => {
+      const { width, height } = img;
       const aspectRatio = width / height;
 
       let newWidth = maxWidth;
@@ -90,7 +90,7 @@ const compressImage = (
       canvas.height = newHeight;
 
       // Draw and compress
-      ctx?.drawImage(htmlImg, 0, 0, newWidth, newHeight);
+      ctx?.drawImage(img, 0, 0, newWidth, newHeight);
       canvas.toBlob(
         (blob) => {
           if (blob) {
@@ -104,11 +104,11 @@ const compressImage = (
       );
     };
 
-    htmlImg.onerror = () => {
+    img.onerror = () => {
       reject(new Error("Failed to load image"));
     };
 
-    htmlImg.src = URL.createObjectURL(file);
+    img.src = URL.createObjectURL(file);
   });
 };
 
@@ -310,8 +310,8 @@ export default function ProfileEdit() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-black py-8 px-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen px-4 sm:px-6 lg:px-8 py-8 bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-black">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -369,29 +369,54 @@ export default function ProfileEdit() {
 
           {/* Photo Section */}
           <div className="flex flex-col items-center mb-8">
-            <div className="relative mb-4">
+            <div className="relative mb-4 group">
               <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white/30 dark:border-white/20 shadow-lg">
                 {userDocument?.photoURL ? (
-                  <Image
-                    src={userDocument.photoURL}
-                    alt="Profile"
-                    width={128}
-                    height={128}
-                    className="w-full h-full object-cover"
-                  />
+                  <div className="relative w-full h-full">
+                    <Image
+                      src={userDocument.photoURL}
+                      alt="Profile"
+                      width={128}
+                      height={128}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-brand-navy-blue/10 to-brand-yellow/10 dark:from-brand-yellow/10 dark:to-brand-navy-blue/10 flex items-center justify-center">
-                    <div className="w-20 h-20 rounded-full bg-brand-navy-blue/20 dark:bg-brand-yellow/20 flex items-center justify-center">
-                      <span className="text-2xl font-bold text-brand-navy-blue dark:text-brand-yellow">
-                        {user.displayName?.[0]?.toUpperCase() ||
-                          formData.name?.[0]?.toUpperCase() ||
-                          "U"}
-                      </span>
-                    </div>
+                    <span className="text-2xl font-bold text-brand-navy-blue dark:text-brand-yellow flex items-center justify-center w-full h-full">
+                      {user.displayName?.[0]?.toUpperCase() ||
+                        formData.name?.[0]?.toUpperCase() ||
+                        "U"}
+                    </span>
                   </div>
                 )}
               </div>
 
+              {/* Remove Photo Button - positioned outside the circle */}
+              {userDocument?.photoURL && (
+                <button
+                  onClick={async () => {
+                    if (!user) return;
+                    try {
+                      const userRef = doc(db, "users", user.uid);
+                      await updateDoc(userRef, {
+                        photoURL: null,
+                        updatedAt: serverTimestamp(),
+                      });
+                      await updateProfile(user, { photoURL: null });
+                      setSuccess("✅ Foto removida com sucesso!");
+                    } catch (error) {
+                      console.error("Error removing photo:", error);
+                      setError("❌ Erro ao remover foto. Tente novamente.");
+                    }
+                  }}
+                  className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600 shadow-lg border-2 border-white/50"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+
+              {/* Camera Button - positioned at bottom-right */}
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploadingPhoto}
