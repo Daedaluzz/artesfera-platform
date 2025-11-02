@@ -223,12 +223,15 @@ export const PortfolioGallery: React.FC<PortfolioGalleryProps> = ({
           <select
             value={sortMode}
             onChange={(e) => setSortMode(e.target.value as SortMode)}
-            className="px-3 py-2 rounded-lg backdrop-blur-md bg-white/[0.1] dark:bg-black/10 border border-white/[0.2] dark:border-white/[0.1] text-brand-black dark:text-brand-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30"
+            className="px-3 py-2 rounded-lg backdrop-blur-md bg-white/[0.1] dark:bg-brand-black/80 border border-white/[0.2] dark:border-white/[0.1] text-brand-black dark:text-brand-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30"
+            style={{
+              colorScheme: 'dark'
+            }}
           >
-            <option value="newest">Mais recentes</option>
-            <option value="oldest">Mais antigas</option>
-            <option value="title">Título A-Z</option>
-            <option value="popular">Mais populares</option>
+            <option value="newest" className="bg-white dark:bg-brand-black text-brand-black dark:text-brand-white">Mais recentes</option>
+            <option value="oldest" className="bg-white dark:bg-brand-black text-brand-black dark:text-brand-white">Mais antigas</option>
+            <option value="title" className="bg-white dark:bg-brand-black text-brand-black dark:text-brand-white">Título A-Z</option>
+            <option value="popular" className="bg-white dark:bg-brand-black text-brand-black dark:text-brand-white">Mais populares</option>
           </select>
         </div>
 

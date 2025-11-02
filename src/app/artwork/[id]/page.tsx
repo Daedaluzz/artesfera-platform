@@ -496,7 +496,20 @@ export default function ArtworkDetailPage() {
               <div className="flex items-center gap-4 text-sm text-brand-black/70 dark:text-brand-white/70">
                 <span className="flex items-center gap-1">
                   <Calendar className="w-4 h-4" />
-                  {new Date(artwork.createdAt).toLocaleDateString("pt-BR")}
+                  {artwork.createdAt ? (() => {
+                    try {
+                      const dateValue = artwork.createdAt;
+                      if (typeof dateValue === 'string') {
+                        return new Date(dateValue).toLocaleDateString("pt-BR");
+                      } else if (dateValue && typeof dateValue === 'object' && 'toDate' in dateValue) {
+                        return new Date((dateValue as { toDate(): Date }).toDate()).toLocaleDateString("pt-BR");
+                      } else {
+                        return new Date(dateValue).toLocaleDateString("pt-BR");
+                      }
+                    } catch {
+                      return 'Data não disponível';
+                    }
+                  })() : 'Data não disponível'}
                 </span>
               </div>
             </div>
