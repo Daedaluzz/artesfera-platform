@@ -181,6 +181,13 @@ export default function ProfileEdit() {
   // Initialize form data when user document loads
   useEffect(() => {
     if (userDocument && user) {
+      console.log("Profile Edit - Debug Info:", {
+        userDocumentPhotoURL: userDocument.photoURL,
+        userPhotoURL: user.photoURL,
+        userDisplayName: user.displayName,
+        userDocumentName: userDocument.name
+      });
+      
       setFormData({
         name: userDocument.name || user.displayName || "",
         email: userDocument.email || user.email || "",
@@ -392,6 +399,9 @@ export default function ProfileEdit() {
       // Update Firebase Auth profile
       await updateProfile(user, { photoURL });
 
+      // Sync public profile to ensure consistency across all views
+      await syncPublicProfile(user.uid);
+
       setSuccess("✅ Foto atualizada com sucesso!");
       console.log("Profile update completed successfully");
     } catch (error) {
@@ -547,14 +557,21 @@ export default function ProfileEdit() {
           <div className="flex flex-col items-center mb-8">
             <div className="relative mb-4 group">
               <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white/30 dark:border-white/20 shadow-lg">
-                {userDocument?.photoURL ? (
+                {(userDocument?.photoURL || user?.photoURL) ? (
                   <div className="relative w-full h-full">
                     <Image
-                      src={userDocument.photoURL}
+                      src={userDocument?.photoURL || user?.photoURL || ""}
                       alt="Profile"
                       width={128}
                       height={128}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        // If image fails to load, hide the image and show initials instead
+                        console.log("Image failed to load, falling back to initials");
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                      }}
+                      priority
                     />
                   </div>
                 ) : (
@@ -569,17 +586,24 @@ export default function ProfileEdit() {
               </div>
 
               {/* Remove Photo Button - positioned outside the circle */}
-              {userDocument?.photoURL && (
+              {(userDocument?.photoURL || user?.photoURL) && (
                 <button
                   onClick={async () => {
                     if (!user) return;
                     try {
+                      // Update Firestore user document
                       const userRef = doc(db, "users", user.uid);
                       await updateDoc(userRef, {
                         photoURL: null,
                         updatedAt: serverTimestamp(),
                       });
+                      
+                      // Update Firebase Auth profile
                       await updateProfile(user, { photoURL: null });
+                      
+                      // Sync public profile to ensure consistency
+                      await syncPublicProfile(user.uid);
+                      
                       setSuccess("✅ Foto removida com sucesso!");
                     } catch (error) {
                       console.error("Error removing photo:", error);
