@@ -76,6 +76,12 @@ service cloud.firestore {
     // ========================================
     
     // Current user documents structure - Private full access
+    // Collection-level rule for username uniqueness queries during registration
+    match /users {
+      allow list: if isAuthenticated(); // Allow querying for username uniqueness
+    }
+    
+    // Document-level rule for individual user documents
     match /users/{userId} {
       allow read, write: if isOwner(userId);
     }

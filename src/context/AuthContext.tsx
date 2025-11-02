@@ -22,10 +22,6 @@ import {
   doc,
   getDoc,
   setDoc,
-  query,
-  collection,
-  where,
-  getDocs,
   serverTimestamp,
   runTransaction,
   FieldValue,
@@ -192,16 +188,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
           let username = baseName;
           let counter = 1;
 
-          // Simple availability check within transaction
+          // Simple availability check within transaction using usernames collection
           while (counter < 100) {
             // Prevent infinite loop
-            const usernameQuery = query(
-              collection(db, "users"),
-              where("username", "==", username)
-            );
-            const usernameSnapshot = await getDocs(usernameQuery);
+            const usernameRef = doc(db, "usernames", username);
+            const usernameDoc = await transaction.get(usernameRef);
 
-            if (usernameSnapshot.empty) {
+            if (!usernameDoc.exists()) {
               break; // Username available
             }
 
@@ -238,8 +231,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
             },
           };
 
+          // Create username mapping document
+          const usernameData = {
+            userId: user.uid,
+            createdAt: serverTimestamp(),
+          };
+
           transaction.set(userRef, userData);
-          console.log("✅ Created new user document for:", user.uid);
+          transaction.set(doc(db, "usernames", username), usernameData);
+          console.log("✅ Created new user document and username mapping for:", user.uid);
         } else {
           // Update existing user with latest auth info, preserving existing data
           const updateData = {
@@ -497,22 +497,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const normalizedUsername = username.toLowerCase();
 
-      // Check in users collection
-      const usersQuery = query(
-        collection(db, "users"),
-        where("username", "==", normalizedUsername)
-      );
-      const usersSnapshot = await getDocs(usersQuery);
+      // Check in usernames collection (dedicated for username mapping)
+      const usernameRef = doc(db, "usernames", normalizedUsername);
+      const usernameDoc = await getDoc(usernameRef);
 
-      // Check in publicProfiles collection as well for consistency
-      const publicProfilesQuery = query(
-        collection(db, "publicProfiles"),
-        where("username", "==", normalizedUsername)
-      );
-      const publicProfilesSnapshot = await getDocs(publicProfilesQuery);
-
-      // Username is available if not found in either collection
-      return usersSnapshot.empty && publicProfilesSnapshot.empty;
+      // Username is available if document doesn't exist
+      return !usernameDoc.exists();
     } catch (error) {
       console.error("❌ Error checking username availability:", error);
       throw error;

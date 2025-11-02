@@ -702,7 +702,7 @@ export default function ProfileEdit() {
                           ? "border-blue-300/50 dark:border-blue-400/50"
                           : "border-red-300/50 dark:border-red-400/50 focus:ring-red-300/30 focus:border-red-300/50"
                       }`}
-                      placeholder="seuusername"
+                      placeholder="seu username"
                       pattern="[a-zA-Z0-9_.-]+"
                       title="Apenas letras, números, pontos, hífens e underscores são permitidos"
                     />
