@@ -290,24 +290,21 @@ export default function UserPortfolioPage() {
                   @{profileData.username || "username"}
                 </p>
                 {profileData.bio && (
-                  <div className="mt-2">
-                    <motion.p 
+                  <div className="mt-2 space-y-1">
+                    <motion.div
                       className={`text-brand-black/80 dark:text-brand-white/80 ${
                         isBioExpanded ? '' : 'line-clamp-2'
                       }`}
                       initial={false}
-                      animate={{ 
-                        height: isBioExpanded ? 'auto' : 'auto'
-                      }}
                       transition={{ duration: 0.3, ease: "easeInOut" }}
                     >
                       {profileData.bio}
-                    </motion.p>
+                    </motion.div>
                     {profileData.bio.length > 100 && (
-                      <div className="flex justify-end mt-1">
+                      <div className="flex justify-end">
                         <button
                           onClick={() => setIsBioExpanded(!isBioExpanded)}
-                          className="text-sm text-brand-navy-blue dark:text-brand-yellow hover:text-brand-navy-blue/80 dark:hover:text-brand-yellow/80 transition-colors duration-200 font-medium"
+                          className="text-sm text-brand-navy-blue dark:text-brand-yellow hover:text-brand-navy-blue/80 dark:hover:text-brand-yellow/80 transition-colors duration-200 font-medium cursor-pointer"
                         >
                           {isBioExpanded ? 'Mostrar menos' : 'Mostrar mais'}
                         </button>
