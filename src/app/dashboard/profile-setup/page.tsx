@@ -54,50 +54,58 @@ const compressImage = (
   return new Promise((resolve, reject) => {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
-    const htmlImg = new HTMLImageElement();
+    const img = document.createElement("img");
 
-    htmlImg.onload = () => {
-      // Calculate new dimensions
-      const { width, height } = htmlImg;
-      const aspectRatio = width / height;
+    img.onload = () => {
+      try {
+        // Calculate new dimensions
+        const { width, height } = img;
+        const aspectRatio = width / height;
 
-      let newWidth = maxWidth;
-      let newHeight = maxWidth / aspectRatio;
+        let newWidth = maxWidth;
+        let newHeight = maxWidth / aspectRatio;
 
-      if (newHeight > maxWidth) {
-        newHeight = maxWidth;
-        newWidth = maxWidth * aspectRatio;
+        if (newHeight > maxWidth) {
+          newHeight = maxWidth;
+          newWidth = maxWidth * aspectRatio;
+        }
+
+        // Set canvas dimensions
+        canvas.width = newWidth;
+        canvas.height = newHeight;
+
+        // Draw and compress
+        ctx?.drawImage(img, 0, 0, newWidth, newHeight);
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              resolve(blob);
+            } else {
+              reject(new Error("Failed to compress image"));
+            }
+            // Clean up
+            URL.revokeObjectURL(img.src);
+          },
+          "image/jpeg",
+          quality
+        );
+      } catch (error) {
+        reject(error);
+        URL.revokeObjectURL(img.src);
       }
-
-      // Set canvas dimensions
-      canvas.width = newWidth;
-      canvas.height = newHeight;
-
-      // Draw and compress
-      ctx?.drawImage(htmlImg, 0, 0, newWidth, newHeight);
-      canvas.toBlob(
-        (blob) => {
-          if (blob) {
-            resolve(blob);
-          } else {
-            reject(new Error("Failed to compress image"));
-          }
-        },
-        "image/jpeg",
-        quality
-      );
     };
 
-    htmlImg.onerror = () => {
+    img.onerror = () => {
       reject(new Error("Failed to load image"));
+      URL.revokeObjectURL(img.src);
     };
 
-    htmlImg.src = URL.createObjectURL(file);
+    img.src = URL.createObjectURL(file);
   });
 };
 
 export default function ProfileSetup() {
-  const { user, userDocument, loading: authLoading } = useAuth();
+  const { user, userDocument, loading: authLoading, syncPublicProfile } = useAuth();
   const router = useRouter();
 
   // Form state
@@ -226,18 +234,14 @@ export default function ProfileSetup() {
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
+    // Only name is required
     if (!formData.name.trim()) {
       newErrors.name = "Nome é obrigatório";
     }
 
-    if (!formData.bio.trim()) {
-      newErrors.bio = "Bio é obrigatória";
-    } else if (formData.bio.length > 500) {
+    // Optional field validations (only validate if field has content)
+    if (formData.bio && formData.bio.length > 500) {
       newErrors.bio = "Bio deve ter no máximo 500 caracteres";
-    }
-
-    if (!formData.artisticName.trim()) {
-      newErrors.artisticName = "Nome artístico é obrigatório";
     }
 
     // Validate social media URLs if provided
@@ -245,6 +249,19 @@ export default function ProfileSetup() {
     if (formData.socials.website && !urlRegex.test(formData.socials.website)) {
       newErrors["socials.website"] =
         "URL do website deve começar com http:// ou https://";
+    }
+
+    if (formData.socials.youtube && !urlRegex.test(formData.socials.youtube)) {
+      newErrors["socials.youtube"] =
+        "URL do YouTube deve começar com http:// ou https://";
+    }
+
+    if (
+      formData.socials.instagram &&
+      !urlRegex.test(formData.socials.instagram)
+    ) {
+      newErrors["socials.instagram"] =
+        "URL do Instagram deve começar com http:// ou https://";
     }
 
     setErrors(newErrors);
@@ -276,9 +293,8 @@ export default function ProfileSetup() {
         .map((tag) => tag.trim())
         .filter((tag) => tag.length > 0);
 
-      // Update user document in Firestore
-      const userRef = doc(db, "users", user.uid);
-      await updateDoc(userRef, {
+      // Prepare profile data
+      const profileData = {
         displayName: formData.name,
         artisticName: formData.artisticName,
         bio: formData.bio,
@@ -288,7 +304,15 @@ export default function ProfileSetup() {
         socials: formData.socials,
         profileCompleted: true,
         lastUpdatedAt: serverTimestamp(),
-      });
+      };
+
+      // Update user document in Firestore (private data)
+      const userRef = doc(db, "users", user.uid);
+      await updateDoc(userRef, profileData);
+
+      // Sync public profile data using the AuthContext function for consistency
+      // This ensures the public profile has all the correct fields and structure
+      await syncPublicProfile(user.uid);
 
       setSuccess("✅ Perfil criado com sucesso!");
 
@@ -469,7 +493,7 @@ export default function ProfileSetup() {
                   className="block text-sm font-medium text-brand-black/80 dark:text-brand-white/80 mb-2"
                 >
                   <User className="w-4 h-4 inline mr-2" />
-                  Nome Artístico
+                  Nome Artístico (opcional)
                 </label>
                 <input
                   type="text"
@@ -484,7 +508,6 @@ export default function ProfileSetup() {
                       : "border-white/[0.2] dark:border-white/[0.1]"
                   }`}
                   placeholder="Como você é conhecido"
-                  required
                 />
                 {errors.artisticName && (
                   <p className="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
@@ -501,7 +524,7 @@ export default function ProfileSetup() {
                 htmlFor="bio"
                 className="block text-sm font-medium text-brand-black/80 dark:text-brand-white/80 mb-2"
               >
-                Bio
+                Bio (opcional)
               </label>
               <textarea
                 id="bio"
@@ -516,7 +539,6 @@ export default function ProfileSetup() {
                     : "border-white/[0.2] dark:border-white/[0.1]"
                 }`}
                 placeholder="Conte um pouco sobre você e sua arte..."
-                required
               />
               <div className="flex justify-between mt-1">
                 {errors.bio ? (
@@ -541,7 +563,7 @@ export default function ProfileSetup() {
                   className="block text-sm font-medium text-brand-black/80 dark:text-brand-white/80 mb-2"
                 >
                   <MapPin className="w-4 h-4 inline mr-2" />
-                  Localização
+                  Localização (opcional)
                 </label>
                 <input
                   type="text"
@@ -561,7 +583,7 @@ export default function ProfileSetup() {
                   className="block text-sm font-medium text-brand-black/80 dark:text-brand-white/80 mb-2"
                 >
                   <Hash className="w-4 h-4 inline mr-2" />
-                  Tags
+                  Tags (opcional)
                 </label>
                 <input
                   type="text"

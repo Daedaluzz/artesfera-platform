@@ -450,9 +450,10 @@ export default function ProfileEdit() {
 
       setSuccess("✅ Perfil atualizado com sucesso!");
 
-      // Redirect back to profile after success
+      // Redirect back to username profile after success
+      const username = formData.username || userDocument?.username || user.uid.slice(0, 8);
       setTimeout(() => {
-        router.push("/profile");
+        router.push(`/@${username}`);
       }, 2000);
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -463,7 +464,8 @@ export default function ProfileEdit() {
   };
 
   const handleCancel = () => {
-    router.push("/profile");
+    const username = userDocument?.username || user?.uid.slice(0, 8);
+    router.push(`/@${username}`);
   };
 
   // Show loading state

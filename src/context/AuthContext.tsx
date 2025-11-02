@@ -239,7 +239,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
           transaction.set(userRef, userData);
           transaction.set(doc(db, "usernames", username), usernameData);
-          console.log("✅ Created new user document and username mapping for:", user.uid);
+          console.log(
+            "✅ Created new user document and username mapping for:",
+            user.uid
+          );
         } else {
           // Update existing user with latest auth info, preserving existing data
           const updateData = {

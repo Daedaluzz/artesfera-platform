@@ -15,6 +15,7 @@ import {
   ArrowLeft,
   Share2,
   ExternalLink,
+  Edit3,
 } from "lucide-react";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { SecondaryButton } from "@/components/ui/secondary-button";
@@ -321,6 +322,74 @@ export default function UsernameProfilePage() {
             </div>
           </div>
         </motion.div>
+
+        {/* Profile Actions for Own Profile */}
+        {isOwnProfile && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.05 }}
+            className="relative backdrop-blur-[15px] bg-white/[0.15] dark:bg-black/15 border border-white/[0.25] dark:border-white/15 rounded-[20px] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1),inset_0_0_20px_10px_rgba(255,255,255,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.25),inset_0_-1px_0_rgba(255,255,255,0.05),inset_0_0_20px_10px_rgba(255,255,255,0.04)] overflow-hidden mb-6"
+          >
+            <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent rounded-full" />
+            <div className="absolute top-4 left-0 w-px h-[calc(100%-2rem)] bg-gradient-to-b from-white/40 via-transparent to-white/10 rounded-full" />
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-full backdrop-blur-[10px] bg-brand-navy-blue/10 dark:bg-brand-yellow/10 border border-brand-navy-blue/20 dark:border-brand-yellow/20">
+                  <Edit3 className="w-5 h-5 text-brand-navy-blue dark:text-brand-yellow" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-brand-black dark:text-brand-white">
+                    Gerenciar Perfil
+                  </h3>
+                  <p className="text-brand-black/60 dark:text-brand-white/60 text-sm">
+                    Edite suas informações pessoais e configurações
+                  </p>
+                </div>
+              </div>
+
+              <PrimaryButton onClick={() => router.push("/profile/edit")}>
+                <Edit3 className="w-4 h-4 mr-2" />
+                Editar Perfil
+              </PrimaryButton>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Share Profile for All Users */}
+        {user && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="relative backdrop-blur-[15px] bg-white/[0.15] dark:bg-black/15 border border-white/[0.25] dark:border-white/15 rounded-[20px] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1),inset_0_0_20px_10px_rgba(255,255,255,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.25),inset_0_-1px_0_rgba(255,255,255,0.05),inset_0_0_20px_10px_rgba(255,255,255,0.04)] overflow-hidden mb-6"
+          >
+            <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent rounded-full" />
+            <div className="absolute top-4 left-0 w-px h-[calc(100%-2rem)] bg-gradient-to-b from-white/40 via-transparent to-white/10 rounded-full" />
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-full backdrop-blur-[10px] bg-brand-navy-blue/10 dark:bg-brand-yellow/10 border border-brand-navy-blue/20 dark:border-brand-yellow/20">
+                  <Share2 className="w-5 h-5 text-brand-navy-blue dark:text-brand-yellow" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-brand-black dark:text-brand-white">
+                    Compartilhar Perfil
+                  </h3>
+                  <p className="text-brand-black/60 dark:text-brand-white/60 text-sm">
+                    Compartilhe este perfil com outras pessoas
+                  </p>
+                </div>
+              </div>
+
+              <SecondaryButton onClick={() => handleShare()}>
+                <Share2 className="w-4 h-4 mr-2" />
+                Compartilhar
+              </SecondaryButton>
+            </div>
+          </motion.div>
+        )}
 
         {/* Tags Section */}
         {profileData?.tags && profileData.tags.length > 0 && (
