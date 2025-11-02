@@ -44,6 +44,7 @@ export default function UserPortfolioPage() {
   const [error, setError] = useState<string | null>(null);
   const [showArtworkModal, setShowArtworkModal] = useState(false);
   const [editingArtwork, setEditingArtwork] = useState<Artwork | null>(null);
+  const [isBioExpanded, setIsBioExpanded] = useState(false);
 
   // Check if current user is the owner of this profile
   const isOwner = user && profileData && user.uid === profileData.uid;
@@ -289,9 +290,28 @@ export default function UserPortfolioPage() {
                   @{profileData.username || "username"}
                 </p>
                 {profileData.bio && (
-                  <p className="mt-2 text-brand-black/80 dark:text-brand-white/80 line-clamp-2">
-                    {profileData.bio}
-                  </p>
+                  <div className="mt-2 relative">
+                    <motion.p 
+                      className={`text-brand-black/80 dark:text-brand-white/80 ${
+                        isBioExpanded ? '' : 'line-clamp-2'
+                      }`}
+                      initial={false}
+                      animate={{ 
+                        height: isBioExpanded ? 'auto' : 'auto'
+                      }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                    >
+                      {profileData.bio}
+                    </motion.p>
+                    {profileData.bio.length > 100 && (
+                      <button
+                        onClick={() => setIsBioExpanded(!isBioExpanded)}
+                        className="absolute bottom-0 right-0 ml-2 text-sm text-brand-navy-blue dark:text-brand-yellow hover:text-brand-navy-blue/80 dark:hover:text-brand-yellow/80 transition-colors duration-200 font-medium bg-gradient-to-l from-white/90 via-white/90 to-transparent dark:from-brand-black/90 dark:via-brand-black/90 dark:to-transparent pl-3"
+                      >
+                        {isBioExpanded ? 'Mostrar menos' : 'Mostrar mais'}
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
