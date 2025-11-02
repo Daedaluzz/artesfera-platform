@@ -6,7 +6,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, X, Filter, Tag, ChevronDown, ChevronUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -29,8 +29,10 @@ export function TagFilter({ onFiltersChange, currentFilters }: TagFilterProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Load available tags and categories on component mount
+  // Load available tags and categories on component mount (only once)
   useEffect(() => {
+    let mounted = true;
+
     const loadFilterData = async () => {
       try {
         setLoading(true);
@@ -39,17 +41,25 @@ export function TagFilter({ onFiltersChange, currentFilters }: TagFilterProps) {
           publicGalleryService.getAvailableCategories()
         ]);
         
-        setAvailableTags(tags);
-        setAvailableCategories(categories);
+        if (mounted) {
+          setAvailableTags(tags);
+          setAvailableCategories(categories);
+        }
       } catch (error) {
         console.error('Error loading filter data:', error);
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
     loadFilterData();
-  }, []);
+
+    return () => {
+      mounted = false;
+    };
+  }, []); // Empty dependency array - only load once
 
   // Filter tags based on search term
   const filteredTags = availableTags.filter(tag =>
@@ -59,37 +69,41 @@ export function TagFilter({ onFiltersChange, currentFilters }: TagFilterProps) {
   // Display limited tags or all tags based on showAllTags state
   const displayedTags = showAllTags ? filteredTags : filteredTags.slice(0, 12);
 
-  // Update filters when any filter changes
+  // Update filters when any filter changes - debounced to prevent rapid requests
   useEffect(() => {
-    const newFilters: GalleryFilters = {
-      tags: selectedTags.length > 0 ? selectedTags : undefined,
-      category: selectedCategory !== "Todos" ? selectedCategory : undefined,
-      sortBy: sortBy,
-      sortOrder: sortOrder
-    };
+    const timeoutId = setTimeout(() => {
+      const newFilters: GalleryFilters = {
+        tags: selectedTags.length > 0 ? selectedTags : undefined,
+        category: selectedCategory !== "Todos" ? selectedCategory : undefined,
+        sortBy: sortBy,
+        sortOrder: sortOrder
+      };
 
-    onFiltersChange(newFilters);
+      onFiltersChange(newFilters);
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timeoutId);
   }, [selectedTags, selectedCategory, sortBy, sortOrder, onFiltersChange]);
 
-  const handleTagToggle = (tag: string) => {
+  const handleTagToggle = useCallback((tag: string) => {
     setSelectedTags(prev => 
       prev.includes(tag) 
         ? prev.filter(t => t !== tag)
         : [...prev, tag]
     );
-  };
+  }, []);
 
-  const handleCategoryChange = (category: string) => {
+  const handleCategoryChange = useCallback((category: string) => {
     setSelectedCategory(category);
-  };
+  }, []);
 
-  const clearAllFilters = () => {
+  const clearAllFilters = useCallback(() => {
     setSelectedTags([]);
     setSelectedCategory("Todos");
     setSortBy("createdAt");
     setSortOrder("desc");
     setSearchTerm("");
-  };
+  }, []);
 
   const hasActiveFilters = selectedTags.length > 0 || selectedCategory !== "Todos" || 
                          sortBy !== "createdAt" || sortOrder !== "desc";

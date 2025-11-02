@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import { SecondaryButton } from "@/components/ui/secondary-button";
 import { GalleryCard } from "@/components/GalleryCard";
@@ -10,6 +10,7 @@ import {
   PublicArtworkWithOwner, 
   GalleryFilters 
 } from "@/services/publicGalleryService";
+import { cacheService } from "@/services/cacheService";
 import { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
 import { Loader2, ImageOff, Palette } from "lucide-react";
 
@@ -27,7 +28,10 @@ export default function Gallery() {
     sortOrder: 'desc'
   });
 
-  // Fetch artworks function
+  // Stable filters string to prevent unnecessary re-renders
+  const filtersString = useMemo(() => JSON.stringify(currentFilters), [currentFilters]);
+
+  // Fetch artworks function with stable dependencies
   const loadArtworks = useCallback(async (isInitial = false) => {
     try {
       if (isInitial) {
@@ -65,32 +69,39 @@ export default function Gallery() {
     }
   }, [currentFilters, lastDoc]);
 
-  // Fetch initial artworks
-  useEffect(() => {
-    loadArtworks(true);
-  }, [currentFilters, loadArtworks]);
+  // Debounced filter change handler
+  const debouncedLoadArtworks = useMemo(() => 
+    cacheService.debounce(() => loadArtworks(true), 500),
+    [loadArtworks]
+  );
 
-  const handleFiltersChange = (newFilters: GalleryFilters) => {
+  // Fetch initial artworks only when filters actually change
+  useEffect(() => {
+    debouncedLoadArtworks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtersString]); // Use stable string instead of object
+
+  const handleFiltersChange = useCallback((newFilters: GalleryFilters) => {
     console.log('🔄 Filters changed:', newFilters);
     setCurrentFilters(newFilters);
-  };
+  }, []);
 
-  const handleLoadMore = () => {
+  const handleLoadMore = useCallback(() => {
     if (!loadingMore && hasMore) {
       loadArtworks(false);
     }
-  };
+  }, [loadingMore, hasMore, loadArtworks]);
 
-  const handleLike = (artworkId: string) => {
+  const handleLike = useCallback((artworkId: string) => {
     setLikedArtworks(prev =>
       prev.includes(artworkId)
         ? prev.filter(id => id !== artworkId)
         : [...prev, artworkId]
     );
     // TODO: Implement actual like functionality with Firebase
-  };
+  }, []);
 
-  const handleShare = async (artwork: PublicArtworkWithOwner) => {
+  const handleShare = useCallback(async (artwork: PublicArtworkWithOwner) => {
     try {
       const artworkUrl = artwork.owner?.username && artwork.title
         ? `${window.location.origin}/artwork/${artwork.owner.username}-${artwork.title.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')}`
@@ -110,7 +121,7 @@ export default function Gallery() {
     } catch (error) {
       console.error('Error sharing artwork:', error);
     }
-  };
+  }, []);
   return (
     <div className="py-8">
       {/* Header Section */}

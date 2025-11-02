@@ -2,12 +2,13 @@
  * Public Gallery Service
  * 
  * Service for fetching public artworks from all users for the main gallery page
- * Includes filtering, pagination, and search functionality
+ * Includes filtering, pagination, search functionality, and caching
  */
 
 import { collection, query, where, orderBy, limit, startAfter, getDocs, DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
 import { getClientFirestore } from "@/lib/firebase";
 import { Artwork } from "@/types/artwork";
+import { cacheService } from "./cacheService";
 
 const db = getClientFirestore();
 
@@ -36,6 +37,9 @@ export interface GalleryResponse {
 
 class PublicGalleryService {
   private readonly ARTWORKS_PER_PAGE = 12;
+  private readonly CACHE_TTL_ARTWORKS = 2 * 60 * 1000; // 2 minutes
+  private readonly CACHE_TTL_METADATA = 5 * 60 * 1000; // 5 minutes for tags/categories
+  private readonly MIN_REQUEST_INTERVAL = 1000; // 1 second between requests
 
   /**
    * Fetch public artworks for the main gallery
@@ -45,6 +49,26 @@ class PublicGalleryService {
     filters: GalleryFilters = {},
     lastDocument?: QueryDocumentSnapshot<DocumentData>
   ): Promise<GalleryResponse> {
+    // Create cache key based on filters and pagination
+    const cacheKey = `artworks_${JSON.stringify(filters)}_${lastDocument?.id || 'initial'}`;
+    
+    // Check cache first
+    const cachedResult = cacheService.get<GalleryResponse>(cacheKey);
+    if (cachedResult) {
+      return cachedResult;
+    }
+
+    // Check throttling
+    if (cacheService.shouldThrottleRequest(`artworks_${JSON.stringify(filters)}`, this.MIN_REQUEST_INTERVAL)) {
+      // Return cached data from a similar query if available
+      const fallbackKey = `artworks_${JSON.stringify({ ...filters, sortBy: 'createdAt', sortOrder: 'desc' })}_initial`;
+      const fallback = cacheService.get<GalleryResponse>(fallbackKey);
+      if (fallback) {
+        console.log('🔄 Using fallback cache data due to throttling');
+        return fallback;
+      }
+    }
+
     try {
       console.log('🎨 Fetching public artworks with filters:', filters);
 
@@ -98,7 +122,7 @@ class PublicGalleryService {
         artworkDocs.map(async (doc) => {
           const artworkData = { id: doc.id, ...doc.data() } as Artwork;
           
-          // Fetch owner info from publicProfiles
+          // Fetch owner info from publicProfiles with caching
           const ownerInfo = await this.getArtworkOwnerInfo(artworkData.userId);
           
           return {
@@ -112,11 +136,16 @@ class PublicGalleryService {
         ? artworkDocs[artworkDocs.length - 1] 
         : undefined;
 
-      return {
+      const result: GalleryResponse = {
         artworks: artworksWithOwners,
         lastDoc,
         hasMore
       };
+
+      // Cache the result
+      cacheService.set(cacheKey, result, this.CACHE_TTL_ARTWORKS);
+
+      return result;
 
     } catch (error) {
       console.error('❌ Error fetching public artworks:', error);
@@ -128,6 +157,13 @@ class PublicGalleryService {
    * Get owner information for an artwork
    */
   private async getArtworkOwnerInfo(userId: string) {
+    // Check cache first
+    const cacheKey = `owner_${userId}`;
+    const cachedOwner = cacheService.get(cacheKey);
+    if (cachedOwner) {
+      return cachedOwner;
+    }
+
     try {
       const ownerQuery = query(
         collection(db, "publicProfiles"),
@@ -136,22 +172,28 @@ class PublicGalleryService {
       
       const ownerSnapshot = await getDocs(ownerQuery);
       
+      let ownerInfo;
       if (!ownerSnapshot.empty) {
         const ownerData = ownerSnapshot.docs[0].data();
-        return {
+        ownerInfo = {
           uid: ownerData.uid,
           displayName: ownerData.displayName || 'Artista Anônimo',
           username: ownerData.username,
           photoURL: ownerData.photoURL
         };
+      } else {
+        ownerInfo = {
+          uid: userId,
+          displayName: 'Artista Anônimo',
+          username: undefined,
+          photoURL: undefined
+        };
       }
 
-      return {
-        uid: userId,
-        displayName: 'Artista Anônimo',
-        username: undefined,
-        photoURL: undefined
-      };
+      // Cache owner info for longer since it changes less frequently
+      cacheService.set(cacheKey, ownerInfo, this.CACHE_TTL_METADATA);
+      return ownerInfo;
+
     } catch (error) {
       console.error('❌ Error fetching owner info for user:', userId, error);
       return {
@@ -167,6 +209,20 @@ class PublicGalleryService {
    * Get all unique tags from public artworks for filtering
    */
   async getAvailableTags(): Promise<string[]> {
+    const cacheKey = 'available_tags';
+    
+    // Check cache first
+    const cachedTags = cacheService.get<string[]>(cacheKey);
+    if (cachedTags) {
+      return cachedTags;
+    }
+
+    // Check throttling for metadata requests
+    if (cacheService.shouldThrottleRequest('metadata_tags', 2000)) {
+      console.log('🚫 Tags request throttled, returning empty array');
+      return [];
+    }
+
     try {
       console.log('🏷️ Fetching available tags from public artworks');
 
@@ -192,6 +248,9 @@ class PublicGalleryService {
       const uniqueTags = Array.from(allTags).sort();
       console.log(`📊 Found ${uniqueTags.length} unique tags`);
 
+      // Cache for longer since tags don't change frequently
+      cacheService.set(cacheKey, uniqueTags, this.CACHE_TTL_METADATA);
+
       return uniqueTags;
     } catch (error) {
       console.error('❌ Error fetching available tags:', error);
@@ -203,6 +262,20 @@ class PublicGalleryService {
    * Get categories with counts for filtering
    */
   async getAvailableCategories(): Promise<{ category: string; count: number }[]> {
+    const cacheKey = 'available_categories';
+    
+    // Check cache first
+    const cachedCategories = cacheService.get<{ category: string; count: number }[]>(cacheKey);
+    if (cachedCategories) {
+      return cachedCategories;
+    }
+
+    // Check throttling for metadata requests
+    if (cacheService.shouldThrottleRequest('metadata_categories', 2000)) {
+      console.log('🚫 Categories request throttled, returning empty array');
+      return [];
+    }
+
     try {
       console.log('📂 Fetching available categories from public artworks');
 
@@ -227,6 +300,10 @@ class PublicGalleryService {
         .sort((a, b) => b.count - a.count);
 
       console.log(`📊 Found ${categories.length} categories`);
+      
+      // Cache for longer since categories don't change frequently
+      cacheService.set(cacheKey, categories, this.CACHE_TTL_METADATA);
+      
       return categories;
     } catch (error) {
       console.error('❌ Error fetching available categories:', error);
