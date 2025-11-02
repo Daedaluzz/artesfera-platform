@@ -21,6 +21,7 @@ import {
   Loader2,
   Share2,
   ExternalLink,
+  Palette,
 } from "lucide-react";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
@@ -464,7 +465,14 @@ export default function Profile() {
 
                 {/* Share Profile Button */}
                 {formData.username && (
-                  <div className="mt-3 flex gap-2">
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <a
+                      href={`/${formData.username}/portfolio`}
+                      className="flex items-center gap-1 px-3 py-1 rounded-[8px] backdrop-blur-[10px] bg-white/[0.1] dark:bg-white/[0.05] border border-white/[0.2] dark:border-white/[0.1] text-xs text-brand-black/70 dark:text-brand-white/70 hover:text-brand-navy-blue dark:hover:text-brand-yellow transition-all duration-300 hover:backdrop-blur-xl hover:bg-white/20"
+                    >
+                      <Palette className="w-3 h-3" />
+                      <span>Meu Portfólio</span>
+                    </a>
                     <button
                       onClick={() => {
                         const shareUrl = `${window.location.origin}/@${formData.username}`;
@@ -500,6 +508,31 @@ export default function Profile() {
                 )}
               </div>
 
+              {/* Portfolio Quick Access */}
+              {formData.username && (
+                <div className="mt-4 p-4 rounded-[12px] backdrop-blur-[10px] bg-gradient-to-br from-white/[0.15] to-white/[0.05] dark:from-white/[0.1] dark:to-white/[0.02] border border-white/[0.2] dark:border-white/[0.1]">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2 rounded-[8px] bg-gradient-to-br from-brand-navy-blue/10 to-brand-navy-blue/5 dark:from-brand-yellow/10 dark:to-brand-yellow/5">
+                      <Palette className="w-4 h-4 text-brand-navy-blue dark:text-brand-yellow" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-brand-black dark:text-brand-white">
+                        Meu Portfólio
+                      </h3>
+                      <p className="text-xs text-brand-black/60 dark:text-brand-white/60">
+                        Gerencie suas obras de arte
+                      </p>
+                    </div>
+                  </div>
+                  <a
+                    href={`/${formData.username}/portfolio`}
+                    className="block w-full px-3 py-2 rounded-[8px] text-center text-sm font-medium bg-gradient-to-r from-brand-navy-blue/20 to-brand-navy-blue/10 dark:from-brand-yellow/20 dark:to-brand-yellow/10 text-brand-navy-blue dark:text-brand-yellow hover:from-brand-navy-blue/30 hover:to-brand-navy-blue/20 dark:hover:from-brand-yellow/30 dark:hover:to-brand-yellow/20 transition-all duration-300"
+                  >
+                    Acessar Portfólio
+                  </a>
+                </div>
+              )}
+
               {/* Navigation */}
               <nav className="space-y-2">
                 {[
@@ -507,8 +540,8 @@ export default function Profile() {
                   {
                     id: "portfolio",
                     name: "Portfolio",
-                    icon: Globe,
-                    comingSoon: true,
+                    icon: Palette,
+                    href: formData.username ? `/${formData.username}/portfolio` : undefined,
                   },
                   {
                     id: "preferences",

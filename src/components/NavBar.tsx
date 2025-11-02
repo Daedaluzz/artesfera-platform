@@ -8,7 +8,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import Image from "next/image";
 import { SecondaryButton } from "@/components/ui/secondary-button";
 import { PrimaryButton } from "@/components/ui/primary-button";
-import { LogIn, Menu, X, LogOut, User } from "lucide-react";
+import { LogIn, Menu, X, LogOut, User, Palette } from "lucide-react";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -22,7 +22,7 @@ import { useAuth } from "@/context/AuthContext";
 export default function NavBar() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user, loading, signOut } = useAuth();
+  const { user, userDocument, loading, signOut } = useAuth();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -133,6 +133,38 @@ export default function NavBar() {
                         }
                       >
                         <span className="relative z-10">Dashboard</span>
+                      </Link>
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
+                )}
+
+                {/* Portfolio link - only show when authenticated and has username */}
+                {user && userDocument?.username && (
+                  <NavigationMenuItem className="h-full">
+                    <NavigationMenuLink asChild className="h-full">
+                      <Link
+                        href={`/${userDocument.username}/portfolio`}
+                        className={cn(
+                          "flex items-center justify-center h-full text-sm md:text-base px-2 sm:px-3 md:px-4 relative group cursor-pointer",
+                          "hover:text-brand-navy-blue dark:hover:text-brand-yellow transition-colors duration-300",
+                          "bg-transparent backdrop-filter-none shadow-none transition-all duration-300 relative overflow-hidden",
+                          "before:content-[''] before:absolute before:top-[-2px] before:left-[-100%] before:w-full before:h-[calc(100%+4px)] before:bg-gradient-to-r before:from-transparent before:via-white/40 before:to-transparent before:transition-all before:duration-600 before:ease-in-out before:pointer-events-none before:z-10",
+                          "hover:before:left-full",
+                          "hover:backdrop-blur-xl hover:bg-white/20 hover:shadow-none hover:translate-y-[-1px]",
+                          "dark:hover:bg-white/8",
+                          pathname === `/${userDocument.username}/portfolio`
+                            ? "text-brand-navy-blue dark:text-brand-yellow backdrop-blur-xl bg-white/20 shadow-none translate-y-[-1px] dark:bg-white/8"
+                            : "text-brand-black dark:text-brand-white",
+                          "text-shadow-[0_0_15px_rgba(255,255,255,0.4),0_2px_6px_rgba(0,0,0,0.15),0_0_30px_rgba(255,255,255,0.2)] dark:text-shadow-[0_0_20px_rgba(255,255,255,0.3),0_2px_10px_rgba(0,0,0,0.6),0_0_40px_rgba(255,255,255,0.15)]"
+                        )}
+                        aria-current={
+                          pathname === `/${userDocument.username}/portfolio` ? "page" : undefined
+                        }
+                      >
+                        <span className="relative z-10 flex items-center gap-2">
+                          <Palette className="w-4 h-4" />
+                          Portfólio
+                        </span>
                       </Link>
                     </NavigationMenuLink>
                   </NavigationMenuItem>
@@ -270,6 +302,29 @@ export default function NavBar() {
                     )}
                   >
                     <span className="relative z-10">Dashboard</span>
+                  </Link>
+                )}
+
+                {/* Portfolio link - only show when authenticated and has username */}
+                {user && userDocument?.username && (
+                  <Link
+                    href={`/${userDocument.username}/portfolio`}
+                    onClick={closeMobileMenu}
+                    className={cn(
+                      "flex items-center w-full px-4 py-3 rounded-xl text-base font-semibold transition-all duration-300 relative overflow-hidden group",
+                      "before:content-[''] before:absolute before:top-[-2px] before:left-[-100%] before:w-full before:h-[calc(100%+4px)] before:bg-gradient-to-r before:from-transparent before:via-white/50 before:to-transparent before:transition-all before:duration-600 before:ease-in-out before:pointer-events-none before:z-10",
+                      "hover:before:left-full",
+                      "hover:backdrop-blur-xl hover:bg-white/30 hover:translate-y-[-1px]",
+                      "dark:hover:bg-white/15",
+                      pathname === `/${userDocument.username}/portfolio`
+                        ? "text-brand-navy-blue dark:text-brand-yellow backdrop-blur-xl bg-white/30 translate-y-[-1px] dark:bg-white/15 font-bold"
+                        : "text-brand-black dark:text-brand-white hover:text-brand-navy-blue dark:hover:text-brand-yellow"
+                    )}
+                  >
+                    <span className="relative z-10 flex items-center gap-2">
+                      <Palette className="w-4 h-4" />
+                      Portfólio
+                    </span>
                   </Link>
                 )}
               </div>
