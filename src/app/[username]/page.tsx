@@ -95,10 +95,12 @@ export default function UsernameProfilePage() {
           );
 
           if (!testSnapshot.empty) {
-            console.log(
-              "Sample document usernames:",
-              testSnapshot.docs.map((doc) => doc.data().username)
-            );
+            const sampleDocs = testSnapshot.docs.map((doc) => ({
+              id: doc.id,
+              username: doc.data().username,
+              displayName: doc.data().displayName,
+            }));
+            console.log("Sample documents:", sampleDocs);
           }
         } catch (testError) {
           console.error("Collection access test failed:", testError);

@@ -160,6 +160,57 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [loading, setLoading] = useState(true);
 
   /**
+   * Sync user's public profile data
+   * Uses secure server-side API to sync data from users to publicProfiles collection
+   */
+  const syncPublicProfile = async (userId: string, authUser?: User): Promise<void> => {
+    try {
+      // Get the current user's data from Firestore
+      const userRef = doc(db, "users", userId);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        throw new Error("User document not found");
+      }
+
+      const userData = userSnap.data();
+
+      // Use provided user or current user from state
+      const currentUser = authUser || user;
+      if (!currentUser) {
+        throw new Error("No authenticated user for sync");
+      }
+
+      // Use the secure server-side sync API
+      const success = await triggerProfileSync(
+        {
+          uid: userData.uid,
+          name: userData.name || "",
+          email: userData.email || "",
+          photoURL: userData.photoURL,
+          bio: userData.bio,
+          tags: userData.tags,
+          website: userData.socials?.website,
+          location: userData.location,
+          username: userData.username,
+          artisticName: userData.artisticName,
+          profileCompleted: userData.profileCompleted,
+        },
+        currentUser
+      );
+
+      if (!success) {
+        throw new Error("Profile sync failed");
+      }
+
+      console.log("✅ Public profile synced successfully via secure API");
+    } catch (error) {
+      console.error("❌ Error syncing public profile:", error);
+      throw error;
+    }
+  };
+
+  /**
    * Creates or updates user document in Firestore
    * Uses transaction with merge: true to avoid overwriting existing data
    */
@@ -169,12 +220,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
    */
   const createUserDocument = useCallback(async (user: User): Promise<void> => {
     const userRef = doc(db, "users", user.uid);
+    let isNewUser = false;
+    let shouldSync = false;
 
     try {
       await runTransaction(db, async (transaction) => {
         const userDoc = await transaction.get(userRef);
 
         if (!userDoc.exists()) {
+          isNewUser = true;
+          shouldSync = true;
           // Generate unique username for new user (simplified logic to avoid circular dependency)
           const baseName = (
             user.displayName ||
@@ -256,6 +311,34 @@ export function AuthProvider({ children }: AuthProviderProps) {
           console.log("✅ Updated existing user document for:", user.uid);
         }
       });
+
+      // Check if existing user needs sync (for users created before sync feature)
+      if (!isNewUser) {
+        try {
+          const publicProfileRef = doc(db, "publicProfiles", user.uid);
+          const publicProfileDoc = await getDoc(publicProfileRef);
+          
+          if (!publicProfileDoc.exists()) {
+            console.log("🔄 Existing user missing public profile, triggering sync:", user.uid);
+            shouldSync = true;
+          }
+        } catch (error) {
+          console.error("❌ Error checking public profile existence:", error);
+          // Don't fail the whole process, just log the error
+        }
+      }
+
+      // Trigger sync for new users or existing users without public profiles
+      if (shouldSync) {
+        try {
+          console.log("🔄 Auto-syncing public profile for user:", user.uid);
+          await syncPublicProfile(user.uid, user);
+          console.log("✅ Auto-sync completed for user:", user.uid);
+        } catch (syncError) {
+          console.error("❌ Auto-sync failed for user:", syncError);
+          // Don't throw error here - user creation succeeded, sync can be retried later
+        }
+      }
     } catch (error) {
       console.error("❌ Error creating/updating user document:", error);
       throw error;
@@ -354,56 +437,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       throw error;
     } finally {
       setLoading(false);
-    }
-  };
-
-  /**
-   * Sync user's public profile data
-   * Uses secure server-side API to sync data from users to publicProfiles collection
-   */
-  const syncPublicProfile = async (userId: string): Promise<void> => {
-    try {
-      // Get the current user's data from Firestore
-      const userRef = doc(db, "users", userId);
-      const userSnap = await getDoc(userRef);
-
-      if (!userSnap.exists()) {
-        throw new Error("User document not found");
-      }
-
-      const userData = userSnap.data();
-
-      // Only sync if we have a current authenticated user
-      if (!user) {
-        throw new Error("No authenticated user for sync");
-      }
-
-      // Use the secure server-side sync API
-      const success = await triggerProfileSync(
-        {
-          uid: userData.uid,
-          name: userData.name || "",
-          email: userData.email || "",
-          photoURL: userData.photoURL,
-          bio: userData.bio,
-          tags: userData.tags,
-          website: userData.socials?.website,
-          location: userData.location,
-          username: userData.username,
-          artisticName: userData.artisticName,
-          profileCompleted: userData.profileCompleted,
-        },
-        user
-      );
-
-      if (!success) {
-        throw new Error("Profile sync failed");
-      }
-
-      console.log("✅ Public profile synced successfully via secure API");
-    } catch (error) {
-      console.error("❌ Error syncing public profile:", error);
-      throw error;
     }
   };
 

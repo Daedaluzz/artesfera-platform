@@ -175,7 +175,7 @@ export function extractPublicFields(
   return {
     uid: userData.uid,
     displayName: userData.artisticName || userData.name,
-    username: userData.username,
+    username: userData.username?.toLowerCase(), // Normalize username to lowercase for consistent queries
     photoURL: userData.photoURL,
     bio: userData.bio,
     tags: userData.tags || [],
