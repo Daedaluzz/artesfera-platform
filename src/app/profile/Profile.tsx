@@ -268,19 +268,22 @@ export default function Profile() {
       });
 
       // Trigger public profile sync
-      await autoSyncProfile({
-        uid: user.uid,
-        name: formData.name,
-        email: user.email || "",
-        photoURL: downloadURL,
-        bio: formData.bio,
-        tags: formData.tags,
-        website: formData.socials?.website,
-        location: formData.location,
-        username: formData.username,
-        artisticName: formData.artisticName,
-        profileCompleted: true,
-      }, user);
+      await autoSyncProfile(
+        {
+          uid: user.uid,
+          name: formData.name,
+          email: user.email || "",
+          photoURL: downloadURL,
+          bio: formData.bio,
+          tags: formData.tags,
+          website: formData.socials?.website,
+          location: formData.location,
+          username: formData.username,
+          artisticName: formData.artisticName,
+          profileCompleted: true,
+        },
+        user
+      );
 
       setSuccess("✅ Foto do perfil atualizada com sucesso!");
     } catch (error) {
@@ -319,19 +322,22 @@ export default function Profile() {
       }
 
       // Trigger public profile sync
-      await autoSyncProfile({
-        uid: user.uid,
-        name: formData.name,
-        email: user.email || "",
-        photoURL: user.photoURL || undefined,
-        bio: formData.bio,
-        tags: formData.tags,
-        website: formData.socials?.website,
-        location: formData.location,
-        username: formData.username,
-        artisticName: formData.artisticName,
-        profileCompleted: true,
-      }, user);
+      await autoSyncProfile(
+        {
+          uid: user.uid,
+          name: formData.name,
+          email: user.email || "",
+          photoURL: user.photoURL || undefined,
+          bio: formData.bio,
+          tags: formData.tags,
+          website: formData.socials?.website,
+          location: formData.location,
+          username: formData.username,
+          artisticName: formData.artisticName,
+          profileCompleted: true,
+        },
+        user
+      );
 
       setSuccess("✅ Perfil atualizado com sucesso!");
       setIsEditing(false);
@@ -572,7 +578,9 @@ export default function Profile() {
                     id: "portfolio",
                     name: "Portfolio",
                     icon: Palette,
-                    href: formData.username ? `/${formData.username}/portfolio` : undefined,
+                    href: formData.username
+                      ? `/${formData.username}/portfolio`
+                      : undefined,
                   },
                   {
                     id: "preferences",

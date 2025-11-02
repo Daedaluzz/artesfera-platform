@@ -8,7 +8,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import Image from "next/image";
 import { SecondaryButton } from "@/components/ui/secondary-button";
 import { PrimaryButton } from "@/components/ui/primary-button";
-import { LogIn, Menu, X, LogOut, User, Palette } from "lucide-react";
+import { LogIn, Menu, X, LogOut, User } from "lucide-react";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -158,13 +158,12 @@ export default function NavBar() {
                           "text-shadow-[0_0_15px_rgba(255,255,255,0.4),0_2px_6px_rgba(0,0,0,0.15),0_0_30px_rgba(255,255,255,0.2)] dark:text-shadow-[0_0_20px_rgba(255,255,255,0.3),0_2px_10px_rgba(0,0,0,0.6),0_0_40px_rgba(255,255,255,0.15)]"
                         )}
                         aria-current={
-                          pathname === `/${userDocument.username}/portfolio` ? "page" : undefined
+                          pathname === `/${userDocument.username}/portfolio`
+                            ? "page"
+                            : undefined
                         }
                       >
-                        <span className="relative z-10 flex items-center gap-2">
-                          <Palette className="w-4 h-4" />
-                          Portfólio
-                        </span>
+                        <span className="relative z-10">Portfólio</span>
                       </Link>
                     </NavigationMenuLink>
                   </NavigationMenuItem>
@@ -321,10 +320,7 @@ export default function NavBar() {
                         : "text-brand-black dark:text-brand-white hover:text-brand-navy-blue dark:hover:text-brand-yellow"
                     )}
                   >
-                    <span className="relative z-10 flex items-center gap-2">
-                      <Palette className="w-4 h-4" />
-                      Portfólio
-                    </span>
+                    <span className="relative z-10">Portfólio</span>
                   </Link>
                 )}
               </div>

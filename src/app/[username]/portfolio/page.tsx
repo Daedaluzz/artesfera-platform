@@ -12,12 +12,7 @@ import { SecondaryButton } from "@/components/ui/secondary-button";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { Artwork } from "@/types/artwork";
 import artworkService from "@/services/artworkService";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-} from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
 import { getClientFirestore } from "@/lib/firebase";
 
 const db = getClientFirestore();

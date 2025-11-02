@@ -169,7 +169,9 @@ export interface UserData {
  * Extract public fields from user data for publicProfiles collection
  * Only includes fields that should be publicly visible
  */
-export function extractPublicFields(userData: UserData): Omit<PublicProfileData, 'createdAt'> {
+export function extractPublicFields(
+  userData: UserData
+): Omit<PublicProfileData, "createdAt"> {
   return {
     uid: userData.uid,
     displayName: userData.artisticName || userData.name,
@@ -187,7 +189,9 @@ export function extractPublicFields(userData: UserData): Omit<PublicProfileData,
  * Synchronize user data to publicProfiles collection
  * This function should be called whenever user profile data changes
  */
-export async function syncUserToPublicProfile(userData: UserData): Promise<boolean> {
+export async function syncUserToPublicProfile(
+  userData: UserData
+): Promise<boolean> {
   const db = getAdminFirestore();
   if (!db) {
     console.error("❌ Admin Firestore not available for sync");
@@ -196,11 +200,11 @@ export async function syncUserToPublicProfile(userData: UserData): Promise<boole
 
   try {
     const publicData = extractPublicFields(userData);
-    const publicProfileRef = db.collection('publicProfiles').doc(userData.uid);
-    
+    const publicProfileRef = db.collection("publicProfiles").doc(userData.uid);
+
     // Check if document exists to set createdAt only on first creation
     const existingDoc = await publicProfileRef.get();
-    
+
     if (!existingDoc.exists) {
       // First time creating public profile
       await publicProfileRef.set({
@@ -213,10 +217,13 @@ export async function syncUserToPublicProfile(userData: UserData): Promise<boole
       await publicProfileRef.update(publicData);
       console.log(`✅ Updated public profile for user ${userData.uid}`);
     }
-    
+
     return true;
   } catch (error) {
-    console.error(`❌ Failed to sync user ${userData.uid} to public profile:`, error);
+    console.error(
+      `❌ Failed to sync user ${userData.uid} to public profile:`,
+      error
+    );
     return false;
   }
 }
@@ -232,7 +239,7 @@ export async function deletePublicProfile(uid: string): Promise<boolean> {
   }
 
   try {
-    await db.collection('publicProfiles').doc(uid).delete();
+    await db.collection("publicProfiles").doc(uid).delete();
     console.log(`✅ Deleted public profile for user ${uid}`);
     return true;
   } catch (error) {

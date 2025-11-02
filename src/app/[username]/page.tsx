@@ -145,13 +145,13 @@ export default function UsernameProfilePage() {
 
       try {
         setPortfolioLoading(true);
-        
+
         // Get latest 6 artworks for preview (public only for others, all for own profile)
         const userArtworks = await artworkService.getUserArtworks(
           profileData.uid,
           isOwnProfile || false
         );
-        
+
         // Take only first 6 for preview
         setPortfolioArtworks(userArtworks.slice(0, 6));
       } catch (err) {
@@ -549,7 +549,7 @@ export default function UsernameProfilePage() {
                           <Palette className="w-8 h-8 text-brand-navy-blue/50 dark:text-brand-yellow/50" />
                         </div>
                       )}
-                      
+
                       {/* Hover overlay */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         <div className="absolute bottom-2 left-2 right-2">
@@ -569,7 +569,9 @@ export default function UsernameProfilePage() {
 
                 <div className="text-center">
                   <p className="text-brand-black/60 dark:text-brand-white/60 text-sm mb-3">
-                    {portfolioArtworks.length === 6 ? "Últimas 6 obras" : `${portfolioArtworks.length} obras`}
+                    {portfolioArtworks.length === 6
+                      ? "Últimas 6 obras"
+                      : `${portfolioArtworks.length} obras`}
                   </p>
                   <a
                     href={`/${profileData.username}/portfolio`}
@@ -586,13 +588,14 @@ export default function UsernameProfilePage() {
                   <Palette className="w-8 h-8 text-brand-navy-blue/50 dark:text-brand-yellow/50" />
                 </div>
                 <h3 className="text-lg font-medium text-brand-black dark:text-brand-white mb-2">
-                  {isOwnProfile ? "Seu portfólio está vazio" : "Nenhuma obra ainda"}
+                  {isOwnProfile
+                    ? "Seu portfólio está vazio"
+                    : "Nenhuma obra ainda"}
                 </h3>
                 <p className="text-brand-black/60 dark:text-brand-white/60 mb-4">
-                  {isOwnProfile 
+                  {isOwnProfile
                     ? "Comece adicionando suas primeiras obras de arte ao seu portfólio."
-                    : "Este artista ainda não compartilhou nenhuma obra em seu portfólio."
-                  }
+                    : "Este artista ainda não compartilhou nenhuma obra em seu portfólio."}
                 </p>
                 {isOwnProfile && (
                   <a

@@ -379,19 +379,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       // Use the secure server-side sync API
-      const success = await triggerProfileSync({
-        uid: userData.uid,
-        name: userData.name || "",
-        email: userData.email || "",
-        photoURL: userData.photoURL,
-        bio: userData.bio,
-        tags: userData.tags,
-        website: userData.socials?.website,
-        location: userData.location,
-        username: userData.username,
-        artisticName: userData.artisticName,
-        profileCompleted: userData.profileCompleted,
-      }, user);
+      const success = await triggerProfileSync(
+        {
+          uid: userData.uid,
+          name: userData.name || "",
+          email: userData.email || "",
+          photoURL: userData.photoURL,
+          bio: userData.bio,
+          tags: userData.tags,
+          website: userData.socials?.website,
+          location: userData.location,
+          username: userData.username,
+          artisticName: userData.artisticName,
+          profileCompleted: userData.profileCompleted,
+        },
+        user
+      );
 
       if (!success) {
         throw new Error("Profile sync failed");

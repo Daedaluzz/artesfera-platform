@@ -3,13 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  X,
-  Plus,
-  Trash2,
-  Loader2,
-  AlertCircle,
-} from "lucide-react";
+import { X, Plus, Trash2, Loader2, AlertCircle } from "lucide-react";
 import {
   Artwork,
   ArtworkFormData,
@@ -131,7 +125,10 @@ export const ArtworkFormModal: React.FC<ArtworkFormModalProps> = ({
   };
 
   // Handle input changes
-  const handleInputChange = (field: keyof ArtworkFormData, value: string | string[] | boolean) => {
+  const handleInputChange = (
+    field: keyof ArtworkFormData,
+    value: string | string[] | boolean
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {
@@ -312,32 +309,36 @@ export const ArtworkFormModal: React.FC<ArtworkFormModalProps> = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+        className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4"
         onClick={onClose}
       >
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className="relative w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] bg-white/[0.15] dark:bg-brand-black/15 backdrop-blur-[15px] border border-white/[0.25] dark:border-brand-navy-500/30 rounded-2xl overflow-hidden"
+          className="relative w-full max-w-4xl h-[calc(100vh-16px)] sm:h-[calc(100vh-32px)] max-h-[800px] bg-white/[0.95] dark:bg-brand-black/90 backdrop-blur-[15px] border border-white/[0.4] dark:border-brand-navy-500/30 rounded-2xl overflow-hidden shadow-2xl flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 sm:p-6 border-b border-white/[0.2] dark:border-white/[0.1] bg-white/[0.05] dark:bg-black/5">
+          <div className="flex items-center justify-between p-4 sm:p-6 border-b border-brand-navy-200/50 dark:border-white/[0.2] bg-white/[0.6] dark:bg-brand-navy-600/20">
             <h2 className="text-lg sm:text-xl font-semibold text-brand-black dark:text-brand-white">
               {artwork ? "Editar Obra" : "Adicionar Nova Obra"}
             </h2>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-white/[0.1] dark:hover:bg-black/10 transition-colors duration-200"
+              className="p-2 rounded-lg hover:bg-brand-navy-100/50 dark:hover:bg-brand-navy-600/30 transition-colors duration-200 cursor-pointer"
             >
               <X className="w-5 h-5 text-brand-black dark:text-brand-white" />
             </button>
           </div>
 
           {/* Scrollable Form Content */}
-          <div className="overflow-y-auto max-h-[calc(95vh-140px)] sm:max-h-[calc(90vh-140px)]">
-            <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-6" id="artwork-form">
+          <div className="flex-1 overflow-y-auto min-h-0">
+            <form
+              onSubmit={handleSubmit}
+              className="p-4 sm:p-6 space-y-6"
+              id="artwork-form"
+            >
               {/* General Error */}
               {errors.general && (
                 <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex items-center gap-2">
@@ -358,10 +359,10 @@ export const ArtworkFormModal: React.FC<ArtworkFormModalProps> = ({
                   value={formData.title}
                   onChange={(e) => handleInputChange("title", e.target.value)}
                   className={cn(
-                    "w-full px-4 py-3 rounded-xl backdrop-blur-md bg-white/[0.1] dark:bg-black/10 border text-brand-black dark:text-brand-white placeholder-brand-black/50 dark:placeholder-brand-white/50 focus:outline-none focus:ring-2 transition-all duration-200",
+                    "w-full px-4 py-3 rounded-xl backdrop-blur-md bg-white/[0.7] dark:bg-brand-navy-600/20 border text-brand-black dark:text-brand-white placeholder-brand-black/60 dark:placeholder-brand-white/60 focus:outline-none focus:ring-2 transition-all duration-200",
                     errors.title
                       ? "border-red-300 dark:border-red-700 focus:ring-red-300 dark:focus:ring-red-700"
-                      : "border-white/[0.2] dark:border-white/[0.1] focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30"
+                      : "border-brand-navy-200/50 dark:border-white/[0.2] focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30"
                   )}
                   placeholder="Digite o título da obra..."
                   maxLength={100}
@@ -385,10 +386,10 @@ export const ArtworkFormModal: React.FC<ArtworkFormModalProps> = ({
                   }
                   rows={4}
                   className={cn(
-                    "w-full px-4 py-3 rounded-xl backdrop-blur-md bg-white/[0.1] dark:bg-black/10 border text-brand-black dark:text-brand-white placeholder-brand-black/50 dark:placeholder-brand-white/50 focus:outline-none focus:ring-2 transition-all duration-200 resize-none",
+                    "w-full px-4 py-3 rounded-xl backdrop-blur-md bg-white/[0.7] dark:bg-brand-navy-600/20 border text-brand-black dark:text-brand-white placeholder-brand-black/60 dark:placeholder-brand-white/60 focus:outline-none focus:ring-2 transition-all duration-200 resize-none",
                     errors.description
                       ? "border-red-300 dark:border-red-700 focus:ring-red-300 dark:focus:ring-red-700"
-                      : "border-white/[0.2] dark:border-white/[0.1] focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30"
+                      : "border-brand-navy-200/50 dark:border-white/[0.2] focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30"
                   )}
                   placeholder="Descreva sua obra, técnicas utilizadas, inspiração..."
                   maxLength={2000}
@@ -429,7 +430,7 @@ export const ArtworkFormModal: React.FC<ArtworkFormModalProps> = ({
                       <button
                         type="button"
                         onClick={() => handleRemoveExistingImage(index)}
-                        className="absolute top-2 right-2 p-1 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors duration-200 z-10"
+                        className="absolute top-2 right-2 p-1 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors duration-200 z-10 cursor-pointer"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -454,7 +455,7 @@ export const ArtworkFormModal: React.FC<ArtworkFormModalProps> = ({
                           <button
                             type="button"
                             onClick={() => handleRemoveUploadedImage(index)}
-                            className="absolute top-2 right-2 p-1 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors duration-200 z-10"
+                            className="absolute top-2 right-2 p-1 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors duration-200 z-10 cursor-pointer"
                           >
                             <X className="w-3 h-3" />
                           </button>
@@ -481,7 +482,7 @@ export const ArtworkFormModal: React.FC<ArtworkFormModalProps> = ({
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="aspect-square rounded-xl border-2 border-dashed border-brand-navy-blue/30 dark:border-brand-yellow/30 hover:border-brand-navy-blue/50 dark:hover:border-brand-yellow/50 flex items-center justify-center transition-colors duration-200"
+                      className="aspect-square rounded-xl border-2 border-dashed border-brand-navy-blue/30 dark:border-brand-yellow/30 hover:border-brand-navy-blue/50 dark:hover:border-brand-yellow/50 flex items-center justify-center transition-colors duration-200 cursor-pointer"
                     >
                       <div className="text-center">
                         <Plus className="w-8 h-8 text-brand-navy-blue dark:text-brand-yellow mx-auto mb-2" />
@@ -530,7 +531,7 @@ export const ArtworkFormModal: React.FC<ArtworkFormModalProps> = ({
                         onChange={(e) =>
                           handleYouTubeChange(index, e.target.value)
                         }
-                        className="flex-1 px-4 py-3 rounded-xl backdrop-blur-md bg-white/[0.1] dark:bg-black/10 border border-white/[0.2] dark:border-white/[0.1] text-brand-black dark:text-brand-white placeholder-brand-black/50 dark:placeholder-brand-white/50 focus:outline-none focus:ring-2 focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30 transition-all duration-200"
+                        className="flex-1 px-4 py-3 rounded-xl backdrop-blur-md bg-white/[0.7] dark:bg-brand-navy-600/20 border border-brand-navy-200/50 dark:border-white/[0.2] text-brand-black dark:text-brand-white placeholder-brand-black/60 dark:placeholder-brand-white/60 focus:outline-none focus:ring-2 focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30 transition-all duration-200"
                         placeholder="https://youtube.com/watch?v=..."
                       />
                       {formData.youtubeLinks.length > 1 && (
@@ -573,7 +574,7 @@ export const ArtworkFormModal: React.FC<ArtworkFormModalProps> = ({
                     onKeyPress={(e) =>
                       e.key === "Enter" && (e.preventDefault(), handleAddTag())
                     }
-                    className="flex-1 px-4 py-2 rounded-lg backdrop-blur-md bg-white/[0.1] dark:bg-black/10 border border-white/[0.2] dark:border-white/[0.1] text-brand-black dark:text-brand-white placeholder-brand-black/50 dark:placeholder-brand-white/50 focus:outline-none focus:ring-2 focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30 transition-all duration-200"
+                    className="flex-1 px-4 py-2 rounded-lg backdrop-blur-md bg-white/[0.7] dark:bg-brand-navy-600/20 border border-brand-navy-200/50 dark:border-white/[0.2] text-brand-black dark:text-brand-white placeholder-brand-black/60 dark:placeholder-brand-white/60 focus:outline-none focus:ring-2 focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30 transition-all duration-200"
                     placeholder="Digite uma tag..."
                     maxLength={PORTFOLIO_CONFIG.maxTagLength}
                   />
@@ -626,7 +627,7 @@ export const ArtworkFormModal: React.FC<ArtworkFormModalProps> = ({
           </div>
 
           {/* Fixed Footer */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 sm:p-6 border-t border-white/[0.2] dark:border-white/[0.1] bg-white/[0.05] dark:bg-black/5">
+          <div className="flex-shrink-0 flex flex-col sm:flex-row items-center justify-between gap-3 p-4 sm:p-6 border-t border-brand-navy-200/50 dark:border-white/[0.2] bg-white/[0.6] dark:bg-brand-navy-600/20">
             <SecondaryButton
               type="button"
               onClick={onClose}
@@ -640,7 +641,9 @@ export const ArtworkFormModal: React.FC<ArtworkFormModalProps> = ({
             <PrimaryButton
               type="button"
               onClick={() => {
-                const form = document.getElementById('artwork-form') as HTMLFormElement;
+                const form = document.getElementById(
+                  "artwork-form"
+                ) as HTMLFormElement;
                 if (form) {
                   form.requestSubmit();
                 }
