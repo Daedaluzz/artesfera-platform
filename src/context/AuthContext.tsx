@@ -316,7 +316,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (user) {
           // Ensure user document exists when user is authenticated
           await createUserDocument(user);
-          
+
           // Set up real-time listener for user document
           const userDocRef = doc(db, "users", user.uid);
           const unsubscribeUserDoc = onSnapshot(userDocRef, (docSnapshot) => {

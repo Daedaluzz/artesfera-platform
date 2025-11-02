@@ -14,7 +14,9 @@ function DashboardContent() {
   // Redirect to profile setup if profile is incomplete
   useEffect(() => {
     if (!loading && user && userDocument && !userDocument.profileCompleted) {
-      console.log("🔀 Dashboard: Redirecting to profile setup for incomplete profile");
+      console.log(
+        "🔀 Dashboard: Redirecting to profile setup for incomplete profile"
+      );
       router.push("/dashboard/profile-setup");
     }
   }, [user, userDocument, loading, router]);

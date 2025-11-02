@@ -20,17 +20,8 @@ import {
   CheckCircle,
   Loader2,
 } from "lucide-react";
-import {
-  getStorage,
-  ref,
-  uploadBytes,
-  getDownloadURL,
-} from "firebase/storage";
-import {
-  doc,
-  updateDoc,
-  serverTimestamp,
-} from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { getClientFirestore } from "@/lib/firebase";
 
 // Initialize Firebase services
@@ -55,7 +46,11 @@ interface FormErrors {
 }
 
 // Image compression utility
-const compressImage = (file: File, maxWidth = 800, quality = 0.8): Promise<Blob> => {
+const compressImage = (
+  file: File,
+  maxWidth = 800,
+  quality = 0.8
+): Promise<Blob> => {
   return new Promise((resolve, reject) => {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
@@ -65,10 +60,10 @@ const compressImage = (file: File, maxWidth = 800, quality = 0.8): Promise<Blob>
       // Calculate new dimensions
       const { width, height } = htmlImg;
       const aspectRatio = width / height;
-      
+
       let newWidth = maxWidth;
       let newHeight = maxWidth / aspectRatio;
-      
+
       if (newHeight > maxWidth) {
         newHeight = maxWidth;
         newWidth = maxWidth * aspectRatio;
@@ -80,13 +75,17 @@ const compressImage = (file: File, maxWidth = 800, quality = 0.8): Promise<Blob>
 
       // Draw and compress
       ctx?.drawImage(htmlImg, 0, 0, newWidth, newHeight);
-      canvas.toBlob((blob) => {
-        if (blob) {
-          resolve(blob);
-        } else {
-          reject(new Error("Failed to compress image"));
-        }
-      }, "image/jpeg", quality);
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error("Failed to compress image"));
+          }
+        },
+        "image/jpeg",
+        quality
+      );
     };
 
     htmlImg.onerror = () => {
@@ -128,26 +127,35 @@ export default function ProfileSetup() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Handle image selection (must be before any conditional returns)
-  const handleImageSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Validate file type
-      if (!file.type.startsWith("image/")) {
-        setErrors((prev) => ({ ...prev, image: "Por favor, selecione uma imagem válida" }));
-        return;
-      }
+  const handleImageSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        // Validate file type
+        if (!file.type.startsWith("image/")) {
+          setErrors((prev) => ({
+            ...prev,
+            image: "Por favor, selecione uma imagem válida",
+          }));
+          return;
+        }
 
-      // Validate file size (5MB max)
-      if (file.size > 5 * 1024 * 1024) {
-        setErrors((prev) => ({ ...prev, image: "Imagem deve ter menos de 5MB" }));
-        return;
-      }
+        // Validate file size (5MB max)
+        if (file.size > 5 * 1024 * 1024) {
+          setErrors((prev) => ({
+            ...prev,
+            image: "Imagem deve ter menos de 5MB",
+          }));
+          return;
+        }
 
-      setSelectedImage(file);
-      setImagePreview(URL.createObjectURL(file));
-      setErrors((prev) => ({ ...prev, image: "" }));
-    }
-  }, []);
+        setSelectedImage(file);
+        setImagePreview(URL.createObjectURL(file));
+        setErrors((prev) => ({ ...prev, image: "" }));
+      }
+    },
+    []
+  );
 
   // Redirect if already completed profile
   if (!authLoading && userDocument?.profileCompleted) {
@@ -191,11 +199,17 @@ export default function ProfileSetup() {
     try {
       // Compress image
       const compressedImage = await compressImage(file);
-      
+
       // Create storage reference
       const timestamp = Date.now();
-      const fileName = `${timestamp}_${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
-      const storageRef = ref(storage, `profile-photos/${user!.uid}/${fileName}`);
+      const fileName = `${timestamp}_${file.name.replace(
+        /[^a-zA-Z0-9.-]/g,
+        "_"
+      )}`;
+      const storageRef = ref(
+        storage,
+        `profile-photos/${user!.uid}/${fileName}`
+      );
 
       // Upload compressed image
       const snapshot = await uploadBytes(storageRef, compressedImage);
@@ -229,7 +243,8 @@ export default function ProfileSetup() {
     // Validate social media URLs if provided
     const urlRegex = /^https?:\/\/.+/;
     if (formData.socials.website && !urlRegex.test(formData.socials.website)) {
-      newErrors["socials.website"] = "URL do website deve começar com http:// ou https://";
+      newErrors["socials.website"] =
+        "URL do website deve começar com http:// ou https://";
     }
 
     setErrors(newErrors);
@@ -281,7 +296,6 @@ export default function ProfileSetup() {
       setTimeout(() => {
         router.push("/dashboard");
       }, 1500);
-
     } catch (error) {
       console.error("Error saving profile:", error);
       setErrors({
@@ -372,7 +386,7 @@ export default function ProfileSetup() {
               <label className="block text-sm font-medium text-brand-black/80 dark:text-brand-white/80 mb-4">
                 Foto do Perfil
               </label>
-              
+
               <div className="relative inline-block">
                 <motion.div
                   whileHover={{ scale: 1.02 }}
@@ -393,12 +407,12 @@ export default function ProfileSetup() {
                       <Camera className="w-8 h-8 text-brand-black/50 dark:text-brand-white/50" />
                     </div>
                   )}
-                  
+
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
                     <Upload className="w-6 h-6 text-white" />
                   </div>
                 </motion.div>
-                
+
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -407,7 +421,7 @@ export default function ProfileSetup() {
                   className="hidden"
                 />
               </div>
-              
+
               {errors.image && (
                 <p className="mt-2 text-xs text-red-600 dark:text-red-400 flex items-center justify-center gap-1">
                   <AlertCircle className="w-3 h-3" />
@@ -570,7 +584,7 @@ export default function ProfileSetup() {
               <label className="block text-sm font-medium text-brand-black/80 dark:text-brand-white/80 mb-4">
                 Redes Sociais (Opcional)
               </label>
-              
+
               <div className="space-y-3">
                 <div>
                   <div className="relative">

@@ -45,7 +45,9 @@ export default function Login() {
     if (!authLoading && user && userDocument) {
       // Check if profile is completed
       if (!userDocument.profileCompleted) {
-        console.log("🔀 Login: Redirecting to profile setup for first-time user");
+        console.log(
+          "🔀 Login: Redirecting to profile setup for first-time user"
+        );
         router.push("/dashboard/profile-setup");
         return;
       }
