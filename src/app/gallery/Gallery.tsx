@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { SecondaryButton } from "@/components/ui/secondary-button";
 import { GalleryCard } from "@/components/GalleryCard";
 import { TagFilter } from "@/components/TagFilter";
-import { useAuth } from "@/context/AuthContext";
 import { 
   publicGalleryService, 
   PublicArtworkWithOwner, 
@@ -15,8 +14,6 @@ import { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
 import { Loader2, ImageOff, Palette } from "lucide-react";
 
 export default function Gallery() {
-  const { user } = useAuth();
-  
   // State management
   const [artworks, setArtworks] = useState<PublicArtworkWithOwner[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,12 +27,8 @@ export default function Gallery() {
     sortOrder: 'desc'
   });
 
-  // Fetch initial artworks
-  useEffect(() => {
-    loadArtworks(true);
-  }, [currentFilters]);
-
-  const loadArtworks = async (isInitial = false) => {
+  // Fetch artworks function
+  const loadArtworks = useCallback(async (isInitial = false) => {
     try {
       if (isInitial) {
         setLoading(true);
@@ -70,7 +63,12 @@ export default function Gallery() {
       setLoading(false);
       setLoadingMore(false);
     }
-  };
+  }, [currentFilters, lastDoc]);
+
+  // Fetch initial artworks
+  useEffect(() => {
+    loadArtworks(true);
+  }, [currentFilters, loadArtworks]);
 
   const handleFiltersChange = (newFilters: GalleryFilters) => {
     console.log('🔄 Filters changed:', newFilters);
@@ -211,7 +209,7 @@ export default function Gallery() {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-16"
           >
-            {artworks.map((artwork, index) => (
+            {artworks.map((artwork) => (
               <GalleryCard
                 key={artwork.id}
                 artwork={artwork}

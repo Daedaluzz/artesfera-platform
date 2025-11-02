@@ -15,7 +15,6 @@ import {
   Heart, 
   Eye, 
   Share2, 
-  MapPin, 
   Calendar, 
   ExternalLink,
   User
@@ -74,13 +73,13 @@ export function GalleryCard({
     }
   };
 
-  const formatDate = (date: any) => {
+  const formatDate = (date: Date | string | { toDate?: () => Date } | null | undefined) => {
     try {
       if (!date) return 'Data não disponível';
       
       let dateObj: Date;
       
-      if (date.toDate && typeof date.toDate === 'function') {
+      if (typeof date === 'object' && date !== null && 'toDate' in date && typeof date.toDate === 'function') {
         // Firestore Timestamp
         dateObj = date.toDate();
       } else if (typeof date === 'string') {

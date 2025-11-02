@@ -23,8 +23,8 @@ export function TagFilter({ onFiltersChange, currentFilters }: TagFilterProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>(currentFilters.tags || []);
   const [selectedCategory, setSelectedCategory] = useState<string>(currentFilters.category || "Todos");
-  const [sortBy, setSortBy] = useState<string>(currentFilters.sortBy || "createdAt");
-  const [sortOrder, setSortOrder] = useState<string>(currentFilters.sortOrder || "desc");
+  const [sortBy, setSortBy] = useState<'createdAt' | 'views' | 'likes' | 'title'>(currentFilters.sortBy || "createdAt");
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>(currentFilters.sortOrder || "desc");
   const [showAllTags, setShowAllTags] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -64,8 +64,8 @@ export function TagFilter({ onFiltersChange, currentFilters }: TagFilterProps) {
     const newFilters: GalleryFilters = {
       tags: selectedTags.length > 0 ? selectedTags : undefined,
       category: selectedCategory !== "Todos" ? selectedCategory : undefined,
-      sortBy: sortBy as any,
-      sortOrder: sortOrder as any
+      sortBy: sortBy,
+      sortOrder: sortOrder
     };
 
     onFiltersChange(newFilters);
@@ -94,7 +94,7 @@ export function TagFilter({ onFiltersChange, currentFilters }: TagFilterProps) {
   const hasActiveFilters = selectedTags.length > 0 || selectedCategory !== "Todos" || 
                          sortBy !== "createdAt" || sortOrder !== "desc";
 
-  const sortOptions = [
+  const sortOptions: { value: 'createdAt' | 'views' | 'likes' | 'title'; label: string; order: 'asc' | 'desc' }[] = [
     { value: "createdAt", label: "Mais Recentes", order: "desc" },
     { value: "createdAt", label: "Mais Antigos", order: "asc" },
     { value: "title", label: "A-Z", order: "asc" },
