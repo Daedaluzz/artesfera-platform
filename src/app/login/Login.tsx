@@ -202,22 +202,22 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8">
-      <div className="max-w-sm w-full sm:max-w-md">
+    <div className="min-h-screen flex items-center justify-center px-4 py-4">
+      <div className="w-full max-w-md">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-8"
+          className="text-center mb-6"
         >
-          <h1 className="text-3xl sm:text-4xl font-bold font-serif text-brand-black dark:text-brand-white mb-2">
+          <h1 className="text-2xl sm:text-3xl font-bold font-serif text-brand-black dark:text-brand-white mb-1">
             {isLogin ? "Bem-vindo de volta à " : "Junte-se à "}
             <span className="text-brand-navy-blue dark:text-brand-yellow">
               ArtEsfera
             </span>
           </h1>
-          <p className="text-base sm:text-lg text-brand-black/70 dark:text-brand-white/70">
+          <p className="text-sm sm:text-base text-brand-black/70 dark:text-brand-white/70">
             {isLogin
               ? "Entre na sua conta e continue criando"
               : "Crie sua conta e comece a explorar"}
@@ -229,18 +229,18 @@ export default function Login() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="relative backdrop-blur-[15px] bg-white/[0.15] dark:bg-black/15 border border-white/[0.25] dark:border-white/15 rounded-[20px] p-6 sm:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1),inset_0_0_20px_10px_rgba(255,255,255,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.25),inset_0_-1px_0_rgba(255,255,255,0.05),inset_0_0_20px_10px_rgba(255,255,255,0.04)] overflow-hidden"
+          className="relative backdrop-blur-[15px] bg-white/[0.15] dark:bg-black/15 border border-white/[0.25] dark:border-white/15 rounded-[20px] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1),inset_0_0_20px_10px_rgba(255,255,255,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.25),inset_0_-1px_0_rgba(255,255,255,0.05),inset_0_0_20px_10px_rgba(255,255,255,0.04)] overflow-hidden"
         >
           <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent rounded-full" />
           <div className="absolute top-4 left-0 w-px h-[calc(100%-2rem)] bg-gradient-to-b from-white/40 via-transparent to-white/10 rounded-full" />
 
           {/* Mode Toggle */}
-          <div className="flex mb-6 p-1 bg-white/[0.1] dark:bg-black/10 rounded-[12px] border border-white/20 dark:border-white/10">
+          <div className="flex mb-4 p-1 bg-white/[0.1] dark:bg-black/10 rounded-[12px] border border-white/20 dark:border-white/10">
             <button
               type="button"
               onClick={() => !isLoading && setIsLogin(true)}
               disabled={isLoading}
-              className={`flex-1 py-2 px-4 rounded-[8px] text-sm font-medium transition-all duration-200 ${
+              className={`flex-1 py-2 px-3 rounded-[8px] text-sm font-medium transition-all duration-200 ${
                 isLogin
                   ? "bg-white/30 dark:bg-white/20 text-brand-black dark:text-brand-white shadow-sm"
                   : "text-brand-black/70 dark:text-brand-white/70 hover:text-brand-black dark:hover:text-brand-white"
@@ -253,7 +253,7 @@ export default function Login() {
               type="button"
               onClick={() => !isLoading && setIsLogin(false)}
               disabled={isLoading}
-              className={`flex-1 py-2 px-4 rounded-[8px] text-sm font-medium transition-all duration-200 ${
+              className={`flex-1 py-2 px-3 rounded-[8px] text-sm font-medium transition-all duration-200 ${
                 !isLogin
                   ? "bg-white/30 dark:bg-white/20 text-brand-black dark:text-brand-white shadow-sm"
                   : "text-brand-black/70 dark:text-brand-white/70 hover:text-brand-black dark:hover:text-brand-white"
@@ -271,10 +271,10 @@ export default function Login() {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="mb-4 p-3 rounded-[12px] bg-red-500/10 border border-red-500/20 flex items-center gap-2"
+                className="mb-3 p-2.5 rounded-[12px] bg-red-500/10 border border-red-500/20 flex items-center gap-2"
               >
-                <AlertCircle className="w-4 h-4 text-red-500" />
-                <span className="text-sm text-red-600 dark:text-red-400">
+                <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                <span className="text-xs text-red-600 dark:text-red-400">
                   {errors.general}
                 </span>
               </motion.div>
@@ -288,10 +288,10 @@ export default function Login() {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="mb-4 p-3 rounded-[12px] bg-green-500/10 border border-green-500/20 flex items-center gap-2"
+                className="mb-3 p-2.5 rounded-[12px] bg-green-500/10 border border-green-500/20 flex items-center gap-2"
               >
-                <CheckCircle className="w-4 h-4 text-green-500" />
-                <span className="text-sm text-green-600 dark:text-green-400">
+                <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                <span className="text-xs text-green-600 dark:text-green-400">
                   {success}
                 </span>
               </motion.div>
@@ -330,12 +330,12 @@ export default function Login() {
           </SecondaryButton>
 
           {/* Divider */}
-          <div className="relative my-6">
+          <div className="relative my-4">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-white/20 dark:border-white/10" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-3 backdrop-blur-sm bg-white/30 dark:bg-black/30 text-brand-black/60 dark:text-brand-white/60 rounded-full border border-white/20 dark:border-white/10 text-xs">
+              <span className="px-2 backdrop-blur-sm bg-white/30 dark:bg-black/30 text-brand-black/60 dark:text-brand-white/60 rounded-full border border-white/20 dark:border-white/10 text-xs">
                 ou continue com email
               </span>
             </div>
@@ -344,7 +344,7 @@ export default function Login() {
           {/* Email/Password Form */}
           <form
             onSubmit={handleEmailSubmit}
-            className="space-y-4"
+            className="space-y-3"
             role="form"
             aria-label={`${isLogin ? "Login" : "Cadastro"} form`}
           >
@@ -359,7 +359,7 @@ export default function Login() {
                 >
                   <label
                     htmlFor="name"
-                    className="block text-sm font-medium text-brand-black/80 dark:text-brand-white/80 mb-2"
+                    className="block text-sm font-medium text-brand-black/80 dark:text-brand-white/80 mb-1.5"
                   >
                     Nome completo
                   </label>
@@ -370,7 +370,7 @@ export default function Login() {
                     value={formData.name}
                     onChange={handleInputChange}
                     disabled={isLoading}
-                    className="w-full px-4 py-3 rounded-[12px] backdrop-blur-[10px] bg-white/[0.1] dark:bg-white/[0.05] border border-white/[0.2] dark:border-white/[0.1] shadow-[0_4px_16px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-1px_0_rgba(255,255,255,0.05)] text-brand-black dark:text-brand-white placeholder-brand-black/50 dark:placeholder-brand-white/50 focus:outline-none focus:ring-2 focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30 focus:border-brand-navy-blue/30 dark:focus:border-brand-yellow/30 transition-all duration-300 disabled:opacity-50"
+                    className="w-full px-3 py-2.5 rounded-[12px] backdrop-blur-[10px] bg-white/[0.1] dark:bg-white/[0.05] border border-white/[0.2] dark:border-white/[0.1] shadow-[0_4px_16px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-1px_0_rgba(255,255,255,0.05)] text-brand-black dark:text-brand-white placeholder-brand-black/50 dark:placeholder-brand-white/50 focus:outline-none focus:ring-2 focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30 focus:border-brand-navy-blue/30 dark:focus:border-brand-yellow/30 transition-all duration-300 disabled:opacity-50"
                     placeholder="Seu nome completo"
                     aria-describedby="name-error"
                     required={!isLogin}
@@ -383,7 +383,7 @@ export default function Login() {
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-brand-black/80 dark:text-brand-white/80 mb-2"
+                className="block text-sm font-medium text-brand-black/80 dark:text-brand-white/80 mb-1.5"
               >
                 Email
               </label>
@@ -394,7 +394,7 @@ export default function Login() {
                 value={formData.email}
                 onChange={handleInputChange}
                 disabled={isLoading}
-                className={`w-full px-4 py-3 rounded-[12px] backdrop-blur-[10px] bg-white/[0.1] dark:bg-white/[0.05] border shadow-[0_4px_16px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-1px_0_rgba(255,255,255,0.05)] text-brand-black dark:text-brand-white placeholder-brand-black/50 dark:placeholder-brand-white/50 focus:outline-none focus:ring-2 focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30 focus:border-brand-navy-blue/30 dark:focus:border-brand-yellow/30 transition-all duration-300 disabled:opacity-50 ${
+                className={`w-full px-3 py-2.5 rounded-[12px] backdrop-blur-[10px] bg-white/[0.1] dark:bg-white/[0.05] border shadow-[0_4px_16px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-1px_0_rgba(255,255,255,0.05)] text-brand-black dark:text-brand-white placeholder-brand-black/50 dark:placeholder-brand-white/50 focus:outline-none focus:ring-2 focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30 focus:border-brand-navy-blue/30 dark:focus:border-brand-yellow/30 transition-all duration-300 disabled:opacity-50 ${
                   errors.email
                     ? "border-red-500/50 focus:border-red-500/50 focus:ring-red-500/30"
                     : "border-white/[0.2] dark:border-white/[0.1]"
@@ -422,7 +422,7 @@ export default function Login() {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-brand-black/80 dark:text-brand-white/80 mb-2"
+                className="block text-sm font-medium text-brand-black/80 dark:text-brand-white/80 mb-1.5"
               >
                 Senha
               </label>
@@ -434,7 +434,7 @@ export default function Login() {
                   value={formData.password}
                   onChange={handleInputChange}
                   disabled={isLoading}
-                  className={`w-full px-4 py-3 pr-10 rounded-[12px] backdrop-blur-[10px] bg-white/[0.1] dark:bg-white/[0.05] border shadow-[0_4px_16px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-1px_0_rgba(255,255,255,0.05)] text-brand-black dark:text-brand-white placeholder-brand-black/50 dark:placeholder-brand-white/50 focus:outline-none focus:ring-2 focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30 focus:border-brand-navy-blue/30 dark:focus:border-brand-yellow/30 transition-all duration-300 disabled:opacity-50 ${
+                  className={`w-full px-3 py-2.5 pr-10 rounded-[12px] backdrop-blur-[10px] bg-white/[0.1] dark:bg-white/[0.05] border shadow-[0_4px_16px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-1px_0_rgba(255,255,255,0.05)] text-brand-black dark:text-brand-white placeholder-brand-black/50 dark:placeholder-brand-white/50 focus:outline-none focus:ring-2 focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30 focus:border-brand-navy-blue/30 dark:focus:border-brand-yellow/30 transition-all duration-300 disabled:opacity-50 ${
                     errors.password
                       ? "border-red-500/50 focus:border-red-500/50 focus:ring-red-500/30"
                       : "border-white/[0.2] dark:border-white/[0.1]"
@@ -485,7 +485,7 @@ export default function Login() {
                 >
                   <label
                     htmlFor="confirmPassword"
-                    className="block text-sm font-medium text-brand-black/80 dark:text-brand-white/80 mb-2"
+                    className="block text-sm font-medium text-brand-black/80 dark:text-brand-white/80 mb-1.5"
                   >
                     Confirmar senha
                   </label>
@@ -497,7 +497,7 @@ export default function Login() {
                       value={formData.confirmPassword}
                       onChange={handleInputChange}
                       disabled={isLoading}
-                      className={`w-full px-4 py-3 pr-10 rounded-[12px] backdrop-blur-[10px] bg-white/[0.1] dark:bg-white/[0.05] border shadow-[0_4px_16px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-1px_0_rgba(255,255,255,0.05)] text-brand-black dark:text-brand-white placeholder-brand-black/50 dark:placeholder-brand-white/50 focus:outline-none focus:ring-2 focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30 focus:border-brand-navy-blue/30 dark:focus:border-brand-yellow/30 transition-all duration-300 disabled:opacity-50 ${
+                      className={`w-full px-3 py-2.5 pr-10 rounded-[12px] backdrop-blur-[10px] bg-white/[0.1] dark:bg-white/[0.05] border shadow-[0_4px_16px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-1px_0_rgba(255,255,255,0.05)] text-brand-black dark:text-brand-white placeholder-brand-black/50 dark:placeholder-brand-white/50 focus:outline-none focus:ring-2 focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30 focus:border-brand-navy-blue/30 dark:focus:border-brand-yellow/30 transition-all duration-300 disabled:opacity-50 ${
                         errors.confirmPassword
                           ? "border-red-500/50 focus:border-red-500/50 focus:ring-red-500/30"
                           : "border-white/[0.2] dark:border-white/[0.1]"
@@ -549,17 +549,17 @@ export default function Login() {
 
             {/* Remember Me & Forgot Password (only for login) */}
             {isLogin && (
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center">
                   <input
                     id="remember-me"
                     type="checkbox"
-                    className="h-4 w-4 rounded border-white/20 text-brand-navy-blue dark:text-brand-yellow focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30"
+                    className="h-3.5 w-3.5 rounded border-white/20 text-brand-navy-blue dark:text-brand-yellow focus:ring-brand-navy-blue/30 dark:focus:ring-brand-yellow/30"
                     disabled={isLoading}
                   />
                   <label
                     htmlFor="remember-me"
-                    className="ml-2 block text-sm text-brand-black/80 dark:text-brand-white/80"
+                    className="ml-2 block text-xs text-brand-black/80 dark:text-brand-white/80"
                   >
                     Lembrar de mim
                   </label>
@@ -568,7 +568,7 @@ export default function Login() {
                 <button
                   type="button"
                   disabled={isLoading}
-                  className="text-sm text-brand-navy-blue dark:text-brand-yellow hover:text-brand-navy-blue/80 dark:hover:text-brand-yellow/80 transition-colors duration-200 cursor-pointer disabled:opacity-50"
+                  className="text-xs text-brand-navy-blue dark:text-brand-yellow hover:text-brand-navy-blue/80 dark:hover:text-brand-yellow/80 transition-colors duration-200 cursor-pointer disabled:opacity-50"
                 >
                   Esqueceu a senha?
                 </button>
@@ -597,7 +597,7 @@ export default function Login() {
 
             {/* Terms (only for register) */}
             {!isLogin && (
-              <div className="text-center mt-4">
+              <div className="text-center">
                 <p className="text-xs text-brand-black/60 dark:text-brand-white/60">
                   Ao se cadastrar, você concorda com nossos{" "}
                   <a
@@ -619,7 +619,7 @@ export default function Login() {
           </form>
 
           {/* Switch Mode Link */}
-          <div className="mt-6 text-center">
+          <div className="mt-4 text-center">
             <p className="text-sm text-brand-black/70 dark:text-brand-white/70">
               {isLogin ? "Não tem uma conta?" : "Já tem uma conta?"}{" "}
               <button
