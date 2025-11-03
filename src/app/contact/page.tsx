@@ -19,11 +19,11 @@ export default function ContactPage() {
   const router = useRouter();
 
   const handleEmailContact = () => {
-    window.location.href = "mailto:contato@artesfera.com";
+    window.location.href = "mailto:contato@artesfera.tech";
   };
 
   const handleWhatsAppContact = () => {
-    window.open("https://wa.me/5511999999999", "_blank");
+    window.open("https://wa.me/5581996066502", "_blank");
   };
 
   return (
@@ -171,7 +171,7 @@ export default function ContactPage() {
                 Localização
               </h4>
               <p className="text-brand-black/60 dark:text-brand-white/60 text-sm">
-                São Paulo, Brasil
+                Recife, Pernambuco
                 <br />
                 Remotamente
               </p>

@@ -268,7 +268,7 @@ export default function UsernameProfilePage() {
               {username === "contact" && (
                 <SecondaryButton
                   onClick={() =>
-                    (window.location.href = "mailto:contato@artesfera.com")
+                    (window.location.href = "mailto:contato@artesfera.tech")
                   }
                 >
                   Entrar em Contato

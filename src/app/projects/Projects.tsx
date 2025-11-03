@@ -2,22 +2,18 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
-  Search,
-  Filter,
   MapPin,
   Clock,
   Users,
   Tag,
   Plus,
-  ChevronDown,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   listPublicProjects,
   type Project,
-  type ProjectFilters,
   formatPayment,
   generateProjectSlug,
 } from "@/lib/firestoreProjects";
@@ -27,43 +23,6 @@ import { PrimaryButton } from "@/components/ui/primary-button";
 import { SecondaryButton } from "@/components/ui/secondary-button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-
-// Location options for filters
-const ESTADOS_BRASILEIROS = [
-  "AC",
-  "AL",
-  "AP",
-  "AM",
-  "BA",
-  "CE",
-  "DF",
-  "ES",
-  "GO",
-  "MA",
-  "MT",
-  "MS",
-  "MG",
-  "PA",
-  "PB",
-  "PR",
-  "PE",
-  "PI",
-  "RJ",
-  "RN",
-  "RS",
-  "RO",
-  "RR",
-  "SC",
-  "SP",
-  "SE",
-  "TO",
-];
-
-const PROJECT_TYPES = [
-  { value: "collaboration", label: "Colaboração" },
-  { value: "hire", label: "Contratação" },
-  { value: "other", label: "Outro" },
-];
 
 interface ProjectCardProps {
   project: Project;
@@ -116,8 +75,9 @@ function ProjectCard({ project }: ProjectCardProps) {
                 }
                 className="ml-4"
               >
-                {PROJECT_TYPES.find((t) => t.value === project.type)?.label ||
-                  project.type}
+                {project.type === "collaboration" ? "Colaboração" : 
+                 project.type === "hire" ? "Contratação" : 
+                 project.type === "other" ? "Outro" : project.type}
               </Badge>
             </div>
 
@@ -185,136 +145,8 @@ function ProjectCard({ project }: ProjectCardProps) {
   );
 }
 
-function FilterPanel({
-  filters,
-  onFiltersChange,
-  isOpen,
-  onToggle,
-}: {
-  filters: ProjectFilters;
-  onFiltersChange: (filters: ProjectFilters) => void;
-  isOpen: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <div className="relative">
-      <SecondaryButton onClick={onToggle} className="flex items-center gap-2">
-        <Filter className="w-4 h-4" />
-        Filtros
-        <ChevronDown
-          className={`w-4 h-4 transition-transform ${
-            isOpen ? "rotate-180" : ""
-          }`}
-        />
-      </SecondaryButton>
-
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="absolute top-full left-0 mt-2 w-80 p-4 rounded-xl backdrop-blur-md bg-white/90 dark:bg-zinc-800/90 border border-white/20 dark:border-zinc-700/30 shadow-lg z-10"
-          >
-            {/* Type Filter */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-                Tipo
-              </label>
-              <select
-                value={filters.type || ""}
-                onChange={(e) =>
-                  onFiltersChange({
-                    ...filters,
-                    type: (e.target.value ||
-                      undefined) as ProjectFilters["type"],
-                  })
-                }
-                className="w-full px-3 py-2 rounded-lg backdrop-blur-sm bg-white/50 dark:bg-zinc-700/50 border border-white/30 dark:border-zinc-600/30 text-zinc-800 dark:text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow/50 [&>option]:bg-white [&>option]:dark:bg-zinc-800 [&>option]:text-zinc-800 [&>option]:dark:text-zinc-200"
-              >
-                <option value="">Todos os tipos</option>
-                {PROJECT_TYPES.map((type) => (
-                  <option key={type.value} value={type.value}>
-                    {type.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* State Filter */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-                Estado
-              </label>
-              <select
-                value={filters.state || ""}
-                onChange={(e) =>
-                  onFiltersChange({
-                    ...filters,
-                    state: e.target.value || undefined,
-                  })
-                }
-                className="w-full px-3 py-2 rounded-lg backdrop-blur-sm bg-white/50 dark:bg-zinc-700/50 border border-white/30 dark:border-zinc-600/30 text-zinc-800 dark:text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow/50 [&>option]:bg-white [&>option]:dark:bg-zinc-800 [&>option]:text-zinc-800 [&>option]:dark:text-zinc-200"
-              >
-                <option value="">Todos os estados</option>
-                {ESTADOS_BRASILEIROS.map((estado) => (
-                  <option key={estado} value={estado}>
-                    {estado}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* City Filter */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-                Cidade
-              </label>
-              <input
-                type="text"
-                placeholder="Digite a cidade..."
-                value={filters.city || ""}
-                onChange={(e) =>
-                  onFiltersChange({
-                    ...filters,
-                    city: e.target.value || undefined,
-                  })
-                }
-                className="w-full px-3 py-2 rounded-lg backdrop-blur-sm bg-white/50 dark:bg-zinc-700/50 border border-white/30 dark:border-zinc-600/30 text-zinc-800 dark:text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow/50 placeholder:text-zinc-500 dark:placeholder:text-zinc-400"
-              />
-            </div>
-
-            {/* Status Filter */}
-            <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-                Status
-              </label>
-              <select
-                value={filters.status || ""}
-                onChange={(e) =>
-                  onFiltersChange({
-                    ...filters,
-                    status: (e.target.value ||
-                      undefined) as ProjectFilters["status"],
-                  })
-                }
-                className="w-full px-3 py-2 rounded-lg backdrop-blur-sm bg-white/50 dark:bg-zinc-700/50 border border-white/30 dark:border-zinc-600/30 text-zinc-800 dark:text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow/50 [&>option]:bg-white [&>option]:dark:bg-zinc-800 [&>option]:text-zinc-800 [&>option]:dark:text-zinc-200"
-              >
-                <option value="">Todos</option>
-                <option value="open">Abertos</option>
-                <option value="closed">Fechados</option>
-              </select>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
 export default function Projects() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { user } = useAuth();
 
   const [projects, setProjects] = useState<Project[]>([]);
@@ -324,55 +156,6 @@ export default function Projects() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [lastDoc, setLastDoc] =
     useState<QueryDocumentSnapshot<DocumentData> | null>(null);
-
-  // Filters state
-  const [filters, setFilters] = useState<ProjectFilters>({
-    status: "open", // Default to open projects
-  });
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filtersOpen, setFiltersOpen] = useState(false);
-
-  // Initialize filters from URL
-  useEffect(() => {
-    const urlFilters: ProjectFilters = { status: "open" };
-
-    if (searchParams.get("type"))
-      urlFilters.type = searchParams.get("type") as ProjectFilters["type"];
-    if (searchParams.get("state"))
-      urlFilters.state = searchParams.get("state") || undefined;
-    if (searchParams.get("city"))
-      urlFilters.city = searchParams.get("city") || undefined;
-    if (searchParams.get("status"))
-      urlFilters.status = searchParams.get(
-        "status"
-      ) as ProjectFilters["status"];
-    if (searchParams.get("search")) {
-      urlFilters.search = searchParams.get("search") || undefined;
-      setSearchTerm(searchParams.get("search") || "");
-    }
-
-    setFilters(urlFilters);
-  }, [searchParams]);
-
-  // Update URL when filters change
-  const updateUrl = useCallback(
-    (newFilters: ProjectFilters, search?: string) => {
-      const params = new URLSearchParams();
-
-      if (newFilters.type) params.set("type", newFilters.type);
-      if (newFilters.state) params.set("state", newFilters.state);
-      if (newFilters.city) params.set("city", newFilters.city);
-      if (newFilters.status && newFilters.status !== "open")
-        params.set("status", newFilters.status);
-      if (search) params.set("search", search);
-
-      const queryString = params.toString();
-      const newUrl = queryString ? `/projects?${queryString}` : "/projects";
-
-      router.replace(newUrl, { scroll: false });
-    },
-    [router]
-  );
 
   // Load projects
   const loadProjects = useCallback(
@@ -386,7 +169,6 @@ export default function Projects() {
         }
 
         const result = await listPublicProjects({
-          filters: { ...filters, search: searchTerm || undefined },
           limit: 12,
           cursor: isLoadMore && lastDoc ? lastDoc : undefined,
         });
@@ -407,52 +189,13 @@ export default function Projects() {
         setLoadingMore(false);
       }
     },
-    [filters, searchTerm, lastDoc]
+    [lastDoc]
   );
 
-  // Load projects when filters change
+  // Load projects on mount
   useEffect(() => {
-    async function load() {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const result = await listPublicProjects({
-          filters: { ...filters, search: searchTerm || undefined },
-          limit: 12,
-        });
-
-        setProjects(result.projects);
-        setHasMore(result.hasMore);
-        setLastDoc(result.lastDoc || null);
-      } catch (err) {
-        console.error("Error loading projects:", err);
-        setError("Erro ao carregar projetos. Tente novamente.");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    load();
-  }, [filters, searchTerm]);
-
-  // Handle search
-  const handleSearch = useCallback(
-    (value: string) => {
-      setSearchTerm(value);
-      updateUrl(filters, value);
-    },
-    [filters, updateUrl]
-  );
-
-  // Handle filters change
-  const handleFiltersChange = useCallback(
-    (newFilters: ProjectFilters) => {
-      setFilters(newFilters);
-      updateUrl(newFilters, searchTerm);
-    },
-    [searchTerm, updateUrl]
-  );
+    loadProjects();
+  }, []);
 
   // Handle load more
   const handleLoadMore = useCallback(() => {
@@ -487,29 +230,6 @@ export default function Projects() {
               </PrimaryButton>
             )}
           </div>
-
-          {/* Search and Filters */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            {/* Search */}
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-400 w-4 h-4" />
-              <input
-                type="text"
-                placeholder="Buscar projetos..."
-                value={searchTerm}
-                onChange={(e) => handleSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 rounded-lg backdrop-blur-md bg-white/50 dark:bg-zinc-800/50 border border-white/30 dark:border-zinc-700/30 text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-brand-yellow/50 hover:backdrop-blur-xl hover:bg-white/60 dark:hover:bg-zinc-800/60 transition-all duration-300"
-              />
-            </div>
-
-            {/* Filters */}
-            <FilterPanel
-              filters={filters}
-              onFiltersChange={handleFiltersChange}
-              isOpen={filtersOpen}
-              onToggle={() => setFiltersOpen(!filtersOpen)}
-            />
-          </div>
         </div>
 
         <Separator className="mb-8" />
@@ -541,16 +261,10 @@ export default function Projects() {
         ) : projects.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-zinc-600 dark:text-zinc-400 mb-4">
-              Nenhum projeto encontrado com os filtros selecionados.
+              Nenhum projeto encontrado.
             </div>
-            <SecondaryButton
-              onClick={() => {
-                setFilters({ status: "open" });
-                setSearchTerm("");
-                updateUrl({ status: "open" }, "");
-              }}
-            >
-              Limpar Filtros
+            <SecondaryButton onClick={() => loadProjects()}>
+              Atualizar
             </SecondaryButton>
           </div>
         ) : (
