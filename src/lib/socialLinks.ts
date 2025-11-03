@@ -7,7 +7,11 @@ interface SocialLink {
 }
 
 export const socialLinks: SocialLink[] = [
-  { name: "GitHub", url: "https://github.com/your-profile", icon: "Github" },
+  {
+    name: "Instagram",
+    url: "https://www.instagram.com/art.esfera.tech/",
+    icon: "Instagram",
+  },
   {
     name: "LinkedIn",
     url: "https://linkedin.com/in/your-profile",
