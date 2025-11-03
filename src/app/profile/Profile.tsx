@@ -1071,7 +1071,7 @@ export default function Profile() {
                               <div className="flex items-center gap-4 text-xs text-brand-black/60 dark:text-brand-white/60">
                                 <span className="flex items-center gap-1">
                                   <MapPin className="w-3 h-3" />
-                                  {project.location?.city}, {project.location?.state}
+                                  {project.city}, {project.state}
                                 </span>
                                 <span className="flex items-center gap-1">
                                   <Clock className="w-3 h-3" />
@@ -1133,8 +1133,9 @@ export default function Profile() {
                                     'secondary'
                                   }
                                 >
-                                  {application.status === 'pending' ? 'Pendente' :
-                                   application.status === 'accepted' ? 'Aceita' : 'Rejeitada'}
+                                  {application.status === 'applied' ? 'Pendente' :
+                                   application.status === 'accepted' ? 'Aceita' : 
+                                   application.status === 'rejected' ? 'Rejeitada' : 'Retirada'}
                                 </Badge>
                               </div>
                               
@@ -1147,7 +1148,7 @@ export default function Profile() {
                                   <Calendar className="w-3 h-3" />
                                   Candidatura: {application.createdAt instanceof Date ? 
                                     application.createdAt.toLocaleDateString('pt-BR') :
-                                    new Date(application.createdAt).toLocaleDateString('pt-BR')
+                                    (application.createdAt as { toDate?: () => Date })?.toDate?.()?.toLocaleDateString('pt-BR') || 'Data não disponível'
                                   }
                                 </span>
                               </div>
