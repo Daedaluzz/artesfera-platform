@@ -50,12 +50,22 @@ function ApplicationModal({
   onSubmit,
   loading,
 }: ApplicationModalProps) {
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [coverLetter, setCoverLetter] = useState("");
   const [portfolioLink, setPortfolioLink] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!email.trim()) {
+      alert("Email é obrigatório");
+      return;
+    }
+
     onSubmit({
+      applicantEmail: email.trim(),
+      applicantPhone: phone.trim() || undefined,
       coverLetter: coverLetter.trim() || undefined,
       portfolioLink: portfolioLink.trim() || undefined,
     });
@@ -63,6 +73,8 @@ function ApplicationModal({
 
   const handleClose = () => {
     if (!loading) {
+      setEmail("");
+      setPhone("");
       setCoverLetter("");
       setPortfolioLink("");
       onClose();
@@ -101,6 +113,33 @@ function ApplicationModal({
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                    Email *
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="seu@email.com"
+                    required
+                    className="w-full px-3 py-2 rounded-lg backdrop-blur-sm bg-white/50 dark:bg-zinc-700/50 border border-white/30 dark:border-zinc-600/30 text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-brand-yellow/50"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                    Telefone (Opcional)
+                  </label>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="(11) 99999-9999"
+                    className="w-full px-3 py-2 rounded-lg backdrop-blur-sm bg-white/50 dark:bg-zinc-700/50 border border-white/30 dark:border-zinc-600/30 text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-brand-yellow/50"
+                  />
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
                     Carta de Apresentação (Opcional)
@@ -206,7 +245,9 @@ export default function ProjectDetail({ projectId }: ProjectDetailProps) {
 
     try {
       setApplying(true);
-      await applyToProject(projectId, user.uid, applicationData);
+      const applicantName =
+        user.displayName || user.email?.split("@")[0] || "Usuário";
+      await applyToProject(projectId, user.uid, applicantName, applicationData);
 
       // Refresh application status
       const application = await hasUserApplied(projectId, user.uid);

@@ -92,6 +92,9 @@ export interface ProjectApplication {
   id: string;
   projectId: string;
   applicantUid: string;
+  applicantName?: string; // Store applicant name for display
+  applicantEmail: string; // Mandatory email field
+  applicantPhone?: string; // Optional phone field
   coverLetter?: string;
   portfolioLink?: string;
   createdAt: Timestamp;
@@ -101,6 +104,8 @@ export interface ProjectApplication {
 }
 
 export interface CreateApplicationData {
+  applicantEmail: string; // Mandatory email field
+  applicantPhone?: string; // Optional phone field
   coverLetter?: string;
   portfolioLink?: string;
 }
@@ -440,6 +445,7 @@ export async function getUserProjects(uid: string): Promise<Project[]> {
 export async function applyToProject(
   projectId: string,
   applicantUid: string,
+  applicantName: string,
   applicationData: CreateApplicationData
 ): Promise<string> {
   try {
@@ -492,6 +498,9 @@ export async function applyToProject(
       const applicationDoc = {
         projectId,
         applicantUid,
+        applicantName: applicantName.trim(),
+        applicantEmail: applicationData.applicantEmail.trim(),
+        applicantPhone: applicationData.applicantPhone?.trim() || "",
         coverLetter: applicationData.coverLetter?.trim() || "",
         portfolioLink: applicationData.portfolioLink?.trim() || "",
         createdAt: serverTimestamp(),
@@ -885,7 +894,9 @@ export function parseProjectSlug(slug: string): { id: string; title?: string } {
 /**
  * Get all applications made by a user
  */
-export async function getUserApplications(uid: string): Promise<{project: Project, application: ProjectApplication}[]> {
+export async function getUserApplications(
+  uid: string
+): Promise<{ project: Project; application: ProjectApplication }[]> {
   try {
     // Get all applications made by the user
     const q = query(
@@ -895,7 +906,10 @@ export async function getUserApplications(uid: string): Promise<{project: Projec
     );
 
     const querySnapshot = await getDocs(q);
-    const applications: {project: Project, application: ProjectApplication}[] = [];
+    const applications: {
+      project: Project;
+      application: ProjectApplication;
+    }[] = [];
 
     // For each application, get the associated project
     for (const applicationDoc of querySnapshot.docs) {
@@ -904,24 +918,34 @@ export async function getUserApplications(uid: string): Promise<{project: Projec
 
       if (projectId) {
         try {
-          const projectDoc = await getDoc(doc(db, COLLECTIONS.PROJECTS, projectId));
-          
+          const projectDoc = await getDoc(
+            doc(db, COLLECTIONS.PROJECTS, projectId)
+          );
+
           if (projectDoc.exists()) {
             const projectData = projectDoc.data();
-            
+
             const project: Project = {
               id: projectDoc.id,
               ...projectData,
-              createdAt: projectData.createdAt?.toDate?.() || projectData.createdAt,
-              updatedAt: projectData.updatedAt?.toDate?.() || projectData.updatedAt,
-              applicationDeadline: projectData.applicationDeadline?.toDate?.() || projectData.applicationDeadline,
+              createdAt:
+                projectData.createdAt?.toDate?.() || projectData.createdAt,
+              updatedAt:
+                projectData.updatedAt?.toDate?.() || projectData.updatedAt,
+              applicationDeadline:
+                projectData.applicationDeadline?.toDate?.() ||
+                projectData.applicationDeadline,
             } as Project;
 
             const application: ProjectApplication = {
               id: applicationDoc.id,
               ...applicationData,
-              createdAt: applicationData.createdAt?.toDate?.() || applicationData.createdAt,
-              decisionAt: applicationData.decisionAt?.toDate?.() || applicationData.decisionAt,
+              createdAt:
+                applicationData.createdAt?.toDate?.() ||
+                applicationData.createdAt,
+              decisionAt:
+                applicationData.decisionAt?.toDate?.() ||
+                applicationData.decisionAt,
             } as ProjectApplication;
 
             applications.push({ project, application });

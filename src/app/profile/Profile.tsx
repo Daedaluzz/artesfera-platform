@@ -33,13 +33,13 @@ import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { getClientFirestore } from "@/lib/firebase";
 import { updateProfile } from "firebase/auth";
 import { autoSyncProfile } from "@/services/profileSyncService";
-import { 
-  getUserProjects, 
-  getUserApplications, 
+import {
+  getUserProjects,
+  getUserApplications,
   generateProjectSlug,
   formatPayment,
   type Project,
-  type ProjectApplication 
+  type ProjectApplication,
 } from "@/lib/firestoreProjects";
 import { Badge } from "@/components/ui/badge";
 
@@ -145,7 +145,9 @@ export default function Profile() {
   const [success, setSuccess] = useState<string | null>(null);
   const [newTag, setNewTag] = useState("");
   const [projects, setProjects] = useState<Project[]>([]);
-  const [applications, setApplications] = useState<{project: Project, application: ProjectApplication}[]>([]);
+  const [applications, setApplications] = useState<
+    { project: Project; application: ProjectApplication }[]
+  >([]);
   const [projectsLoading, setProjectsLoading] = useState(false);
 
   // Form data state
@@ -202,7 +204,7 @@ export default function Profile() {
       try {
         const [userProjects, userApplications] = await Promise.all([
           getUserProjects(user.uid),
-          getUserApplications(user.uid)
+          getUserApplications(user.uid),
         ]);
 
         setProjects(userProjects);
@@ -994,9 +996,23 @@ export default function Profile() {
             {/* Quick Stats */}
             <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
-                { label: "Projetos Criados", value: projects.length.toString(), icon: "🎨" },
-                { label: "Candidaturas", value: applications.length.toString(), icon: "📝" },
-                { label: "Ativos", value: projects.filter(p => p.status === 'open').length.toString(), icon: "✅" },
+                {
+                  label: "Projetos Criados",
+                  value: projects.length.toString(),
+                  icon: "🎨",
+                },
+                {
+                  label: "Candidaturas",
+                  value: applications.length.toString(),
+                  icon: "📝",
+                },
+                {
+                  label: "Ativos",
+                  value: projects
+                    .filter((p) => p.status === "open")
+                    .length.toString(),
+                  icon: "✅",
+                },
               ].map((stat) => (
                 <div
                   key={stat.label}
@@ -1034,7 +1050,7 @@ export default function Profile() {
                       <Calendar className="w-5 h-5" />
                       Projetos Criados ({projects.length})
                     </h3>
-                    
+
                     {projects.length === 0 ? (
                       <div className="backdrop-blur-[15px] bg-white/[0.1] dark:bg-black/10 border border-white/[0.2] dark:border-white/10 rounded-[16px] p-8 text-center">
                         <Briefcase className="w-12 h-12 text-brand-black/50 dark:text-brand-white/50 mx-auto mb-4" />
@@ -1050,24 +1066,35 @@ export default function Profile() {
                     ) : (
                       <div className="space-y-4">
                         {projects.slice(0, 3).map((project) => (
-                          <Link 
+                          <Link
                             key={project.id}
-                            href={`/projects/${generateProjectSlug(project.title, project.id)}`}
+                            href={`/projects/${generateProjectSlug(
+                              project.title,
+                              project.id
+                            )}`}
                           >
                             <div className="backdrop-blur-[15px] bg-white/[0.1] dark:bg-black/10 border border-white/[0.2] dark:border-white/10 rounded-[16px] p-6 hover:border-white/[0.3] dark:hover:border-white/20 transition-all duration-300 hover:backdrop-blur-xl hover:bg-white/[0.15] dark:hover:bg-black/15 group">
                               <div className="flex justify-between items-start mb-3">
                                 <h4 className="font-semibold text-brand-black dark:text-brand-white group-hover:text-brand-navy-blue dark:group-hover:text-brand-yellow transition-colors line-clamp-2">
                                   {project.title}
                                 </h4>
-                                <Badge variant={project.status === 'open' ? 'default' : 'secondary'}>
-                                  {project.status === 'open' ? 'Aberto' : 'Fechado'}
+                                <Badge
+                                  variant={
+                                    project.status === "open"
+                                      ? "default"
+                                      : "secondary"
+                                  }
+                                >
+                                  {project.status === "open"
+                                    ? "Aberto"
+                                    : "Fechado"}
                                 </Badge>
                               </div>
-                              
+
                               <p className="text-sm text-brand-black/70 dark:text-brand-white/70 line-clamp-2 mb-3">
                                 {project.description}
                               </p>
-                              
+
                               <div className="flex items-center gap-4 text-xs text-brand-black/60 dark:text-brand-white/60">
                                 <span className="flex items-center gap-1">
                                   <MapPin className="w-3 h-3" />
@@ -1081,7 +1108,7 @@ export default function Profile() {
                             </div>
                           </Link>
                         ))}
-                        
+
                         {projects.length > 3 && (
                           <Link href="/projects?filter=my-projects">
                             <div className="text-center py-4">
@@ -1101,7 +1128,7 @@ export default function Profile() {
                       <BadgeIcon className="w-5 h-5" />
                       Candidaturas ({applications.length})
                     </h3>
-                    
+
                     {applications.length === 0 ? (
                       <div className="backdrop-blur-[15px] bg-white/[0.1] dark:bg-black/10 border border-white/[0.2] dark:border-white/10 rounded-[16px] p-8 text-center">
                         <BadgeIcon className="w-12 h-12 text-brand-black/50 dark:text-brand-white/50 mx-auto mb-4" />
@@ -1116,51 +1143,72 @@ export default function Profile() {
                       </div>
                     ) : (
                       <div className="space-y-4">
-                        {applications.slice(0, 3).map(({ project, application }) => (
-                          <Link 
-                            key={application.id}
-                            href={`/projects/${generateProjectSlug(project.title, project.id)}`}
-                          >
-                            <div className="backdrop-blur-[15px] bg-white/[0.1] dark:bg-black/10 border border-white/[0.2] dark:border-white/10 rounded-[16px] p-6 hover:border-white/[0.3] dark:hover:border-white/20 transition-all duration-300 hover:backdrop-blur-xl hover:bg-white/[0.15] dark:hover:bg-black/15 group">
-                              <div className="flex justify-between items-start mb-3">
-                                <h4 className="font-semibold text-brand-black dark:text-brand-white group-hover:text-brand-navy-blue dark:group-hover:text-brand-yellow transition-colors line-clamp-2">
-                                  {project.title}
-                                </h4>
-                                <Badge 
-                                  variant={
-                                    application.status === 'accepted' ? 'default' : 
-                                    application.status === 'rejected' ? 'destructive' : 
-                                    'secondary'
-                                  }
-                                >
-                                  {application.status === 'applied' ? 'Pendente' :
-                                   application.status === 'accepted' ? 'Aceita' : 
-                                   application.status === 'rejected' ? 'Rejeitada' : 'Retirada'}
-                                </Badge>
+                        {applications
+                          .slice(0, 3)
+                          .map(({ project, application }) => (
+                            <Link
+                              key={application.id}
+                              href={`/projects/${generateProjectSlug(
+                                project.title,
+                                project.id
+                              )}`}
+                            >
+                              <div className="backdrop-blur-[15px] bg-white/[0.1] dark:bg-black/10 border border-white/[0.2] dark:border-white/10 rounded-[16px] p-6 hover:border-white/[0.3] dark:hover:border-white/20 transition-all duration-300 hover:backdrop-blur-xl hover:bg-white/[0.15] dark:hover:bg-black/15 group">
+                                <div className="flex justify-between items-start mb-3">
+                                  <h4 className="font-semibold text-brand-black dark:text-brand-white group-hover:text-brand-navy-blue dark:group-hover:text-brand-yellow transition-colors line-clamp-2">
+                                    {project.title}
+                                  </h4>
+                                  <Badge
+                                    variant={
+                                      application.status === "accepted"
+                                        ? "default"
+                                        : application.status === "rejected"
+                                        ? "destructive"
+                                        : "secondary"
+                                    }
+                                  >
+                                    {application.status === "applied"
+                                      ? "Pendente"
+                                      : application.status === "accepted"
+                                      ? "Aceita"
+                                      : application.status === "rejected"
+                                      ? "Rejeitada"
+                                      : "Retirada"}
+                                  </Badge>
+                                </div>
+
+                                <p className="text-sm text-brand-black/70 dark:text-brand-white/70 line-clamp-2 mb-3">
+                                  {project.description}
+                                </p>
+
+                                <div className="flex items-center gap-4 text-xs text-brand-black/60 dark:text-brand-white/60">
+                                  <span className="flex items-center gap-1">
+                                    <Calendar className="w-3 h-3" />
+                                    Candidatura:{" "}
+                                    {application.createdAt instanceof Date
+                                      ? application.createdAt.toLocaleDateString(
+                                          "pt-BR"
+                                        )
+                                      : (
+                                          application.createdAt as {
+                                            toDate?: () => Date;
+                                          }
+                                        )
+                                          ?.toDate?.()
+                                          ?.toLocaleDateString("pt-BR") ||
+                                        "Data não disponível"}
+                                  </span>
+                                </div>
                               </div>
-                              
-                              <p className="text-sm text-brand-black/70 dark:text-brand-white/70 line-clamp-2 mb-3">
-                                {project.description}
-                              </p>
-                              
-                              <div className="flex items-center gap-4 text-xs text-brand-black/60 dark:text-brand-white/60">
-                                <span className="flex items-center gap-1">
-                                  <Calendar className="w-3 h-3" />
-                                  Candidatura: {application.createdAt instanceof Date ? 
-                                    application.createdAt.toLocaleDateString('pt-BR') :
-                                    (application.createdAt as { toDate?: () => Date })?.toDate?.()?.toLocaleDateString('pt-BR') || 'Data não disponível'
-                                  }
-                                </span>
-                              </div>
-                            </div>
-                          </Link>
-                        ))}
-                        
+                            </Link>
+                          ))}
+
                         {applications.length > 3 && (
                           <Link href="/projects?filter=my-applications">
                             <div className="text-center py-4">
                               <span className="text-brand-navy-blue dark:text-brand-yellow hover:underline">
-                                Ver todas as {applications.length} candidaturas →
+                                Ver todas as {applications.length} candidaturas
+                                →
                               </span>
                             </div>
                           </Link>

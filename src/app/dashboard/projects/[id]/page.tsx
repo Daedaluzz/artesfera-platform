@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { AuthGuard } from "@/components/AuthGuard";
 import { motion } from "framer-motion";
-import { 
+import {
   ArrowLeft,
   Edit3,
   Users,
@@ -20,12 +20,14 @@ import {
   ExternalLink,
   Loader2,
   User,
+  Mail,
+  Phone,
   FileText,
   Link as LinkIcon,
   Check,
-  X
+  X,
 } from "lucide-react";
-import { 
+import {
   getProject,
   listApplications,
   acceptApplication,
@@ -33,7 +35,7 @@ import {
   generateProjectSlug,
   formatPayment,
   type Project,
-  type ProjectApplication 
+  type ProjectApplication,
 } from "@/lib/firestoreProjects";
 import { Timestamp } from "firebase/firestore";
 import { Badge } from "@/components/ui/badge";
@@ -50,7 +52,9 @@ function ProjectManagementContent() {
   const [applications, setApplications] = useState<ProjectApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [applicationsLoading, setApplicationsLoading] = useState(false);
-  const [processingApplication, setProcessingApplication] = useState<string | null>(null);
+  const [processingApplication, setProcessingApplication] = useState<
+    string | null
+  >(null);
 
   // Load project data
   useEffect(() => {
@@ -60,22 +64,22 @@ function ProjectManagementContent() {
       try {
         setLoading(true);
         const projectData = await getProject(projectId);
-        
+
         if (!projectData) {
-          router.push('/dashboard');
+          router.push("/dashboard");
           return;
         }
 
         // Check if user owns this project
         if (projectData.createdBy !== user.uid) {
-          router.push('/dashboard');
+          router.push("/dashboard");
           return;
         }
 
         setProject(projectData);
       } catch (error) {
         console.error("Error loading project:", error);
-        router.push('/dashboard');
+        router.push("/dashboard");
       } finally {
         setLoading(false);
       }
@@ -103,23 +107,31 @@ function ProjectManagementContent() {
     loadApplications();
   }, [project?.id, user?.uid]);
 
-  const handleApplicationAction = async (applicationId: string, status: 'accepted' | 'rejected') => {
+  const handleApplicationAction = async (
+    applicationId: string,
+    status: "accepted" | "rejected"
+  ) => {
     if (!user?.uid || !project?.id) return;
 
     try {
       setProcessingApplication(applicationId);
-      
-      if (status === 'accepted') {
+
+      if (status === "accepted") {
         await acceptApplication(project.id, applicationId, user.uid);
       } else {
         await rejectApplication(project.id, applicationId, user.uid);
       }
-      
+
       // Update local state
-      setApplications(prev => 
-        prev.map(app => 
-          app.id === applicationId 
-            ? { ...app, status, decisionAt: Timestamp.now(), decisionBy: user.uid }
+      setApplications((prev) =>
+        prev.map((app) =>
+          app.id === applicationId
+            ? {
+                ...app,
+                status,
+                decisionAt: Timestamp.now(),
+                decisionBy: user.uid,
+              }
             : app
         )
       );
@@ -154,7 +166,7 @@ function ProjectManagementContent() {
         >
           <div className="flex items-center justify-between mb-4">
             <SecondaryButton
-              onClick={() => router.push('/dashboard')}
+              onClick={() => router.push("/dashboard")}
               className="flex items-center gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -162,7 +174,12 @@ function ProjectManagementContent() {
             </SecondaryButton>
 
             <div className="flex items-center gap-3">
-              <Link href={`/projects/${generateProjectSlug(project.title, project.id)}`}>
+              <Link
+                href={`/projects/${generateProjectSlug(
+                  project.title,
+                  project.id
+                )}`}
+              >
                 <SecondaryButton className="flex items-center gap-2">
                   <Eye className="w-4 h-4" />
                   Ver Projeto
@@ -180,7 +197,7 @@ function ProjectManagementContent() {
               <p className="text-brand-black/70 dark:text-brand-white/70 mb-4">
                 {project.description}
               </p>
-              
+
               <div className="flex items-center gap-4 text-sm text-brand-black/60 dark:text-brand-white/60">
                 <span className="flex items-center gap-1">
                   <MapPin className="w-4 h-4" />
@@ -190,8 +207,10 @@ function ProjectManagementContent() {
                   <Clock className="w-4 h-4" />
                   {project.duration}
                 </span>
-                <Badge variant={project.status === 'open' ? 'default' : 'secondary'}>
-                  {project.status === 'open' ? 'Aberto' : 'Fechado'}
+                <Badge
+                  variant={project.status === "open" ? "default" : "secondary"}
+                >
+                  {project.status === "open" ? "Aberto" : "Fechado"}
                 </Badge>
               </div>
             </div>
@@ -219,8 +238,11 @@ function ProjectManagementContent() {
                     Tipo
                   </label>
                   <Badge variant="outline">
-                    {project.type === 'collaboration' ? 'Colaboração' : 
-                     project.type === 'hire' ? 'Contratação' : 'Outro'}
+                    {project.type === "collaboration"
+                      ? "Colaboração"
+                      : project.type === "hire"
+                      ? "Contratação"
+                      : "Outro"}
                   </Badge>
                 </div>
 
@@ -240,10 +262,12 @@ function ProjectManagementContent() {
                   </label>
                   <div className="flex items-center gap-1 text-sm text-brand-black/70 dark:text-brand-white/70">
                     <Calendar className="w-4 h-4" />
-                    {project.applicationDeadline instanceof Date ? 
-                      project.applicationDeadline.toLocaleDateString('pt-BR') :
-                      (project.applicationDeadline as { toDate?: () => Date })?.toDate?.()?.toLocaleDateString('pt-BR') || 'Data não disponível'
-                    }
+                    {project.applicationDeadline instanceof Date
+                      ? project.applicationDeadline.toLocaleDateString("pt-BR")
+                      : (project.applicationDeadline as { toDate?: () => Date })
+                          ?.toDate?.()
+                          ?.toLocaleDateString("pt-BR") ||
+                        "Data não disponível"}
                   </div>
                 </div>
 
@@ -254,7 +278,11 @@ function ProjectManagementContent() {
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {project.tags.map((tag) => (
-                        <Badge key={tag} variant="secondary" className="text-xs">
+                        <Badge
+                          key={tag}
+                          variant="secondary"
+                          className="text-xs"
+                        >
                           {tag}
                         </Badge>
                       ))}
@@ -286,9 +314,7 @@ function ProjectManagementContent() {
                   Gerenciar Candidaturas
                 </SecondaryButton>
 
-                <SecondaryButton 
-                  className="w-full flex items-center gap-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                >
+                <SecondaryButton className="w-full flex items-center gap-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
                   <Trash2 className="w-4 h-4" />
                   Excluir Projeto
                 </SecondaryButton>
@@ -336,27 +362,57 @@ function ProjectManagementContent() {
                           </div>
                           <div>
                             <h4 className="font-medium text-brand-black dark:text-brand-white">
-                              Candidato #{application.id.slice(-6)}
+                              {application.applicantName ||
+                                `Candidato #${application.id.slice(-6)}`}
                             </h4>
-                            <p className="text-xs text-brand-black/60 dark:text-brand-white/60">
-                              {application.createdAt instanceof Date ? 
-                                application.createdAt.toLocaleDateString('pt-BR') :
-                                (application.createdAt as { toDate?: () => Date })?.toDate?.()?.toLocaleDateString('pt-BR') || 'Data não disponível'
-                              }
-                            </p>
+                            <div className="space-y-1">
+                              {application.applicantEmail && (
+                                <p className="text-xs text-brand-black/60 dark:text-brand-white/60 flex items-center gap-1">
+                                  <Mail className="w-3 h-3" />
+                                  {application.applicantEmail}
+                                </p>
+                              )}
+                              {application.applicantPhone && (
+                                <p className="text-xs text-brand-black/60 dark:text-brand-white/60 flex items-center gap-1">
+                                  <Phone className="w-3 h-3" />
+                                  {application.applicantPhone}
+                                </p>
+                              )}
+                              <p className="text-xs text-brand-black/60 dark:text-brand-white/60">
+                                Candidatura:{" "}
+                                {application.createdAt instanceof Date
+                                  ? application.createdAt.toLocaleDateString(
+                                      "pt-BR"
+                                    )
+                                  : (
+                                      application.createdAt as {
+                                        toDate?: () => Date;
+                                      }
+                                    )
+                                      ?.toDate?.()
+                                      ?.toLocaleDateString("pt-BR") ||
+                                    "Data não disponível"}
+                              </p>
+                            </div>
                           </div>
                         </div>
 
-                        <Badge 
+                        <Badge
                           variant={
-                            application.status === 'accepted' ? 'default' : 
-                            application.status === 'rejected' ? 'destructive' : 
-                            'secondary'
+                            application.status === "accepted"
+                              ? "default"
+                              : application.status === "rejected"
+                              ? "destructive"
+                              : "secondary"
                           }
                         >
-                          {application.status === 'applied' ? 'Pendente' :
-                           application.status === 'accepted' ? 'Aceita' : 
-                           application.status === 'rejected' ? 'Rejeitada' : 'Retirada'}
+                          {application.status === "applied"
+                            ? "Pendente"
+                            : application.status === "accepted"
+                            ? "Aceita"
+                            : application.status === "rejected"
+                            ? "Rejeitada"
+                            : "Retirada"}
                         </Badge>
                       </div>
 
@@ -394,10 +450,15 @@ function ProjectManagementContent() {
                         </div>
                       )}
 
-                      {application.status === 'applied' && (
+                      {application.status === "applied" && (
                         <div className="flex items-center gap-3 pt-4 border-t border-white/10 dark:border-white/5">
                           <PrimaryButton
-                            onClick={() => handleApplicationAction(application.id, 'accepted')}
+                            onClick={() =>
+                              handleApplicationAction(
+                                application.id,
+                                "accepted"
+                              )
+                            }
                             disabled={processingApplication === application.id}
                             className="flex items-center gap-2"
                           >
@@ -410,7 +471,12 @@ function ProjectManagementContent() {
                           </PrimaryButton>
 
                           <SecondaryButton
-                            onClick={() => handleApplicationAction(application.id, 'rejected')}
+                            onClick={() =>
+                              handleApplicationAction(
+                                application.id,
+                                "rejected"
+                              )
+                            }
                             disabled={processingApplication === application.id}
                             className="flex items-center gap-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
                           >

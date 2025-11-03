@@ -3,7 +3,14 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { ArrowLeft, Calendar, MapPin, Plus, X, Image as ImageIcon } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar,
+  MapPin,
+  Plus,
+  X,
+  Image as ImageIcon,
+} from "lucide-react";
 import { motion } from "framer-motion";
 import {
   createProject,
@@ -148,18 +155,18 @@ export default function CreateProject() {
     const files = event.target.files;
     if (!files) return;
 
-    const imageFiles = Array.from(files).filter(file => {
-      const isImage = file.type.startsWith('image/');
+    const imageFiles = Array.from(files).filter((file) => {
+      const isImage = file.type.startsWith("image/");
       const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB limit
       return isImage && isValidSize;
     });
 
-    setSelectedImages(prev => [...prev, ...imageFiles].slice(0, 5)); // Max 5 images
+    setSelectedImages((prev) => [...prev, ...imageFiles].slice(0, 5)); // Max 5 images
   };
 
   // Remove selected image
   const removeSelectedImage = (index: number) => {
-    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+    setSelectedImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   // Upload images to Firebase Storage
@@ -168,7 +175,10 @@ export default function CreateProject() {
 
     const storage = getStorage();
     const uploadPromises = selectedImages.map(async (file, index) => {
-      const imageRef = ref(storage, `project-images/${projectId}/${Date.now()}-${index}`);
+      const imageRef = ref(
+        storage,
+        `project-images/${projectId}/${Date.now()}-${index}`
+      );
       await uploadBytes(imageRef, file);
       return getDownloadURL(imageRef);
     });
@@ -272,7 +282,7 @@ export default function CreateProject() {
       if (selectedImages.length > 0) {
         setUploadingImages(true);
         const imageUrls = await uploadImages(projectId);
-        
+
         // Update project with image URLs
         if (imageUrls.length > 0) {
           const updateData = { images: imageUrls };
@@ -741,7 +751,8 @@ export default function CreateProject() {
                   Imagens do Projeto
                 </h2>
                 <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
-                  Adicione imagens para mostrar seu projeto (máximo 5 imagens, até 5MB cada)
+                  Adicione imagens para mostrar seu projeto (máximo 5 imagens,
+                  até 5MB cada)
                 </p>
 
                 <div className="space-y-4">
@@ -865,7 +876,11 @@ export default function CreateProject() {
                   disabled={loading}
                   className="w-full"
                 >
-                  {uploadingImages ? "Enviando Imagens..." : loading ? "Criando Projeto..." : "Criar Projeto"}
+                  {uploadingImages
+                    ? "Enviando Imagens..."
+                    : loading
+                    ? "Criando Projeto..."
+                    : "Criar Projeto"}
                 </PrimaryButton>
 
                 <SecondaryButton

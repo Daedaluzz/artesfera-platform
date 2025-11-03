@@ -6,13 +6,13 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { AuthGuard } from "@/components/AuthGuard";
 import { motion } from "framer-motion";
-import { 
-  User, 
-  LogOut, 
-  Settings, 
-  BarChart3, 
-  Folder, 
-  Users, 
+import {
+  User,
+  LogOut,
+  Settings,
+  BarChart3,
+  Folder,
+  Users,
   Calendar,
   MapPin,
   Clock,
@@ -20,15 +20,15 @@ import {
   Briefcase,
   Plus,
   Loader2,
-  ExternalLink
+  ExternalLink,
 } from "lucide-react";
-import { 
-  getUserProjects, 
-  getUserApplications, 
+import {
+  getUserProjects,
+  getUserApplications,
   generateProjectSlug,
   formatPayment,
   type Project,
-  type ProjectApplication 
+  type ProjectApplication,
 } from "@/lib/firestoreProjects";
 import { Badge } from "@/components/ui/badge";
 
@@ -36,7 +36,9 @@ function DashboardContent() {
   const { user, userDocument, signOut, loading } = useAuth();
   const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
-  const [applications, setApplications] = useState<{project: Project, application: ProjectApplication}[]>([]);
+  const [applications, setApplications] = useState<
+    { project: Project; application: ProjectApplication }[]
+  >([]);
   const [projectsLoading, setProjectsLoading] = useState(false);
 
   // Redirect to profile setup if profile is incomplete
@@ -58,7 +60,7 @@ function DashboardContent() {
       try {
         const [userProjects, userApplications] = await Promise.all([
           getUserProjects(user.uid),
-          getUserApplications(user.uid)
+          getUserApplications(user.uid),
         ]);
 
         setProjects(userProjects);
@@ -156,7 +158,7 @@ function DashboardContent() {
                     <Briefcase className="w-4 h-4" />
                     Projetos Criados ({projects.length})
                   </h4>
-                  
+
                   {projects.length === 0 ? (
                     <div className="backdrop-blur-[10px] bg-white/[0.05] dark:bg-black/5 border border-white/[0.15] dark:border-white/5 rounded-[16px] p-6 text-center">
                       <Briefcase className="w-10 h-10 text-brand-black/50 dark:text-brand-white/50 mx-auto mb-3" />
@@ -172,24 +174,36 @@ function DashboardContent() {
                   ) : (
                     <div className="space-y-3">
                       {projects.slice(0, 3).map((project) => (
-                        <Link 
+                        <Link
                           key={project.id}
-                          href={`/projects/${generateProjectSlug(project.title, project.id)}`}
+                          href={`/projects/${generateProjectSlug(
+                            project.title,
+                            project.id
+                          )}`}
                         >
                           <div className="backdrop-blur-[10px] bg-white/[0.05] dark:bg-black/5 border border-white/[0.15] dark:border-white/5 rounded-[16px] p-4 hover:border-white/[0.25] dark:hover:border-white/15 transition-all duration-300 hover:backdrop-blur-xl hover:bg-white/[0.1] dark:hover:bg-black/10 group">
                             <div className="flex justify-between items-start mb-2">
                               <h5 className="font-medium text-brand-black dark:text-brand-white group-hover:text-brand-navy-blue dark:group-hover:text-brand-yellow transition-colors line-clamp-1 text-sm">
                                 {project.title}
                               </h5>
-                              <Badge variant={project.status === 'open' ? 'default' : 'secondary'} className="text-xs">
-                                {project.status === 'open' ? 'Aberto' : 'Fechado'}
+                              <Badge
+                                variant={
+                                  project.status === "open"
+                                    ? "default"
+                                    : "secondary"
+                                }
+                                className="text-xs"
+                              >
+                                {project.status === "open"
+                                  ? "Aberto"
+                                  : "Fechado"}
                               </Badge>
                             </div>
-                            
+
                             <p className="text-xs text-brand-black/70 dark:text-brand-white/70 line-clamp-2 mb-2">
                               {project.description}
                             </p>
-                            
+
                             <div className="flex items-center gap-3 text-xs text-brand-black/60 dark:text-brand-white/60">
                               <span className="flex items-center gap-1">
                                 <MapPin className="w-3 h-3" />
@@ -203,12 +217,13 @@ function DashboardContent() {
                           </div>
                         </Link>
                       ))}
-                      
+
                       {projects.length > 3 && (
                         <Link href="/projects?filter=my-projects">
                           <div className="text-center py-3">
                             <span className="text-sm text-brand-navy-blue dark:text-brand-yellow hover:underline flex items-center justify-center gap-1">
-                              Ver todos os {projects.length} projetos <ExternalLink className="w-3 h-3" />
+                              Ver todos os {projects.length} projetos{" "}
+                              <ExternalLink className="w-3 h-3" />
                             </span>
                           </div>
                         </Link>
@@ -223,7 +238,7 @@ function DashboardContent() {
                     <BadgeIcon className="w-4 h-4" />
                     Candidaturas ({applications.length})
                   </h4>
-                  
+
                   {applications.length === 0 ? (
                     <div className="backdrop-blur-[10px] bg-white/[0.05] dark:bg-black/5 border border-white/[0.15] dark:border-white/5 rounded-[16px] p-6 text-center">
                       <BadgeIcon className="w-10 h-10 text-brand-black/50 dark:text-brand-white/50 mx-auto mb-3" />
@@ -238,52 +253,73 @@ function DashboardContent() {
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {applications.slice(0, 3).map(({ project, application }) => (
-                        <Link 
-                          key={application.id}
-                          href={`/projects/${generateProjectSlug(project.title, project.id)}`}
-                        >
-                          <div className="backdrop-blur-[10px] bg-white/[0.05] dark:bg-black/5 border border-white/[0.15] dark:border-white/5 rounded-[16px] p-4 hover:border-white/[0.25] dark:hover:border-white/15 transition-all duration-300 hover:backdrop-blur-xl hover:bg-white/[0.1] dark:hover:bg-black/10 group">
-                            <div className="flex justify-between items-start mb-2">
-                              <h5 className="font-medium text-brand-black dark:text-brand-white group-hover:text-brand-navy-blue dark:group-hover:text-brand-yellow transition-colors line-clamp-1 text-sm">
-                                {project.title}
-                              </h5>
-                              <Badge 
-                                variant={
-                                  application.status === 'accepted' ? 'default' : 
-                                  application.status === 'rejected' ? 'destructive' : 
-                                  'secondary'
-                                }
-                                className="text-xs"
-                              >
-                                {application.status === 'applied' ? 'Pendente' :
-                                 application.status === 'accepted' ? 'Aceita' : 
-                                 application.status === 'rejected' ? 'Rejeitada' : 'Retirada'}
-                              </Badge>
+                      {applications
+                        .slice(0, 3)
+                        .map(({ project, application }) => (
+                          <Link
+                            key={application.id}
+                            href={`/projects/${generateProjectSlug(
+                              project.title,
+                              project.id
+                            )}`}
+                          >
+                            <div className="backdrop-blur-[10px] bg-white/[0.05] dark:bg-black/5 border border-white/[0.15] dark:border-white/5 rounded-[16px] p-4 hover:border-white/[0.25] dark:hover:border-white/15 transition-all duration-300 hover:backdrop-blur-xl hover:bg-white/[0.1] dark:hover:bg-black/10 group">
+                              <div className="flex justify-between items-start mb-2">
+                                <h5 className="font-medium text-brand-black dark:text-brand-white group-hover:text-brand-navy-blue dark:group-hover:text-brand-yellow transition-colors line-clamp-1 text-sm">
+                                  {project.title}
+                                </h5>
+                                <Badge
+                                  variant={
+                                    application.status === "accepted"
+                                      ? "default"
+                                      : application.status === "rejected"
+                                      ? "destructive"
+                                      : "secondary"
+                                  }
+                                  className="text-xs"
+                                >
+                                  {application.status === "applied"
+                                    ? "Pendente"
+                                    : application.status === "accepted"
+                                    ? "Aceita"
+                                    : application.status === "rejected"
+                                    ? "Rejeitada"
+                                    : "Retirada"}
+                                </Badge>
+                              </div>
+
+                              <p className="text-xs text-brand-black/70 dark:text-brand-white/70 line-clamp-2 mb-2">
+                                {project.description}
+                              </p>
+
+                              <div className="flex items-center gap-3 text-xs text-brand-black/60 dark:text-brand-white/60">
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="w-3 h-3" />
+                                  Candidatura:{" "}
+                                  {application.createdAt instanceof Date
+                                    ? application.createdAt.toLocaleDateString(
+                                        "pt-BR"
+                                      )
+                                    : (
+                                        application.createdAt as {
+                                          toDate?: () => Date;
+                                        }
+                                      )
+                                        ?.toDate?.()
+                                        ?.toLocaleDateString("pt-BR") ||
+                                      "Data não disponível"}
+                                </span>
+                              </div>
                             </div>
-                            
-                            <p className="text-xs text-brand-black/70 dark:text-brand-white/70 line-clamp-2 mb-2">
-                              {project.description}
-                            </p>
-                            
-                            <div className="flex items-center gap-3 text-xs text-brand-black/60 dark:text-brand-white/60">
-                              <span className="flex items-center gap-1">
-                                <Calendar className="w-3 h-3" />
-                                Candidatura: {application.createdAt instanceof Date ? 
-                                  application.createdAt.toLocaleDateString('pt-BR') :
-                                  (application.createdAt as { toDate?: () => Date })?.toDate?.()?.toLocaleDateString('pt-BR') || 'Data não disponível'
-                                }
-                              </span>
-                            </div>
-                          </div>
-                        </Link>
-                      ))}
-                      
+                          </Link>
+                        ))}
+
                       {applications.length > 3 && (
                         <Link href="/projects?filter=my-applications">
                           <div className="text-center py-3">
                             <span className="text-sm text-brand-navy-blue dark:text-brand-yellow hover:underline flex items-center justify-center gap-1">
-                              Ver todas as {applications.length} candidaturas <ExternalLink className="w-3 h-3" />
+                              Ver todas as {applications.length} candidaturas{" "}
+                              <ExternalLink className="w-3 h-3" />
                             </span>
                           </div>
                         </Link>
