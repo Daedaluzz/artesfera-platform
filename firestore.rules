@@ -186,6 +186,12 @@ service cloud.firestore {
       allow delete: if isAuthenticated() && resource.data.userUid == request.auth.uid;
     }
 
+    // Collection group rule for applications (enables getUserApplications)
+    match /{path=**}/applications/{applicationId} {
+      allow read: if isAuthenticated() && 
+        resource.data.applicantUid == request.auth.uid;
+    }
+
     // ========================================
     // DELETED SECTIONS
     // ========================================
