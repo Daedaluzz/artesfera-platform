@@ -128,7 +128,7 @@ function ProjectCard({ project }: ProjectCardProps) {
                       : "text-zinc-500 dark:text-zinc-500"
                   }`}
                 >
-                  até{" "}
+                  até
                   {(project.applicationDeadline instanceof Date
                     ? project.applicationDeadline
                     : project.applicationDeadline.toDate()

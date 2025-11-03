@@ -393,7 +393,7 @@ export default function ProjectDetail({ projectId }: ProjectDetailProps) {
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
                   <span>
-                    Até{" "}
+                    Até
                     {(project.applicationDeadline instanceof Date
                       ? project.applicationDeadline
                       : project.applicationDeadline.toDate()

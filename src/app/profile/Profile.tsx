@@ -472,7 +472,7 @@ export default function Profile() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h1 className="text-4xl md:text-6xl font-bold font-serif mb-6 text-brand-black dark:text-brand-white">
-              Meu{" "}
+              Meu
               <span className="text-brand-navy-blue dark:text-brand-yellow">
                 Perfil
               </span>
@@ -1184,7 +1184,7 @@ export default function Profile() {
                                 <div className="flex items-center gap-4 text-xs text-brand-black/60 dark:text-brand-white/60">
                                   <span className="flex items-center gap-1">
                                     <Calendar className="w-3 h-3" />
-                                    Candidatura:{" "}
+                                    Candidatura:
                                     {application.createdAt instanceof Date
                                       ? application.createdAt.toLocaleDateString(
                                           "pt-BR"

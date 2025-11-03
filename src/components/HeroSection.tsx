@@ -90,12 +90,12 @@ export default function HeroSection() {
                 transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
                 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold font-serif text-brand-black dark:text-brand-white leading-[1.1]"
               >
-                Conecte sua{" "}
+                Conecte sua
                 <span className="text-brand-navy-blue dark:text-brand-yellow">
                   Arte
-                </span>{" "}
+                </span>
                 <br className="hidden sm:inline" />
-                com{" "}
+                com
                 <span className="text-brand-navy-blue dark:text-brand-yellow">
                   Oportunidades
                 </span>
@@ -107,14 +107,14 @@ export default function HeroSection() {
                 transition={{ duration: 0.8, ease: "easeOut", delay: 0.4 }}
                 className="text-lg sm:text-xl text-brand-black/70 dark:text-brand-white/70 leading-relaxed max-w-xl"
               >
-                Entre na ArtEsfera e descubra{" "}
+                Entre na ArtEsfera e descubra
                 <span className="font-medium text-brand-navy-blue dark:text-brand-yellow">
                   projetos culturais
-                </span>{" "}
-                e{" "}
+                </span>
+                e
                 <span className="font-medium text-brand-navy-blue dark:text-brand-yellow">
                   colaborações artísticas
-                </span>{" "}
+                </span>
                 que transformarão sua carreira criativa.
               </motion.p>
             </div>

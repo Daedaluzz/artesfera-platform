@@ -3514,7 +3514,7 @@ interface Artwork {
 ```typescript
 // CHANGED: Removed bottom margin since price section was removed
 <div className="flex flex-wrap gap-2">
-  {" "}
+  
   // was: gap-2 mb-4
   {artwork.tags.slice(0, 3).map((tag) => (
     <Badge>{tag}</Badge>

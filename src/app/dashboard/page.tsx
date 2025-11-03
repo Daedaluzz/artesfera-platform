@@ -100,7 +100,7 @@ function DashboardContent() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-brand-black dark:text-brand-white">
-                  Bem-vindo,{" "}
+                  Bem-vindo,
                   {user?.displayName || user?.email?.split("@")[0] || "Usuário"}
                   !
                 </h1>
@@ -222,7 +222,7 @@ function DashboardContent() {
                         <Link href="/projects?filter=my-projects">
                           <div className="text-center py-3">
                             <span className="text-sm text-brand-navy-blue dark:text-brand-yellow hover:underline flex items-center justify-center gap-1">
-                              Ver todos os {projects.length} projetos{" "}
+                              Ver todos os {projects.length} projetos
                               <ExternalLink className="w-3 h-3" />
                             </span>
                           </div>
@@ -295,7 +295,7 @@ function DashboardContent() {
                               <div className="flex items-center gap-3 text-xs text-brand-black/60 dark:text-brand-white/60">
                                 <span className="flex items-center gap-1">
                                   <Calendar className="w-3 h-3" />
-                                  Candidatura:{" "}
+                                  Candidatura:
                                   {application.createdAt instanceof Date
                                     ? application.createdAt.toLocaleDateString(
                                         "pt-BR"
@@ -318,7 +318,7 @@ function DashboardContent() {
                         <Link href="/projects?filter=my-applications">
                           <div className="text-center py-3">
                             <span className="text-sm text-brand-navy-blue dark:text-brand-yellow hover:underline flex items-center justify-center gap-1">
-                              Ver todas as {applications.length} candidaturas{" "}
+                              Ver todas as {applications.length} candidaturas
                               <ExternalLink className="w-3 h-3" />
                             </span>
                           </div>

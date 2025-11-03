@@ -444,7 +444,7 @@ export default function ProfileSetup() {
           className="text-center mb-8"
         >
           <h1 className="text-3xl sm:text-4xl font-bold font-serif text-brand-black dark:text-brand-white mb-2">
-            Complete seu{" "}
+            Complete seu
             <span className="text-brand-navy-blue dark:text-brand-yellow">
               Perfil
             </span>

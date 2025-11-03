@@ -599,14 +599,14 @@ export default function Login() {
             {!isLogin && (
               <div className="text-center">
                 <p className="text-xs text-brand-black/60 dark:text-brand-white/60">
-                  Ao se cadastrar, você concorda com nossos{" "}
+                  Ao se cadastrar, você concorda com nossos
                   <a
                     href="#"
                     className="text-brand-navy-blue dark:text-brand-yellow hover:text-brand-navy-blue/80 dark:hover:text-brand-yellow/80 transition-colors duration-200 cursor-pointer"
                   >
                     Termos de Uso
-                  </a>{" "}
-                  e{" "}
+                  </a>
+                  e
                   <a
                     href="#"
                     className="text-brand-navy-blue dark:text-brand-yellow hover:text-brand-navy-blue/80 dark:hover:text-brand-yellow/80 transition-colors duration-200 cursor-pointer"
@@ -621,7 +621,7 @@ export default function Login() {
           {/* Switch Mode Link */}
           <div className="mt-4 text-center">
             <p className="text-sm text-brand-black/70 dark:text-brand-white/70">
-              {isLogin ? "Não tem uma conta?" : "Já tem uma conta?"}{" "}
+              {isLogin ? "Não tem uma conta?" : "Já tem uma conta?"}
               <button
                 type="button"
                 onClick={toggleMode}

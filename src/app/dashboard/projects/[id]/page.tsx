@@ -429,7 +429,7 @@ function ProjectManagementContent() {
                                 </p>
                               )}
                               <p className="text-xs text-brand-black/60 dark:text-brand-white/60">
-                                Candidatura:{" "}
+                                Candidatura:
                                 {application.createdAt instanceof Date
                                   ? application.createdAt.toLocaleDateString(
                                       "pt-BR"

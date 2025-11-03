@@ -351,7 +351,7 @@ export default function UserPortfolioPage() {
               {/* Profile Info */}
               <div className="flex-1 min-w-0">
                 <h1 className="text-2xl font-bold text-brand-black dark:text-brand-white">
-                  Portfólio de{" "}
+                  Portfólio de
                   {profileData.artisticName || profileData.displayName}
                 </h1>
                 <p className="text-brand-black/70 dark:text-brand-white/70">

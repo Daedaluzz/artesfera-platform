@@ -153,7 +153,7 @@ export function TagFilter({ onFiltersChange, currentFilters }: TagFilterProps) {
               </h3>
               {hasActiveFilters && (
                 <Badge className="bg-brand-navy-blue/20 dark:bg-brand-yellow/20 text-brand-navy-blue dark:text-brand-yellow border-0">
-                  {selectedTags.length + (selectedCategory !== "Todos" ? 1 : 0)}{" "}
+                  {selectedTags.length + (selectedCategory !== "Todos" ? 1 : 0)}
                   filtros ativos
                 </Badge>
               )}

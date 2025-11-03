@@ -364,14 +364,14 @@ export default function Daeva() {
                   <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-serif text-brand-black dark:text-brand-white">
                     {specialization === "general" ? (
                       <>
-                        Daeva{" "}
+                        Daeva
                         <span className="text-brand-navy-blue dark:text-brand-yellow">
                           AI
                         </span>
                       </>
                     ) : (
                       <>
-                        Daeva{" "}
+                        Daeva
                         <span className="text-brand-navy-blue dark:text-brand-yellow">
                           {specialization === "editais" && "Editais"}
                           {specialization === "contratos" && "Contratos"}

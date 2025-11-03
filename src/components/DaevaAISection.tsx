@@ -79,7 +79,7 @@ export default function DaevaAISection() {
                 viewport={{ once: true }}
                 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold font-serif text-brand-black dark:text-brand-white leading-tight"
               >
-                Conheça a{" "}
+                Conheça a
                 <span className="text-brand-navy-blue dark:text-brand-yellow">
                   Daeva.AI
                 </span>

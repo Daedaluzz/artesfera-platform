@@ -512,7 +512,7 @@ export const ArtworkFormModal: React.FC<ArtworkFormModalProps> = ({
                 )}
 
                 <p className="text-brand-black/50 dark:text-brand-white/50 text-sm">
-                  Formatos aceitos: JPG, PNG, WebP (máximo{" "}
+                  Formatos aceitos: JPG, PNG, WebP (máximo
                   {PORTFOLIO_CONFIG.maxImageSizeMB}MB cada)
                 </p>
               </div>
