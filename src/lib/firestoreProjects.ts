@@ -672,6 +672,7 @@ export async function acceptApplication(
 ): Promise<void> {
   try {
     await runTransaction(db, async (transaction) => {
+      // READ PHASE - Do all reads first
       // Verify project ownership
       const projectRef = doc(db, COLLECTIONS.PROJECTS, projectId);
       const projectSnap = await transaction.get(projectRef);
@@ -687,7 +688,7 @@ export async function acceptApplication(
         );
       }
 
-      // Update application
+      // Get application data for notification
       const applicationRef = doc(
         db,
         COLLECTIONS.PROJECTS,
@@ -695,7 +696,16 @@ export async function acceptApplication(
         COLLECTIONS.APPLICATIONS,
         applicationId
       );
+      const appSnap = await transaction.get(applicationRef);
 
+      if (!appSnap.exists()) {
+        throw new Error("Application not found");
+      }
+
+      const application = appSnap.data() as ProjectApplication;
+
+      // WRITE PHASE - Do all writes after reads
+      // Update application status
       transaction.update(applicationRef, {
         status: "accepted",
         decisionAt: serverTimestamp(),
@@ -703,24 +713,19 @@ export async function acceptApplication(
       });
 
       // Create notification for applicant
-      const appSnap = await transaction.get(applicationRef);
-      if (appSnap.exists()) {
-        const application = appSnap.data() as ProjectApplication;
+      const notificationDoc = {
+        userUid: application.applicantUid,
+        type: "application_accepted",
+        payload: {
+          projectId,
+          projectTitle: project.title,
+        },
+        createdAt: serverTimestamp(),
+        read: false,
+      };
 
-        const notificationDoc = {
-          userUid: application.applicantUid,
-          type: "application_accepted",
-          payload: {
-            projectId,
-            projectTitle: project.title,
-          },
-          createdAt: serverTimestamp(),
-          read: false,
-        };
-
-        const notificationRef = doc(collection(db, COLLECTIONS.NOTIFICATIONS));
-        transaction.set(notificationRef, notificationDoc);
-      }
+      const notificationRef = doc(collection(db, COLLECTIONS.NOTIFICATIONS));
+      transaction.set(notificationRef, notificationDoc);
     });
 
     console.log(`✅ Accepted application: ${applicationId}`);
@@ -740,6 +745,7 @@ export async function rejectApplication(
 ): Promise<void> {
   try {
     await runTransaction(db, async (transaction) => {
+      // READ PHASE - Do all reads first
       // Verify project ownership
       const projectRef = doc(db, COLLECTIONS.PROJECTS, projectId);
       const projectSnap = await transaction.get(projectRef);
@@ -755,7 +761,7 @@ export async function rejectApplication(
         );
       }
 
-      // Update application
+      // Get application data for notification
       const applicationRef = doc(
         db,
         COLLECTIONS.PROJECTS,
@@ -763,7 +769,16 @@ export async function rejectApplication(
         COLLECTIONS.APPLICATIONS,
         applicationId
       );
+      const appSnap = await transaction.get(applicationRef);
 
+      if (!appSnap.exists()) {
+        throw new Error("Application not found");
+      }
+
+      const application = appSnap.data() as ProjectApplication;
+
+      // WRITE PHASE - Do all writes after reads
+      // Update application status
       transaction.update(applicationRef, {
         status: "rejected",
         decisionAt: serverTimestamp(),
@@ -771,24 +786,19 @@ export async function rejectApplication(
       });
 
       // Create notification for applicant
-      const appSnap = await transaction.get(applicationRef);
-      if (appSnap.exists()) {
-        const application = appSnap.data() as ProjectApplication;
+      const notificationDoc = {
+        userUid: application.applicantUid,
+        type: "application_rejected",
+        payload: {
+          projectId,
+          projectTitle: project.title,
+        },
+        createdAt: serverTimestamp(),
+        read: false,
+      };
 
-        const notificationDoc = {
-          userUid: application.applicantUid,
-          type: "application_rejected",
-          payload: {
-            projectId,
-            projectTitle: project.title,
-          },
-          createdAt: serverTimestamp(),
-          read: false,
-        };
-
-        const notificationRef = doc(collection(db, COLLECTIONS.NOTIFICATIONS));
-        transaction.set(notificationRef, notificationDoc);
-      }
+      const notificationRef = doc(collection(db, COLLECTIONS.NOTIFICATIONS));
+      transaction.set(notificationRef, notificationDoc);
     });
 
     console.log(`✅ Rejected application: ${applicationId}`);

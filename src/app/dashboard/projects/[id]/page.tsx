@@ -32,6 +32,7 @@ import {
   listApplications,
   acceptApplication,
   rejectApplication,
+  deleteProject,
   generateProjectSlug,
   formatPayment,
   type Project,
@@ -55,6 +56,7 @@ function ProjectManagementContent() {
   const [processingApplication, setProcessingApplication] = useState<
     string | null
   >(null);
+  const [deletingProject, setDeletingProject] = useState(false);
 
   // Load project data
   useEffect(() => {
@@ -140,6 +142,39 @@ function ProjectManagementContent() {
       alert("Erro ao atualizar candidatura. Tente novamente.");
     } finally {
       setProcessingApplication(null);
+    }
+  };
+
+  const handleEditProject = () => {
+    if (!project) return;
+    const slug = generateProjectSlug(project.title, project.id);
+    router.push(`/projects/${slug}/edit`);
+  };
+
+  const handleManageApplications = () => {
+    // Scroll to applications section
+    const applicationsSection = document.querySelector('[data-applications]');
+    applicationsSection?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleDeleteProject = async () => {
+    if (!project || !user?.uid) return;
+
+    const confirmed = window.confirm(
+      `Tem certeza que deseja excluir o projeto "${project.title}"? Esta ação não pode ser desfeita.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setDeletingProject(true);
+      await deleteProject(project.id, user.uid);
+      router.push('/dashboard');
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      alert("Erro ao excluir projeto. Tente novamente.");
+    } finally {
+      setDeletingProject(false);
     }
   };
 
@@ -304,19 +339,33 @@ function ProjectManagementContent() {
               </h3>
 
               <div className="space-y-3">
-                <SecondaryButton className="w-full flex items-center gap-2">
+                <SecondaryButton 
+                  onClick={handleEditProject}
+                  className="w-full flex items-center gap-2"
+                >
                   <Edit3 className="w-4 h-4" />
                   Editar Projeto
                 </SecondaryButton>
 
-                <SecondaryButton className="w-full flex items-center gap-2">
+                <SecondaryButton 
+                  onClick={handleManageApplications}
+                  className="w-full flex items-center gap-2"
+                >
                   <Users className="w-4 h-4" />
                   Gerenciar Candidaturas
                 </SecondaryButton>
 
-                <SecondaryButton className="w-full flex items-center gap-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
-                  <Trash2 className="w-4 h-4" />
-                  Excluir Projeto
+                <SecondaryButton 
+                  onClick={handleDeleteProject}
+                  disabled={deletingProject}
+                  className="w-full flex items-center gap-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                >
+                  {deletingProject ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-4 h-4" />
+                  )}
+                  {deletingProject ? "Excluindo..." : "Excluir Projeto"}
                 </SecondaryButton>
               </div>
             </motion.div>
@@ -328,6 +377,7 @@ function ProjectManagementContent() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
+              data-applications
               className="relative backdrop-blur-[15px] bg-white/[0.15] dark:bg-black/15 border border-white/[0.25] dark:border-white/15 rounded-[20px] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)]"
             >
               <div className="flex items-center justify-between mb-6">
