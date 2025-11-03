@@ -6,7 +6,7 @@ import EcosystemFeaturesSection from "./EcosystemFeaturesSection";
 export default function AboutSection() {
   return (
     <>
-      <section className="relative overflow-hidden py-20 px-4 sm:px-6 lg:px-8">
+      <section className="relative overflow-hidden py-20 px-4 sm:px-6 lg:px-8" data-section="about">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}

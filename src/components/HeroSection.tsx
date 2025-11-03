@@ -2,10 +2,62 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { SecondaryButton } from "@/components/ui/secondary-button";
 
 export default function HeroSection() {
+  const router = useRouter();
+  const { user, signInWithGoogle } = useAuth();
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithGoogle();
+      // Redirect to dashboard after successful login
+      router.push("/dashboard");
+    } catch (error) {
+      console.error("Error signing in with Google:", error);
+    }
+  };
+
+  const handleEmailSignIn = () => {
+    router.push("/login");
+  };
+
+  // If user is already logged in, show different content
+  if (user) {
+    return (
+      <section className="relative overflow-hidden min-h-screen flex items-center justify-center py-20">
+        <div className="max-w-7xl mx-auto w-full relative z-10 px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="text-4xl sm:text-5xl lg:text-6xl font-bold font-serif text-brand-black dark:text-brand-white leading-[1.1] mb-8"
+            >
+              Bem-vindo de volta, {user.displayName}!
+            </motion.h1>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+              className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto"
+            >
+              <PrimaryButton onClick={() => router.push("/dashboard")}>
+                Acessar Dashboard
+              </PrimaryButton>
+              <SecondaryButton onClick={() => router.push("/projects")}>
+                Ver Projetos
+              </SecondaryButton>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="relative overflow-hidden min-h-screen flex items-center justify-center py-20">
       {/* Subtle floating elements */}
@@ -38,14 +90,14 @@ export default function HeroSection() {
                 transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
                 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold font-serif text-brand-black dark:text-brand-white leading-[1.1]"
               >
-                Transforme sua{" "}
+                Conecte sua{" "}
                 <span className="text-brand-navy-blue dark:text-brand-yellow">
                   Arte
                 </span>{" "}
                 <br className="hidden sm:inline" />
-                em{" "}
+                com{" "}
                 <span className="text-brand-navy-blue dark:text-brand-yellow">
-                  Carreira
+                  Oportunidades
                 </span>
               </motion.h1>
 
@@ -55,15 +107,15 @@ export default function HeroSection() {
                 transition={{ duration: 0.8, ease: "easeOut", delay: 0.4 }}
                 className="text-lg sm:text-xl text-brand-black/70 dark:text-brand-white/70 leading-relaxed max-w-xl"
               >
-                Cadastre-se agora e descubra{" "}
+                Entre na ArtEsfera e descubra{" "}
                 <span className="font-medium text-brand-navy-blue dark:text-brand-yellow">
-                  projetos exclusivos
+                  projetos culturais
                 </span>{" "}
                 e{" "}
                 <span className="font-medium text-brand-navy-blue dark:text-brand-yellow">
-                  oportunidades culturais
+                  colaborações artísticas
                 </span>{" "}
-                que combinam perfeitamente com seu talento artístico.
+                que transformarão sua carreira criativa.
               </motion.p>
             </div>
 
@@ -73,9 +125,10 @@ export default function HeroSection() {
               transition={{ duration: 0.8, ease: "easeOut", delay: 0.6 }}
               className="flex flex-col gap-4 max-w-sm"
             >
-              {/* Primary CTA - Google Sign-up */}
+              {/* Primary CTA - Google Sign-in */}
               <PrimaryButton
                 fullWidth
+                onClick={handleGoogleSignIn}
                 leftIcon={
                   <svg className="w-4 h-4" viewBox="0 0 24 24">
                     <path
@@ -100,9 +153,10 @@ export default function HeroSection() {
                 Continuar com o Google
               </PrimaryButton>
 
-              {/* Secondary CTA - Email Sign-up */}
+              {/* Secondary CTA - Email Sign-in */}
               <SecondaryButton
                 fullWidth
+                onClick={handleEmailSignIn}
                 leftIcon={
                   <svg
                     className="w-4 h-4"
@@ -141,7 +195,7 @@ export default function HeroSection() {
                   <div className="relative w-full h-full rounded-[16px] overflow-hidden">
                     <Image
                       src="/images/placeholder.webp"
-                      alt="ArtEsfera: Onde a arte encontra oportunidades"
+                      alt="ArtEsfera: Conectando artistas com oportunidades culturais"
                       fill
                       className="object-cover"
                       priority

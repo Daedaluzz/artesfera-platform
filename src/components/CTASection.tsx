@@ -2,10 +2,39 @@
 
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { SecondaryButton } from "@/components/ui/secondary-button";
 
 export default function CTASection() {
+  const router = useRouter();
+  const { user, signInWithGoogle } = useAuth();
+
+  const handleGetStarted = async () => {
+    if (user) {
+      router.push("/dashboard");
+    } else {
+      try {
+        await signInWithGoogle();
+        router.push("/dashboard");
+      } catch (error) {
+        console.error("Error signing in:", error);
+        router.push("/login");
+      }
+    }
+  };
+
+  const handleLearnMore = () => {
+    // Scroll to about section or navigate to dedicated about page
+    const aboutSection = document.querySelector('section[data-section="about"]');
+    if (aboutSection) {
+      aboutSection.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      router.push("/about");
+    }
+  };
+
   return (
     <section className="py-20 px-4 relative overflow-hidden">
       {/* Main Glass Container */}
@@ -37,16 +66,19 @@ export default function CTASection() {
                 {/* Primary CTA */}
                 <PrimaryButton
                   fullWidth
+                  onClick={handleGetStarted}
                   showArrow
                   arrowIcon={
                     <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-300" />
                   }
                 >
-                  Comece Gratuitamente
+                  {user ? "Acessar Dashboard" : "Comece Gratuitamente"}
                 </PrimaryButton>
 
                 {/* Secondary CTA */}
-                <SecondaryButton fullWidth>Saiba Mais</SecondaryButton>
+                <SecondaryButton fullWidth onClick={handleLearnMore}>
+                  Saiba Mais
+                </SecondaryButton>
               </div>
 
               {/* Trust Indicators */}
