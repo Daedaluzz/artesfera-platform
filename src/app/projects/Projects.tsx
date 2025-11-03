@@ -3,9 +3,24 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Search, Filter, MapPin, Clock, Users, Tag, Plus, ChevronDown } from "lucide-react";
+import {
+  Search,
+  Filter,
+  MapPin,
+  Clock,
+  Users,
+  Tag,
+  Plus,
+  ChevronDown,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { listPublicProjects, type Project, type ProjectFilters, formatPayment, generateProjectSlug } from "@/lib/firestoreProjects";
+import {
+  listPublicProjects,
+  type Project,
+  type ProjectFilters,
+  formatPayment,
+  generateProjectSlug,
+} from "@/lib/firestoreProjects";
 import type { QueryDocumentSnapshot, DocumentData } from "firebase/firestore";
 import { useAuth } from "@/context/AuthContext";
 import { PrimaryButton } from "@/components/ui/primary-button";
@@ -15,15 +30,39 @@ import { Separator } from "@/components/ui/separator";
 
 // Location options for filters
 const ESTADOS_BRASILEIROS = [
-  "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA",
-  "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN",
-  "RS", "RO", "RR", "SC", "SP", "SE", "TO"
+  "AC",
+  "AL",
+  "AP",
+  "AM",
+  "BA",
+  "CE",
+  "DF",
+  "ES",
+  "GO",
+  "MA",
+  "MT",
+  "MS",
+  "MG",
+  "PA",
+  "PB",
+  "PR",
+  "PE",
+  "PI",
+  "RJ",
+  "RN",
+  "RS",
+  "RO",
+  "RR",
+  "SC",
+  "SP",
+  "SE",
+  "TO",
 ];
 
 const PROJECT_TYPES = [
   { value: "collaboration", label: "Colaboração" },
   { value: "hire", label: "Contratação" },
-  { value: "other", label: "Outro" }
+  { value: "other", label: "Outro" },
 ];
 
 interface ProjectCardProps {
@@ -32,8 +71,14 @@ interface ProjectCardProps {
 
 function ProjectCard({ project }: ProjectCardProps) {
   const slug = generateProjectSlug(project.title, project.id);
-  const isDeadlineSoon = project.applicationDeadline && 
-    (project.applicationDeadline instanceof Date ? project.applicationDeadline : project.applicationDeadline.toDate()).getTime() - Date.now() < 7 * 24 * 60 * 60 * 1000; // 7 days
+  const isDeadlineSoon =
+    project.applicationDeadline &&
+    (project.applicationDeadline instanceof Date
+      ? project.applicationDeadline
+      : project.applicationDeadline.toDate()
+    ).getTime() -
+      Date.now() <
+      7 * 24 * 60 * 60 * 1000; // 7 days
 
   return (
     <motion.div
@@ -46,7 +91,7 @@ function ProjectCard({ project }: ProjectCardProps) {
         <div className="relative overflow-hidden rounded-xl backdrop-blur-md bg-white/10 dark:bg-zinc-800/10 border border-white/20 dark:border-zinc-700/30 hover:border-white/40 dark:hover:border-zinc-600/50 transition-all duration-300 hover:backdrop-blur-xl hover:bg-white/20 dark:hover:bg-zinc-800/20 hover:translate-y-[-2px] hover:shadow-lg">
           {/* Reflexive hover effect */}
           <div className="absolute inset-0 before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:translate-x-[-100%] group-hover:before:translate-x-full before:transition-transform before:duration-700 before:ease-out" />
-          
+
           <div className="relative p-6">
             {/* Header */}
             <div className="flex items-start justify-between mb-4">
@@ -56,14 +101,23 @@ function ProjectCard({ project }: ProjectCardProps) {
                 </h3>
                 <div className="flex items-center gap-2 mt-2 text-sm text-zinc-600 dark:text-zinc-400">
                   <MapPin className="w-4 h-4" />
-                  <span>{project.city}, {project.state}</span>
+                  <span>
+                    {project.city}, {project.state}
+                  </span>
                 </div>
               </div>
-              <Badge 
-                variant={project.type === 'collaboration' ? 'default' : project.type === 'hire' ? 'secondary' : 'outline'}
+              <Badge
+                variant={
+                  project.type === "collaboration"
+                    ? "default"
+                    : project.type === "hire"
+                    ? "secondary"
+                    : "outline"
+                }
                 className="ml-4"
               >
-                {PROJECT_TYPES.find(t => t.value === project.type)?.label || project.type}
+                {PROJECT_TYPES.find((t) => t.value === project.type)?.label ||
+                  project.type}
               </Badge>
             </div>
 
@@ -76,7 +130,7 @@ function ProjectCard({ project }: ProjectCardProps) {
             {project.tags.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-4">
                 {project.tags.slice(0, 3).map((tag) => (
-                  <div 
+                  <div
                     key={tag}
                     className="inline-flex items-center gap-1 px-2 py-1 rounded-full backdrop-blur-sm bg-white/20 dark:bg-zinc-700/30 border border-white/30 dark:border-zinc-600/30 text-xs text-zinc-700 dark:text-zinc-300"
                   >
@@ -104,13 +158,23 @@ function ProjectCard({ project }: ProjectCardProps) {
                   <span>{project.applicantsCount}</span>
                 </div>
               </div>
-              
+
               <div className="text-right">
                 <div className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
                   {formatPayment(project.payment)}
                 </div>
-                <div className={`text-xs ${isDeadlineSoon ? 'text-orange-600 dark:text-orange-400' : 'text-zinc-500 dark:text-zinc-500'}`}>
-                  até {(project.applicationDeadline instanceof Date ? project.applicationDeadline : project.applicationDeadline.toDate()).toLocaleDateString('pt-BR')}
+                <div
+                  className={`text-xs ${
+                    isDeadlineSoon
+                      ? "text-orange-600 dark:text-orange-400"
+                      : "text-zinc-500 dark:text-zinc-500"
+                  }`}
+                >
+                  até{" "}
+                  {(project.applicationDeadline instanceof Date
+                    ? project.applicationDeadline
+                    : project.applicationDeadline.toDate()
+                  ).toLocaleDateString("pt-BR")}
                 </div>
               </div>
             </div>
@@ -121,12 +185,12 @@ function ProjectCard({ project }: ProjectCardProps) {
   );
 }
 
-function FilterPanel({ 
-  filters, 
-  onFiltersChange, 
-  isOpen, 
-  onToggle 
-}: { 
+function FilterPanel({
+  filters,
+  onFiltersChange,
+  isOpen,
+  onToggle,
+}: {
   filters: ProjectFilters;
   onFiltersChange: (filters: ProjectFilters) => void;
   isOpen: boolean;
@@ -134,13 +198,14 @@ function FilterPanel({
 }) {
   return (
     <div className="relative">
-      <SecondaryButton
-        onClick={onToggle}
-        className="flex items-center gap-2"
-      >
+      <SecondaryButton onClick={onToggle} className="flex items-center gap-2">
         <Filter className="w-4 h-4" />
         Filtros
-        <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown
+          className={`w-4 h-4 transition-transform ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
       </SecondaryButton>
 
       <AnimatePresence>
@@ -157,12 +222,18 @@ function FilterPanel({
                 Tipo
               </label>
               <select
-                value={filters.type || ''}
-                onChange={(e) => onFiltersChange({ ...filters, type: (e.target.value || undefined) as ProjectFilters['type'] })}
-                className="w-full px-3 py-2 rounded-lg backdrop-blur-sm bg-white/50 dark:bg-zinc-700/50 border border-white/30 dark:border-zinc-600/30 text-zinc-800 dark:text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow/50"
+                value={filters.type || ""}
+                onChange={(e) =>
+                  onFiltersChange({
+                    ...filters,
+                    type: (e.target.value ||
+                      undefined) as ProjectFilters["type"],
+                  })
+                }
+                className="w-full px-3 py-2 rounded-lg backdrop-blur-sm bg-white/50 dark:bg-zinc-700/50 border border-white/30 dark:border-zinc-600/30 text-zinc-800 dark:text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow/50 [&>option]:bg-white [&>option]:dark:bg-zinc-800 [&>option]:text-zinc-800 [&>option]:dark:text-zinc-200"
               >
                 <option value="">Todos os tipos</option>
-                {PROJECT_TYPES.map(type => (
+                {PROJECT_TYPES.map((type) => (
                   <option key={type.value} value={type.value}>
                     {type.label}
                   </option>
@@ -176,12 +247,17 @@ function FilterPanel({
                 Estado
               </label>
               <select
-                value={filters.state || ''}
-                onChange={(e) => onFiltersChange({ ...filters, state: e.target.value || undefined })}
-                className="w-full px-3 py-2 rounded-lg backdrop-blur-sm bg-white/50 dark:bg-zinc-700/50 border border-white/30 dark:border-zinc-600/30 text-zinc-800 dark:text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow/50"
+                value={filters.state || ""}
+                onChange={(e) =>
+                  onFiltersChange({
+                    ...filters,
+                    state: e.target.value || undefined,
+                  })
+                }
+                className="w-full px-3 py-2 rounded-lg backdrop-blur-sm bg-white/50 dark:bg-zinc-700/50 border border-white/30 dark:border-zinc-600/30 text-zinc-800 dark:text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow/50 [&>option]:bg-white [&>option]:dark:bg-zinc-800 [&>option]:text-zinc-800 [&>option]:dark:text-zinc-200"
               >
                 <option value="">Todos os estados</option>
-                {ESTADOS_BRASILEIROS.map(estado => (
+                {ESTADOS_BRASILEIROS.map((estado) => (
                   <option key={estado} value={estado}>
                     {estado}
                   </option>
@@ -197,8 +273,13 @@ function FilterPanel({
               <input
                 type="text"
                 placeholder="Digite a cidade..."
-                value={filters.city || ''}
-                onChange={(e) => onFiltersChange({ ...filters, city: e.target.value || undefined })}
+                value={filters.city || ""}
+                onChange={(e) =>
+                  onFiltersChange({
+                    ...filters,
+                    city: e.target.value || undefined,
+                  })
+                }
                 className="w-full px-3 py-2 rounded-lg backdrop-blur-sm bg-white/50 dark:bg-zinc-700/50 border border-white/30 dark:border-zinc-600/30 text-zinc-800 dark:text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow/50 placeholder:text-zinc-500 dark:placeholder:text-zinc-400"
               />
             </div>
@@ -209,9 +290,15 @@ function FilterPanel({
                 Status
               </label>
               <select
-                value={filters.status || ''}
-                onChange={(e) => onFiltersChange({ ...filters, status: (e.target.value || undefined) as ProjectFilters['status'] })}
-                className="w-full px-3 py-2 rounded-lg backdrop-blur-sm bg-white/50 dark:bg-zinc-700/50 border border-white/30 dark:border-zinc-600/30 text-zinc-800 dark:text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow/50"
+                value={filters.status || ""}
+                onChange={(e) =>
+                  onFiltersChange({
+                    ...filters,
+                    status: (e.target.value ||
+                      undefined) as ProjectFilters["status"],
+                  })
+                }
+                className="w-full px-3 py-2 rounded-lg backdrop-blur-sm bg-white/50 dark:bg-zinc-700/50 border border-white/30 dark:border-zinc-600/30 text-zinc-800 dark:text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow/50 [&>option]:bg-white [&>option]:dark:bg-zinc-800 [&>option]:text-zinc-800 [&>option]:dark:text-zinc-200"
               >
                 <option value="">Todos</option>
                 <option value="open">Abertos</option>
@@ -229,85 +316,99 @@ export default function Projects() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
-  
+
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
-  
+  const [lastDoc, setLastDoc] =
+    useState<QueryDocumentSnapshot<DocumentData> | null>(null);
+
   // Filters state
   const [filters, setFilters] = useState<ProjectFilters>({
-    status: 'open', // Default to open projects
+    status: "open", // Default to open projects
   });
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   // Initialize filters from URL
   useEffect(() => {
-    const urlFilters: ProjectFilters = { status: 'open' };
-    
-    if (searchParams.get('type')) urlFilters.type = searchParams.get('type') as ProjectFilters['type'];
-    if (searchParams.get('state')) urlFilters.state = searchParams.get('state') || undefined;
-    if (searchParams.get('city')) urlFilters.city = searchParams.get('city') || undefined;
-    if (searchParams.get('status')) urlFilters.status = searchParams.get('status') as ProjectFilters['status'];
-    if (searchParams.get('search')) {
-      urlFilters.search = searchParams.get('search') || undefined;
-      setSearchTerm(searchParams.get('search') || '');
+    const urlFilters: ProjectFilters = { status: "open" };
+
+    if (searchParams.get("type"))
+      urlFilters.type = searchParams.get("type") as ProjectFilters["type"];
+    if (searchParams.get("state"))
+      urlFilters.state = searchParams.get("state") || undefined;
+    if (searchParams.get("city"))
+      urlFilters.city = searchParams.get("city") || undefined;
+    if (searchParams.get("status"))
+      urlFilters.status = searchParams.get(
+        "status"
+      ) as ProjectFilters["status"];
+    if (searchParams.get("search")) {
+      urlFilters.search = searchParams.get("search") || undefined;
+      setSearchTerm(searchParams.get("search") || "");
     }
-    
+
     setFilters(urlFilters);
   }, [searchParams]);
 
   // Update URL when filters change
-  const updateUrl = useCallback((newFilters: ProjectFilters, search?: string) => {
-    const params = new URLSearchParams();
-    
-    if (newFilters.type) params.set('type', newFilters.type);
-    if (newFilters.state) params.set('state', newFilters.state);
-    if (newFilters.city) params.set('city', newFilters.city);
-    if (newFilters.status && newFilters.status !== 'open') params.set('status', newFilters.status);
-    if (search) params.set('search', search);
-    
-    const queryString = params.toString();
-    const newUrl = queryString ? `/projects?${queryString}` : '/projects';
-    
-    router.replace(newUrl, { scroll: false });
-  }, [router]);
+  const updateUrl = useCallback(
+    (newFilters: ProjectFilters, search?: string) => {
+      const params = new URLSearchParams();
+
+      if (newFilters.type) params.set("type", newFilters.type);
+      if (newFilters.state) params.set("state", newFilters.state);
+      if (newFilters.city) params.set("city", newFilters.city);
+      if (newFilters.status && newFilters.status !== "open")
+        params.set("status", newFilters.status);
+      if (search) params.set("search", search);
+
+      const queryString = params.toString();
+      const newUrl = queryString ? `/projects?${queryString}` : "/projects";
+
+      router.replace(newUrl, { scroll: false });
+    },
+    [router]
+  );
 
   // Load projects
-  const loadProjects = useCallback(async (isLoadMore = false) => {
-    try {
-      if (isLoadMore) {
-        setLoadingMore(true);
-      } else {
-        setLoading(true);
-        setError(null);
+  const loadProjects = useCallback(
+    async (isLoadMore = false) => {
+      try {
+        if (isLoadMore) {
+          setLoadingMore(true);
+        } else {
+          setLoading(true);
+          setError(null);
+        }
+
+        const result = await listPublicProjects({
+          filters: { ...filters, search: searchTerm || undefined },
+          limit: 12,
+          cursor: isLoadMore && lastDoc ? lastDoc : undefined,
+        });
+
+        if (isLoadMore) {
+          setProjects((prev) => [...prev, ...result.projects]);
+        } else {
+          setProjects(result.projects);
+        }
+
+        setHasMore(result.hasMore);
+        setLastDoc(result.lastDoc || null);
+      } catch (err) {
+        console.error("Error loading projects:", err);
+        setError("Erro ao carregar projetos. Tente novamente.");
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
       }
-
-      const result = await listPublicProjects({
-        filters: { ...filters, search: searchTerm || undefined },
-        limit: 12,
-        cursor: isLoadMore && lastDoc ? lastDoc : undefined,
-      });
-
-      if (isLoadMore) {
-        setProjects(prev => [...prev, ...result.projects]);
-      } else {
-        setProjects(result.projects);
-      }
-
-      setHasMore(result.hasMore);
-      setLastDoc(result.lastDoc || null);
-    } catch (err) {
-      console.error('Error loading projects:', err);
-      setError('Erro ao carregar projetos. Tente novamente.');
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
-  }, [filters, searchTerm, lastDoc]);
+    },
+    [filters, searchTerm, lastDoc]
+  );
 
   // Load projects when filters change
   useEffect(() => {
@@ -325,8 +426,8 @@ export default function Projects() {
         setHasMore(result.hasMore);
         setLastDoc(result.lastDoc || null);
       } catch (err) {
-        console.error('Error loading projects:', err);
-        setError('Erro ao carregar projetos. Tente novamente.');
+        console.error("Error loading projects:", err);
+        setError("Erro ao carregar projetos. Tente novamente.");
       } finally {
         setLoading(false);
       }
@@ -336,16 +437,22 @@ export default function Projects() {
   }, [filters, searchTerm]);
 
   // Handle search
-  const handleSearch = useCallback((value: string) => {
-    setSearchTerm(value);
-    updateUrl(filters, value);
-  }, [filters, updateUrl]);
+  const handleSearch = useCallback(
+    (value: string) => {
+      setSearchTerm(value);
+      updateUrl(filters, value);
+    },
+    [filters, updateUrl]
+  );
 
   // Handle filters change
-  const handleFiltersChange = useCallback((newFilters: ProjectFilters) => {
-    setFilters(newFilters);
-    updateUrl(newFilters, searchTerm);
-  }, [searchTerm, updateUrl]);
+  const handleFiltersChange = useCallback(
+    (newFilters: ProjectFilters) => {
+      setFilters(newFilters);
+      updateUrl(newFilters, searchTerm);
+    },
+    [searchTerm, updateUrl]
+  );
 
   // Handle load more
   const handleLoadMore = useCallback(() => {
@@ -365,13 +472,14 @@ export default function Projects() {
                 Projetos
               </h1>
               <p className="text-lg text-zinc-600 dark:text-zinc-400">
-                Descubra oportunidades de colaboração e contratação na comunidade artística
+                Descubra oportunidades de colaboração e contratação na
+                comunidade artística
               </p>
             </div>
-            
+
             {user && (
               <PrimaryButton
-                onClick={() => router.push('/projects/create')}
+                onClick={() => router.push("/projects/create")}
                 className="flex items-center gap-2 whitespace-nowrap"
               >
                 <Plus className="w-4 h-4" />
@@ -435,11 +543,13 @@ export default function Projects() {
             <div className="text-zinc-600 dark:text-zinc-400 mb-4">
               Nenhum projeto encontrado com os filtros selecionados.
             </div>
-            <SecondaryButton onClick={() => {
-              setFilters({ status: 'open' });
-              setSearchTerm('');
-              updateUrl({ status: 'open' }, '');
-            }}>
+            <SecondaryButton
+              onClick={() => {
+                setFilters({ status: "open" });
+                setSearchTerm("");
+                updateUrl({ status: "open" }, "");
+              }}
+            >
               Limpar Filtros
             </SecondaryButton>
           </div>
@@ -460,7 +570,7 @@ export default function Projects() {
                   disabled={loadingMore}
                   className="min-w-[120px]"
                 >
-                  {loadingMore ? 'Carregando...' : 'Carregar Mais'}
+                  {loadingMore ? "Carregando..." : "Carregar Mais"}
                 </SecondaryButton>
               </div>
             )}

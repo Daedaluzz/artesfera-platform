@@ -6,5 +6,6 @@ export default function CreateProjectPage() {
 
 export const metadata = {
   title: "Criar Projeto | ArtEsfera",
-  description: "Crie um novo projeto e encontre colaboradores talentosos na comunidade ArtEsfera",
+  description:
+    "Crie um novo projeto e encontre colaboradores talentosos na comunidade ArtEsfera",
 };

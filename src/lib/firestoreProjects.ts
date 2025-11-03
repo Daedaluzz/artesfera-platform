@@ -1,12 +1,13 @@
 /**
  * Firestore Projects API
- * 
+ *
  * Typed helpers for project CRUD operations, applications, and related functionality.
  * Implements the LinkedIn-style projects system with proper security and data consistency.
  */
 
 import {
   collection,
+  collectionGroup,
   doc,
   getDoc,
   getDocs,
@@ -79,7 +80,8 @@ export interface CreateProjectData {
   };
 }
 
-export interface UpdateProjectData extends Partial<Omit<CreateProjectData, 'applicationDeadline'>> {
+export interface UpdateProjectData
+  extends Partial<Omit<CreateProjectData, "applicationDeadline">> {
   applicationDeadline?: Date;
   status?: "open" | "closed";
 }
@@ -153,14 +155,17 @@ export async function createProject(
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
       createdBy: uid,
-      tags: data.tags.map(tag => tag.trim().toLowerCase()),
+      tags: data.tags.map((tag) => tag.trim().toLowerCase()),
       type: data.type,
       payment: data.payment,
       status: "open" as const,
       applicantsCount: 0,
     };
 
-    const docRef = await addDoc(collection(db, COLLECTIONS.PROJECTS), projectDoc);
+    const docRef = await addDoc(
+      collection(db, COLLECTIONS.PROJECTS),
+      projectDoc
+    );
     console.log(`✅ Created project: ${docRef.id}`);
     return docRef.id;
   } catch (error) {
@@ -191,22 +196,34 @@ export async function updateProject(
 
     // Handle date conversion
     if (updates.applicationDeadline) {
-      updateData.applicationDeadline = Timestamp.fromDate(updates.applicationDeadline);
+      updateData.applicationDeadline = Timestamp.fromDate(
+        updates.applicationDeadline
+      );
     }
 
     // Clean up data
-    if (updateData.title && typeof updateData.title === 'string') updateData.title = updateData.title.trim();
-    if (updateData.description && typeof updateData.description === 'string') updateData.description = updateData.description.trim();
-    if (updateData.city && typeof updateData.city === 'string') updateData.city = updateData.city.trim();
-    if (updateData.state && typeof updateData.state === 'string') updateData.state = updateData.state.trim();
-    if (updateData.duration && typeof updateData.duration === 'string') updateData.duration = updateData.duration.trim();
+    if (updateData.title && typeof updateData.title === "string")
+      updateData.title = updateData.title.trim();
+    if (updateData.description && typeof updateData.description === "string")
+      updateData.description = updateData.description.trim();
+    if (updateData.city && typeof updateData.city === "string")
+      updateData.city = updateData.city.trim();
+    if (updateData.state && typeof updateData.state === "string")
+      updateData.state = updateData.state.trim();
+    if (updateData.duration && typeof updateData.duration === "string")
+      updateData.duration = updateData.duration.trim();
     if (updateData.tags && Array.isArray(updateData.tags)) {
-      updateData.tags = updateData.tags.map((tag: string) => tag.trim().toLowerCase());
+      updateData.tags = updateData.tags.map((tag: string) =>
+        tag.trim().toLowerCase()
+      );
     }
 
     const projectRef = doc(db, COLLECTIONS.PROJECTS, projectId);
-    await updateDoc(projectRef, updateData as { [x: string]: FieldValue | Partial<unknown> | undefined });
-    
+    await updateDoc(
+      projectRef,
+      updateData as { [x: string]: FieldValue | Partial<unknown> | undefined }
+    );
+
     console.log(`✅ Updated project: ${projectId}`);
   } catch (error) {
     console.error("Error updating project:", error);
@@ -217,7 +234,10 @@ export async function updateProject(
 /**
  * Delete project (owner only)
  */
-export async function deleteProject(projectId: string, uid: string): Promise<void> {
+export async function deleteProject(
+  projectId: string,
+  uid: string
+): Promise<void> {
   try {
     // First verify ownership
     const project = await getProject(projectId);
@@ -229,10 +249,15 @@ export async function deleteProject(projectId: string, uid: string): Promise<voi
     await runTransaction(db, async (transaction) => {
       // Delete all applications
       const applicationsQuery = query(
-        collection(db, COLLECTIONS.PROJECTS, projectId, COLLECTIONS.APPLICATIONS)
+        collection(
+          db,
+          COLLECTIONS.PROJECTS,
+          projectId,
+          COLLECTIONS.APPLICATIONS
+        )
       );
       const applicationsSnapshot = await getDocs(applicationsQuery);
-      
+
       applicationsSnapshot.docs.forEach((appDoc) => {
         transaction.delete(appDoc.ref);
       });
@@ -264,7 +289,8 @@ export async function getProject(projectId: string): Promise<Project | null> {
         ...data,
         createdAt: data.createdAt?.toDate?.() || data.createdAt,
         updatedAt: data.updatedAt?.toDate?.() || data.updatedAt,
-        applicationDeadline: data.applicationDeadline?.toDate?.() || data.applicationDeadline,
+        applicationDeadline:
+          data.applicationDeadline?.toDate?.() || data.applicationDeadline,
       } as Project;
     }
 
@@ -309,12 +335,15 @@ export async function listPublicProjects({
     if (filters.tags && filters.tags.length > 0) {
       // For tags, we'll use array-contains for now (limited to one tag)
       // In production, you might want to use array-contains-any or separate tag queries
-      q = query(q, where("tags", "array-contains", filters.tags[0].toLowerCase()));
+      q = query(
+        q,
+        where("tags", "array-contains", filters.tags[0].toLowerCase())
+      );
     }
 
     // Add pagination
     q = query(q, limit(pageLimit + 1)); // Get one extra to check if there are more
-    
+
     if (cursor) {
       q = query(q, startAfter(cursor));
     }
@@ -334,7 +363,8 @@ export async function listPublicProjects({
         ...data,
         createdAt: data.createdAt?.toDate?.() || data.createdAt,
         updatedAt: data.updatedAt?.toDate?.() || data.updatedAt,
-        applicationDeadline: data.applicationDeadline?.toDate?.() || data.applicationDeadline,
+        applicationDeadline:
+          data.applicationDeadline?.toDate?.() || data.applicationDeadline,
       } as Project);
     });
 
@@ -342,14 +372,17 @@ export async function listPublicProjects({
     let filteredProjects = projects;
     if (filters.search) {
       const searchTerm = filters.search.toLowerCase();
-      filteredProjects = projects.filter(project =>
-        project.title.toLowerCase().includes(searchTerm) ||
-        project.description.toLowerCase().includes(searchTerm) ||
-        project.tags.some(tag => tag.includes(searchTerm))
+      filteredProjects = projects.filter(
+        (project) =>
+          project.title.toLowerCase().includes(searchTerm) ||
+          project.description.toLowerCase().includes(searchTerm) ||
+          project.tags.some((tag) => tag.includes(searchTerm))
       );
     }
 
-    const lastDoc = hasMore ? docsToProcess[docsToProcess.length - 1] : undefined;
+    const lastDoc = hasMore
+      ? docsToProcess[docsToProcess.length - 1]
+      : undefined;
 
     return {
       projects: filteredProjects,
@@ -383,7 +416,8 @@ export async function getUserProjects(uid: string): Promise<Project[]> {
         ...data,
         createdAt: data.createdAt?.toDate?.() || data.createdAt,
         updatedAt: data.updatedAt?.toDate?.() || data.updatedAt,
-        applicationDeadline: data.applicationDeadline?.toDate?.() || data.applicationDeadline,
+        applicationDeadline:
+          data.applicationDeadline?.toDate?.() || data.applicationDeadline,
       } as Project);
     });
 
@@ -417,7 +451,7 @@ export async function applyToProject(
       }
 
       const project = projectSnap.data() as Project;
-      
+
       // Prevent owner from applying to their own project
       if (project.createdBy === applicantUid) {
         throw new Error("You cannot apply to your own project");
@@ -430,14 +464,20 @@ export async function applyToProject(
 
       // Check if deadline has passed
       const now = new Date();
-      const deadline = project.applicationDeadline?.toDate?.() || project.applicationDeadline;
+      const deadline =
+        project.applicationDeadline?.toDate?.() || project.applicationDeadline;
       if (deadline instanceof Date && deadline < now) {
         throw new Error("Application deadline has passed");
       }
 
       // Check for existing application
       const existingAppQuery = query(
-        collection(db, COLLECTIONS.PROJECTS, projectId, COLLECTIONS.APPLICATIONS),
+        collection(
+          db,
+          COLLECTIONS.PROJECTS,
+          projectId,
+          COLLECTIONS.APPLICATIONS
+        ),
         where("applicantUid", "==", applicantUid)
       );
       const existingApps = await getDocs(existingAppQuery);
@@ -457,7 +497,12 @@ export async function applyToProject(
       };
 
       const applicationRef = await addDoc(
-        collection(db, COLLECTIONS.PROJECTS, projectId, COLLECTIONS.APPLICATIONS),
+        collection(
+          db,
+          COLLECTIONS.PROJECTS,
+          projectId,
+          COLLECTIONS.APPLICATIONS
+        ),
         applicationDoc
       );
 
@@ -467,7 +512,9 @@ export async function applyToProject(
         updatedAt: serverTimestamp(),
       });
 
-      console.log(`✅ Applied to project: ${projectId}, application: ${applicationRef.id}`);
+      console.log(
+        `✅ Applied to project: ${projectId}, application: ${applicationRef.id}`
+      );
       return applicationRef.id;
     });
   } catch (error) {
@@ -503,7 +550,9 @@ export async function withdrawApplication(
 
       // Verify ownership
       if (application.applicantUid !== applicantUid) {
-        throw new Error("Unauthorized: You can only withdraw your own applications");
+        throw new Error(
+          "Unauthorized: You can only withdraw your own applications"
+        );
       }
 
       // Update application status
@@ -538,7 +587,9 @@ export async function listApplications(
     // First verify ownership
     const project = await getProject(projectId);
     if (!project || project.createdBy !== uid) {
-      throw new Error("Unauthorized: You can only view applications for your own projects");
+      throw new Error(
+        "Unauthorized: You can only view applications for your own projects"
+      );
     }
 
     const q = query(
@@ -620,7 +671,9 @@ export async function acceptApplication(
 
       const project = projectSnap.data() as Project;
       if (project.createdBy !== ownerUid) {
-        throw new Error("Unauthorized: You can only manage applications for your own projects");
+        throw new Error(
+          "Unauthorized: You can only manage applications for your own projects"
+        );
       }
 
       // Update application
@@ -631,7 +684,7 @@ export async function acceptApplication(
         COLLECTIONS.APPLICATIONS,
         applicationId
       );
-      
+
       transaction.update(applicationRef, {
         status: "accepted",
         decisionAt: serverTimestamp(),
@@ -642,7 +695,7 @@ export async function acceptApplication(
       const appSnap = await transaction.get(applicationRef);
       if (appSnap.exists()) {
         const application = appSnap.data() as ProjectApplication;
-        
+
         const notificationDoc = {
           userUid: application.applicantUid,
           type: "application_accepted",
@@ -686,7 +739,9 @@ export async function rejectApplication(
 
       const project = projectSnap.data() as Project;
       if (project.createdBy !== ownerUid) {
-        throw new Error("Unauthorized: You can only manage applications for your own projects");
+        throw new Error(
+          "Unauthorized: You can only manage applications for your own projects"
+        );
       }
 
       // Update application
@@ -697,7 +752,7 @@ export async function rejectApplication(
         COLLECTIONS.APPLICATIONS,
         applicationId
       );
-      
+
       transaction.update(applicationRef, {
         status: "rejected",
         decisionAt: serverTimestamp(),
@@ -708,7 +763,7 @@ export async function rejectApplication(
       const appSnap = await transaction.get(applicationRef);
       if (appSnap.exists()) {
         const application = appSnap.data() as ProjectApplication;
-        
+
         const notificationDoc = {
           userUid: application.applicantUid,
           type: "application_rejected",
@@ -772,7 +827,9 @@ export async function hasUserApplied(
 /**
  * Check if application deadline has passed
  */
-export function isApplicationDeadlinePassed(deadline: Date | Timestamp): boolean {
+export function isApplicationDeadlinePassed(
+  deadline: Date | Timestamp
+): boolean {
   const now = new Date();
   const deadlineDate = deadline instanceof Date ? deadline : deadline.toDate();
   return deadlineDate < now;
@@ -781,14 +838,14 @@ export function isApplicationDeadlinePassed(deadline: Date | Timestamp): boolean
 /**
  * Format payment display
  */
-export function formatPayment(payment: Project['payment']): string {
+export function formatPayment(payment: Project["payment"]): string {
   if (payment.mode === "a_combinar") {
     return "A combinar";
   }
-  
+
   if (payment.mode === "currency" && payment.amount && payment.currency) {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
       currency: payment.currency,
     }).format(payment.amount);
   }
@@ -819,8 +876,66 @@ export function parseProjectSlug(slug: string): { id: string; title?: string } {
   const parts = slug.split("-");
   const id = parts[0];
   const title = parts.slice(1).join("-");
-  
+
   return { id, title: title || undefined };
+}
+
+/**
+ * Get all applications made by a user
+ */
+export async function getUserApplications(uid: string): Promise<{project: Project, application: ProjectApplication}[]> {
+  try {
+    // Get all applications made by the user
+    const q = query(
+      collectionGroup(db, COLLECTIONS.APPLICATIONS),
+      where("applicantUid", "==", uid),
+      orderBy("createdAt", "desc")
+    );
+
+    const querySnapshot = await getDocs(q);
+    const applications: {project: Project, application: ProjectApplication}[] = [];
+
+    // For each application, get the associated project
+    for (const applicationDoc of querySnapshot.docs) {
+      const applicationData = applicationDoc.data();
+      const projectId = applicationDoc.ref.parent.parent?.id;
+
+      if (projectId) {
+        try {
+          const projectDoc = await getDoc(doc(db, COLLECTIONS.PROJECTS, projectId));
+          
+          if (projectDoc.exists()) {
+            const projectData = projectDoc.data();
+            
+            const project: Project = {
+              id: projectDoc.id,
+              ...projectData,
+              createdAt: projectData.createdAt?.toDate?.() || projectData.createdAt,
+              updatedAt: projectData.updatedAt?.toDate?.() || projectData.updatedAt,
+              applicationDeadline: projectData.applicationDeadline?.toDate?.() || projectData.applicationDeadline,
+            } as Project;
+
+            const application: ProjectApplication = {
+              id: applicationDoc.id,
+              ...applicationData,
+              createdAt: applicationData.createdAt?.toDate?.() || applicationData.createdAt,
+              decisionAt: applicationData.decisionAt?.toDate?.() || applicationData.decisionAt,
+            } as ProjectApplication;
+
+            applications.push({ project, application });
+          }
+        } catch (error) {
+          console.error(`Error fetching project ${projectId}:`, error);
+          // Continue with other applications even if one fails
+        }
+      }
+    }
+
+    return applications;
+  } catch (error) {
+    console.error("Error getting user applications:", error);
+    throw error;
+  }
 }
 
 const firestoreProjects = {
@@ -830,6 +945,7 @@ const firestoreProjects = {
   getProject,
   listPublicProjects,
   getUserProjects,
+  getUserApplications,
   applyToProject,
   withdrawApplication,
   listApplications,

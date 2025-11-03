@@ -4,7 +4,11 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Calendar, MapPin, Plus, X } from "lucide-react";
 import { motion } from "framer-motion";
-import { createProject, generateProjectSlug, type CreateProjectData } from "@/lib/firestoreProjects";
+import {
+  createProject,
+  generateProjectSlug,
+  type CreateProjectData,
+} from "@/lib/firestoreProjects";
 import { useAuth } from "@/context/AuthContext";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { SecondaryButton } from "@/components/ui/secondary-button";
@@ -43,8 +47,16 @@ const ESTADOS_BRASILEIROS = [
 ];
 
 const PROJECT_TYPES = [
-  { value: "collaboration", label: "Colaboração", description: "Projeto colaborativo entre artistas" },
-  { value: "hire", label: "Contratação", description: "Contratação de profissionais" },
+  {
+    value: "collaboration",
+    label: "Colaboração",
+    description: "Projeto colaborativo entre artistas",
+  },
+  {
+    value: "hire",
+    label: "Contratação",
+    description: "Contratação de profissionais",
+  },
   { value: "other", label: "Outro", description: "Outros tipos de projeto" },
 ];
 
@@ -72,7 +84,7 @@ interface FormData {
 export default function CreateProject() {
   const router = useRouter();
   const { user } = useAuth();
-  
+
   const [formData, setFormData] = useState<FormData>({
     title: "",
     description: "",
@@ -87,7 +99,7 @@ export default function CreateProject() {
     paymentCurrency: "BRL",
     paymentRaw: "",
   });
-  
+
   const [newTag, setNewTag] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -100,10 +112,10 @@ export default function CreateProject() {
 
   // Handle form field changes
   const handleChange = (field: keyof FormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: "" }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
@@ -111,16 +123,16 @@ export default function CreateProject() {
   const addTag = () => {
     const tag = newTag.trim().toLowerCase();
     if (tag && !formData.tags.includes(tag) && formData.tags.length < 10) {
-      setFormData(prev => ({ ...prev, tags: [...prev.tags, tag] }));
+      setFormData((prev) => ({ ...prev, tags: [...prev.tags, tag] }));
       setNewTag("");
     }
   };
 
   // Remove tag
   const removeTag = (tagToRemove: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      tags: prev.tags.filter(tag => tag !== tagToRemove),
+      tags: prev.tags.filter((tag) => tag !== tagToRemove),
     }));
   };
 
@@ -158,7 +170,7 @@ export default function CreateProject() {
       const deadline = new Date(formData.applicationDeadline);
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      
+
       if (deadline < tomorrow) {
         newErrors.applicationDeadline = "Prazo deve ser pelo menos amanhã";
       }
@@ -181,7 +193,7 @@ export default function CreateProject() {
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -190,7 +202,7 @@ export default function CreateProject() {
       setLoading(true);
 
       // Prepare payment data
-      const payment: CreateProjectData['payment'] = {
+      const payment: CreateProjectData["payment"] = {
         mode: formData.paymentMode,
       };
 
@@ -216,7 +228,7 @@ export default function CreateProject() {
 
       // Create project
       const projectId = await createProject(projectData, user.uid);
-      
+
       // Generate slug and redirect
       const slug = generateProjectSlug(projectData.title, projectId);
       router.push(`/projects/${slug}`);
@@ -246,14 +258,15 @@ export default function CreateProject() {
             Criar Novo Projeto
           </h1>
           <p className="text-lg text-zinc-600 dark:text-zinc-400">
-            Publique seu projeto e encontre colaboradores talentosos na comunidade
+            Publique seu projeto e encontre colaboradores talentosos na
+            comunidade
           </p>
         </div>
 
         <Separator className="mb-8" />
 
         {/* Form */}
-        <motion.form 
+        <motion.form
           onSubmit={handleSubmit}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -280,12 +293,16 @@ export default function CreateProject() {
                       onChange={(e) => handleChange("title", e.target.value)}
                       placeholder="Ex: Ilustrações para livro infantil"
                       className={`w-full px-3 py-2 rounded-lg backdrop-blur-sm bg-white/50 dark:bg-zinc-700/50 border ${
-                        errors.title ? 'border-red-500' : 'border-white/30 dark:border-zinc-600/30'
+                        errors.title
+                          ? "border-red-500"
+                          : "border-white/30 dark:border-zinc-600/30"
                       } text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-brand-yellow/50`}
                       maxLength={100}
                     />
                     {errors.title && (
-                      <p className="text-red-500 text-sm mt-1">{errors.title}</p>
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.title}
+                      </p>
                     )}
                     <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                       {formData.title.length}/100 caracteres
@@ -299,16 +316,22 @@ export default function CreateProject() {
                     </label>
                     <textarea
                       value={formData.description}
-                      onChange={(e) => handleChange("description", e.target.value)}
+                      onChange={(e) =>
+                        handleChange("description", e.target.value)
+                      }
                       placeholder="Descreva detalhadamente o projeto, expectativas, requisitos, entregáveis, etc."
                       rows={6}
                       className={`w-full px-3 py-2 rounded-lg backdrop-blur-sm bg-white/50 dark:bg-zinc-700/50 border ${
-                        errors.description ? 'border-red-500' : 'border-white/30 dark:border-zinc-600/30'
+                        errors.description
+                          ? "border-red-500"
+                          : "border-white/30 dark:border-zinc-600/30"
                       } text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-brand-yellow/50 resize-none`}
                       maxLength={2000}
                     />
                     {errors.description && (
-                      <p className="text-red-500 text-sm mt-1">{errors.description}</p>
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.description}
+                      </p>
                     )}
                     <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                       {formData.description.length}/2000 caracteres (mínimo 50)
@@ -326,8 +349,8 @@ export default function CreateProject() {
                           key={type.value}
                           className={`relative flex cursor-pointer rounded-lg border p-4 focus:outline-none ${
                             formData.type === type.value
-                              ? 'border-brand-yellow bg-brand-yellow/10'
-                              : 'border-white/30 dark:border-zinc-600/30 bg-white/20 dark:bg-zinc-700/20'
+                              ? "border-brand-yellow bg-brand-yellow/10"
+                              : "border-white/30 dark:border-zinc-600/30 bg-white/20 dark:bg-zinc-700/20"
                           }`}
                         >
                           <input
@@ -335,7 +358,15 @@ export default function CreateProject() {
                             name="type"
                             value={type.value}
                             checked={formData.type === type.value}
-                            onChange={(e) => handleChange("type", e.target.value as "collaboration" | "hire" | "other")}
+                            onChange={(e) =>
+                              handleChange(
+                                "type",
+                                e.target.value as
+                                  | "collaboration"
+                                  | "hire"
+                                  | "other"
+                              )
+                            }
                             className="sr-only"
                           />
                           <div className="flex w-full items-center justify-between">
@@ -351,8 +382,16 @@ export default function CreateProject() {
                             </div>
                             {formData.type === type.value && (
                               <div className="shrink-0 text-brand-yellow">
-                                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                <svg
+                                  className="h-5 w-5"
+                                  viewBox="0 0 20 20"
+                                  fill="currentColor"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clipRule="evenodd"
+                                  />
                                 </svg>
                               </div>
                             )}
@@ -382,7 +421,9 @@ export default function CreateProject() {
                       onChange={(e) => handleChange("city", e.target.value)}
                       placeholder="Ex: São Paulo"
                       className={`w-full px-3 py-2 rounded-lg backdrop-blur-sm bg-white/50 dark:bg-zinc-700/50 border ${
-                        errors.city ? 'border-red-500' : 'border-white/30 dark:border-zinc-600/30'
+                        errors.city
+                          ? "border-red-500"
+                          : "border-white/30 dark:border-zinc-600/30"
                       } text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-brand-yellow/50`}
                     />
                     {errors.city && (
@@ -399,8 +440,10 @@ export default function CreateProject() {
                       value={formData.state}
                       onChange={(e) => handleChange("state", e.target.value)}
                       className={`w-full px-3 py-2 rounded-lg backdrop-blur-sm bg-white/50 dark:bg-zinc-700/50 border ${
-                        errors.state ? 'border-red-500' : 'border-white/30 dark:border-zinc-600/30'
-                      } text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-yellow/50`}
+                        errors.state
+                          ? "border-red-500"
+                          : "border-white/30 dark:border-zinc-600/30"
+                      } text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-yellow/50 [&>option]:bg-white [&>option]:dark:bg-zinc-800 [&>option]:text-zinc-800 [&>option]:dark:text-zinc-200`}
                     >
                       <option value="">Selecione um estado</option>
                       {ESTADOS_BRASILEIROS.map((estado) => (
@@ -410,7 +453,9 @@ export default function CreateProject() {
                       ))}
                     </select>
                     {errors.state && (
-                      <p className="text-red-500 text-sm mt-1">{errors.state}</p>
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.state}
+                      </p>
                     )}
                   </div>
 
@@ -425,11 +470,15 @@ export default function CreateProject() {
                       onChange={(e) => handleChange("duration", e.target.value)}
                       placeholder="Ex: 3 meses, 2 semanas, etc."
                       className={`w-full px-3 py-2 rounded-lg backdrop-blur-sm bg-white/50 dark:bg-zinc-700/50 border ${
-                        errors.duration ? 'border-red-500' : 'border-white/30 dark:border-zinc-600/30'
+                        errors.duration
+                          ? "border-red-500"
+                          : "border-white/30 dark:border-zinc-600/30"
                       } text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-brand-yellow/50`}
                     />
                     {errors.duration && (
-                      <p className="text-red-500 text-sm mt-1">{errors.duration}</p>
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.duration}
+                      </p>
                     )}
                   </div>
 
@@ -441,14 +490,24 @@ export default function CreateProject() {
                     <input
                       type="date"
                       value={formData.applicationDeadline}
-                      onChange={(e) => handleChange("applicationDeadline", e.target.value)}
-                      min={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+                      onChange={(e) =>
+                        handleChange("applicationDeadline", e.target.value)
+                      }
+                      min={
+                        new Date(Date.now() + 24 * 60 * 60 * 1000)
+                          .toISOString()
+                          .split("T")[0]
+                      }
                       className={`w-full px-3 py-2 rounded-lg backdrop-blur-sm bg-white/50 dark:bg-zinc-700/50 border ${
-                        errors.applicationDeadline ? 'border-red-500' : 'border-white/30 dark:border-zinc-600/30'
+                        errors.applicationDeadline
+                          ? "border-red-500"
+                          : "border-white/30 dark:border-zinc-600/30"
                       } text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-yellow/50`}
                     />
                     {errors.applicationDeadline && (
-                      <p className="text-red-500 text-sm mt-1">{errors.applicationDeadline}</p>
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.applicationDeadline}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -468,8 +527,13 @@ export default function CreateProject() {
                     </label>
                     <select
                       value={formData.paymentMode}
-                      onChange={(e) => handleChange("paymentMode", e.target.value as "currency" | "a_combinar" | "other")}
-                      className="w-full px-3 py-2 rounded-lg backdrop-blur-sm bg-white/50 dark:bg-zinc-700/50 border border-white/30 dark:border-zinc-600/30 text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-yellow/50"
+                      onChange={(e) =>
+                        handleChange(
+                          "paymentMode",
+                          e.target.value as "currency" | "a_combinar" | "other"
+                        )
+                      }
+                      className="w-full px-3 py-2 rounded-lg backdrop-blur-sm bg-white/50 dark:bg-zinc-700/50 border border-white/30 dark:border-zinc-600/30 text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-yellow/50 [&>option]:bg-white [&>option]:dark:bg-zinc-800 [&>option]:text-zinc-800 [&>option]:dark:text-zinc-200"
                     >
                       <option value="a_combinar">A combinar</option>
                       <option value="currency">Valor específico</option>
@@ -489,14 +553,20 @@ export default function CreateProject() {
                           step="0.01"
                           min="0"
                           value={formData.paymentAmount}
-                          onChange={(e) => handleChange("paymentAmount", e.target.value)}
+                          onChange={(e) =>
+                            handleChange("paymentAmount", e.target.value)
+                          }
                           placeholder="0.00"
                           className={`w-full px-3 py-2 rounded-lg backdrop-blur-sm bg-white/50 dark:bg-zinc-700/50 border ${
-                            errors.paymentAmount ? 'border-red-500' : 'border-white/30 dark:border-zinc-600/30'
+                            errors.paymentAmount
+                              ? "border-red-500"
+                              : "border-white/30 dark:border-zinc-600/30"
                           } text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-brand-yellow/50`}
                         />
                         {errors.paymentAmount && (
-                          <p className="text-red-500 text-sm mt-1">{errors.paymentAmount}</p>
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors.paymentAmount}
+                          </p>
                         )}
                       </div>
                       <div>
@@ -505,8 +575,10 @@ export default function CreateProject() {
                         </label>
                         <select
                           value={formData.paymentCurrency}
-                          onChange={(e) => handleChange("paymentCurrency", e.target.value)}
-                          className="w-full px-3 py-2 rounded-lg backdrop-blur-sm bg-white/50 dark:bg-zinc-700/50 border border-white/30 dark:border-zinc-600/30 text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-yellow/50"
+                          onChange={(e) =>
+                            handleChange("paymentCurrency", e.target.value)
+                          }
+                          className="w-full px-3 py-2 rounded-lg backdrop-blur-sm bg-white/50 dark:bg-zinc-700/50 border border-white/30 dark:border-zinc-600/30 text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-yellow/50 [&>option]:bg-white [&>option]:dark:bg-zinc-800 [&>option]:text-zinc-800 [&>option]:dark:text-zinc-200"
                         >
                           {CURRENCY_OPTIONS.map((currency) => (
                             <option key={currency.value} value={currency.value}>
@@ -527,15 +599,21 @@ export default function CreateProject() {
                       <input
                         type="text"
                         value={formData.paymentRaw}
-                        onChange={(e) => handleChange("paymentRaw", e.target.value)}
+                        onChange={(e) =>
+                          handleChange("paymentRaw", e.target.value)
+                        }
                         placeholder="Ex: Participação nos lucros, porcentagem das vendas, etc."
                         className={`w-full px-3 py-2 rounded-lg backdrop-blur-sm bg-white/50 dark:bg-zinc-700/50 border ${
-                          errors.paymentRaw ? 'border-red-500' : 'border-white/30 dark:border-zinc-600/30'
+                          errors.paymentRaw
+                            ? "border-red-500"
+                            : "border-white/30 dark:border-zinc-600/30"
                         } text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-brand-yellow/50`}
                         maxLength={200}
                       />
                       {errors.paymentRaw && (
-                        <p className="text-red-500 text-sm mt-1">{errors.paymentRaw}</p>
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.paymentRaw}
+                        </p>
                       )}
                     </div>
                   )}
@@ -548,7 +626,8 @@ export default function CreateProject() {
                   Tags
                 </h2>
                 <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
-                  Adicione tags relevantes para ajudar outros a encontrarem seu projeto (máximo 10)
+                  Adicione tags relevantes para ajudar outros a encontrarem seu
+                  projeto (máximo 10)
                 </p>
 
                 <div className="space-y-4">
@@ -558,7 +637,9 @@ export default function CreateProject() {
                       type="text"
                       value={newTag}
                       onChange={(e) => setNewTag(e.target.value)}
-                      onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addTag())}
+                      onKeyPress={(e) =>
+                        e.key === "Enter" && (e.preventDefault(), addTag())
+                      }
                       placeholder="Ex: ilustração, design, fotografia..."
                       className="flex-1 px-3 py-2 rounded-lg backdrop-blur-sm bg-white/50 dark:bg-zinc-700/50 border border-white/30 dark:border-zinc-600/30 text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-brand-yellow/50"
                       maxLength={30}
@@ -610,7 +691,7 @@ export default function CreateProject() {
                 <h3 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200 mb-4">
                   Preview
                 </h3>
-                
+
                 {formData.title && (
                   <div className="mb-3">
                     <h4 className="font-medium text-zinc-800 dark:text-zinc-200 line-clamp-2">
@@ -623,8 +704,9 @@ export default function CreateProject() {
                   <div className="flex items-center gap-2 mb-3 text-sm text-zinc-600 dark:text-zinc-400">
                     <MapPin className="w-4 h-4" />
                     <span>
-                      {formData.city && formData.state ? `${formData.city}, ${formData.state}` : 
-                       formData.city || formData.state}
+                      {formData.city && formData.state
+                        ? `${formData.city}, ${formData.state}`
+                        : formData.city || formData.state}
                     </span>
                   </div>
                 )}
@@ -667,7 +749,7 @@ export default function CreateProject() {
                 >
                   {loading ? "Criando Projeto..." : "Criar Projeto"}
                 </PrimaryButton>
-                
+
                 <SecondaryButton
                   type="button"
                   onClick={() => router.back()}

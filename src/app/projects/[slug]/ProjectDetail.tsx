@@ -2,9 +2,31 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, MapPin, Clock, Users, Calendar, DollarSign, Tag, Share2, AlertCircle, CheckCircle2, X } from "lucide-react";
+import {
+  ArrowLeft,
+  MapPin,
+  Clock,
+  Users,
+  Calendar,
+  DollarSign,
+  Tag,
+  Share2,
+  AlertCircle,
+  CheckCircle2,
+  X,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { getProject, applyToProject, hasUserApplied, withdrawApplication, formatPayment, isApplicationDeadlinePassed, type Project, type ProjectApplication, type CreateApplicationData } from "@/lib/firestoreProjects";
+import {
+  getProject,
+  applyToProject,
+  hasUserApplied,
+  withdrawApplication,
+  formatPayment,
+  isApplicationDeadlinePassed,
+  type Project,
+  type ProjectApplication,
+  type CreateApplicationData,
+} from "@/lib/firestoreProjects";
 import { useAuth } from "@/context/AuthContext";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { SecondaryButton } from "@/components/ui/secondary-button";
@@ -22,7 +44,12 @@ interface ApplicationModalProps {
   loading: boolean;
 }
 
-function ApplicationModal({ isOpen, onClose, onSubmit, loading }: ApplicationModalProps) {
+function ApplicationModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  loading,
+}: ApplicationModalProps) {
   const [coverLetter, setCoverLetter] = useState("");
   const [portfolioLink, setPortfolioLink] = useState("");
 
@@ -133,9 +160,10 @@ function ApplicationModal({ isOpen, onClose, onSubmit, loading }: ApplicationMod
 export default function ProjectDetail({ projectId }: ProjectDetailProps) {
   const router = useRouter();
   const { user } = useAuth();
-  
+
   const [project, setProject] = useState<Project | null>(null);
-  const [userApplication, setUserApplication] = useState<ProjectApplication | null>(null);
+  const [userApplication, setUserApplication] =
+    useState<ProjectApplication | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [applicationModalOpen, setApplicationModalOpen] = useState(false);
@@ -179,7 +207,7 @@ export default function ProjectDetail({ projectId }: ProjectDetailProps) {
     try {
       setApplying(true);
       await applyToProject(projectId, user.uid, applicationData);
-      
+
       // Refresh application status
       const application = await hasUserApplied(projectId, user.uid);
       setUserApplication(application);
@@ -258,8 +286,15 @@ export default function ProjectDetail({ projectId }: ProjectDetailProps) {
   }
 
   const isOwner = user?.uid === project.createdBy;
-  const deadlinePassed = isApplicationDeadlinePassed(project.applicationDeadline);
-  const canApply = user && !isOwner && !userApplication && project.status === "open" && !deadlinePassed;
+  const deadlinePassed = isApplicationDeadlinePassed(
+    project.applicationDeadline
+  );
+  const canApply =
+    user &&
+    !isOwner &&
+    !userApplication &&
+    project.status === "open" &&
+    !deadlinePassed;
   const canWithdraw = userApplication && userApplication.status === "applied";
 
   return (
@@ -278,21 +313,28 @@ export default function ProjectDetail({ projectId }: ProjectDetailProps) {
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-4">
-                <Badge 
-                  variant={project.type === 'collaboration' ? 'default' : project.type === 'hire' ? 'secondary' : 'outline'}
+                <Badge
+                  variant={
+                    project.type === "collaboration"
+                      ? "default"
+                      : project.type === "hire"
+                      ? "secondary"
+                      : "outline"
+                  }
                 >
-                  {project.type === 'collaboration' ? 'Colaboração' : 
-                   project.type === 'hire' ? 'Contratação' : 'Outro'}
+                  {project.type === "collaboration"
+                    ? "Colaboração"
+                    : project.type === "hire"
+                    ? "Contratação"
+                    : "Outro"}
                 </Badge>
-                <Badge 
-                  variant={project.status === 'open' ? 'default' : 'secondary'}
+                <Badge
+                  variant={project.status === "open" ? "default" : "secondary"}
                 >
-                  {project.status === 'open' ? 'Aberto' : 'Fechado'}
+                  {project.status === "open" ? "Aberto" : "Fechado"}
                 </Badge>
                 {deadlinePassed && (
-                  <Badge variant="destructive">
-                    Prazo Expirado
-                  </Badge>
+                  <Badge variant="destructive">Prazo Expirado</Badge>
                 )}
               </div>
 
@@ -303,11 +345,19 @@ export default function ProjectDetail({ projectId }: ProjectDetailProps) {
               <div className="flex flex-wrap items-center gap-4 text-zinc-600 dark:text-zinc-400 mb-6">
                 <div className="flex items-center gap-2">
                   <MapPin className="w-4 h-4" />
-                  <span>{project.city}, {project.state}</span>
+                  <span>
+                    {project.city}, {project.state}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
-                  <span>Até {(project.applicationDeadline instanceof Date ? project.applicationDeadline : project.applicationDeadline.toDate()).toLocaleDateString('pt-BR')}</span>
+                  <span>
+                    Até{" "}
+                    {(project.applicationDeadline instanceof Date
+                      ? project.applicationDeadline
+                      : project.applicationDeadline.toDate()
+                    ).toLocaleDateString("pt-BR")}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />
@@ -331,7 +381,9 @@ export default function ProjectDetail({ projectId }: ProjectDetailProps) {
 
               {isOwner ? (
                 <PrimaryButton
-                  onClick={() => router.push(`/dashboard/projects/${project.id}`)}
+                  onClick={() =>
+                    router.push(`/dashboard/projects/${project.id}`)
+                  }
                   className="whitespace-nowrap"
                 >
                   Gerenciar Projeto
@@ -356,25 +408,33 @@ export default function ProjectDetail({ projectId }: ProjectDetailProps) {
                   {userApplication.status === "applied" && (
                     <>
                       <Clock className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
-                      <span className="text-yellow-600 dark:text-yellow-400">Candidatura Enviada</span>
+                      <span className="text-yellow-600 dark:text-yellow-400">
+                        Candidatura Enviada
+                      </span>
                     </>
                   )}
                   {userApplication.status === "accepted" && (
                     <>
                       <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400" />
-                      <span className="text-green-600 dark:text-green-400">Candidatura Aceita</span>
+                      <span className="text-green-600 dark:text-green-400">
+                        Candidatura Aceita
+                      </span>
                     </>
                   )}
                   {userApplication.status === "rejected" && (
                     <>
                       <X className="w-4 h-4 text-red-600 dark:text-red-400" />
-                      <span className="text-red-600 dark:text-red-400">Candidatura Rejeitada</span>
+                      <span className="text-red-600 dark:text-red-400">
+                        Candidatura Rejeitada
+                      </span>
                     </>
                   )}
                   {userApplication.status === "withdrawn" && (
                     <>
                       <AlertCircle className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                      <span className="text-gray-600 dark:text-gray-400">Candidatura Retirada</span>
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Candidatura Retirada
+                      </span>
                     </>
                   )}
                 </div>
@@ -415,7 +475,7 @@ export default function ProjectDetail({ projectId }: ProjectDetailProps) {
                 </h2>
                 <div className="flex flex-wrap gap-2">
                   {project.tags.map((tag) => (
-                    <div 
+                    <div
                       key={tag}
                       className="inline-flex items-center gap-1 px-3 py-1 rounded-full backdrop-blur-sm bg-white/20 dark:bg-zinc-700/30 border border-white/30 dark:border-zinc-600/30 text-sm text-zinc-700 dark:text-zinc-300"
                     >
@@ -435,12 +495,14 @@ export default function ProjectDetail({ projectId }: ProjectDetailProps) {
               <h3 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200 mb-4">
                 Detalhes do Projeto
               </h3>
-              
+
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
                   <DollarSign className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5" />
                   <div>
-                    <div className="text-sm text-zinc-600 dark:text-zinc-400">Remuneração</div>
+                    <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                      Remuneração
+                    </div>
                     <div className="font-semibold text-zinc-800 dark:text-zinc-200">
                       {formatPayment(project.payment)}
                     </div>
@@ -450,13 +512,18 @@ export default function ProjectDetail({ projectId }: ProjectDetailProps) {
                 <div className="flex items-start gap-3">
                   <Calendar className="w-5 h-5 text-brand-yellow mt-0.5" />
                   <div>
-                    <div className="text-sm text-zinc-600 dark:text-zinc-400">Prazo de Candidatura</div>
+                    <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                      Prazo de Candidatura
+                    </div>
                     <div className="font-semibold text-zinc-800 dark:text-zinc-200">
-                      {(project.applicationDeadline instanceof Date ? project.applicationDeadline : project.applicationDeadline.toDate()).toLocaleDateString('pt-BR', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
+                      {(project.applicationDeadline instanceof Date
+                        ? project.applicationDeadline
+                        : project.applicationDeadline.toDate()
+                      ).toLocaleDateString("pt-BR", {
+                        weekday: "long",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
                       })}
                     </div>
                   </div>
@@ -465,7 +532,9 @@ export default function ProjectDetail({ projectId }: ProjectDetailProps) {
                 <div className="flex items-start gap-3">
                   <Clock className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
                   <div>
-                    <div className="text-sm text-zinc-600 dark:text-zinc-400">Duração</div>
+                    <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                      Duração
+                    </div>
                     <div className="font-semibold text-zinc-800 dark:text-zinc-200">
                       {project.duration}
                     </div>
@@ -475,7 +544,9 @@ export default function ProjectDetail({ projectId }: ProjectDetailProps) {
                 <div className="flex items-start gap-3">
                   <Users className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-0.5" />
                   <div>
-                    <div className="text-sm text-zinc-600 dark:text-zinc-400">Candidatos</div>
+                    <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                      Candidatos
+                    </div>
                     <div className="font-semibold text-zinc-800 dark:text-zinc-200">
                       {project.applicantsCount} pessoas se candidataram
                     </div>
