@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import Image from "next/image";
+import { ArrowLeft, X, Image as ImageIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import {
   getProject,
@@ -14,6 +15,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { SecondaryButton } from "@/components/ui/secondary-button";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 interface FormData {
   title: string;
@@ -57,6 +59,9 @@ export default function EditProject() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [uploadingImages, setUploadingImages] = useState(false);
 
   // Load project data
   useEffect(() => {
@@ -80,6 +85,9 @@ export default function EditProject() {
         }
 
         setProject(projectData);
+        
+        // Set existing images
+        setExistingImages(projectData.images || []);
         
         // Populate form with project data
         const deadline = projectData.applicationDeadline instanceof Date 
@@ -119,6 +127,53 @@ export default function EditProject() {
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
+  };
+
+  // Handle image selection
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    const imageFiles = Array.from(files).filter((file) => {
+      const isImage = file.type.startsWith("image/");
+      const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB limit
+      return isImage && isValidSize;
+    });
+
+    const totalImages = existingImages.length + selectedImages.length + imageFiles.length;
+    if (totalImages > 5) {
+      const availableSlots = 5 - existingImages.length - selectedImages.length;
+      setSelectedImages((prev) => [...prev, ...imageFiles.slice(0, availableSlots)]);
+    } else {
+      setSelectedImages((prev) => [...prev, ...imageFiles]);
+    }
+  };
+
+  // Remove selected image
+  const removeSelectedImage = (index: number) => {
+    setSelectedImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Remove existing image
+  const removeExistingImage = (index: number) => {
+    setExistingImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Upload new images to Firebase Storage
+  const uploadImages = async (projectId: string): Promise<string[]> => {
+    if (selectedImages.length === 0) return [];
+
+    const storage = getStorage();
+    const uploadPromises = selectedImages.map(async (file, index) => {
+      const imageRef = ref(
+        storage,
+        `project-images/${projectId}/${Date.now()}-${index}`
+      );
+      await uploadBytes(imageRef, file);
+      return getDownloadURL(imageRef);
+    });
+
+    return Promise.all(uploadPromises);
   };
 
   // Validate form
@@ -207,7 +262,28 @@ export default function EditProject() {
         status: formData.status,
       };
 
-      await updateProject(project.id, updateData, user.uid);
+      // Handle image uploads if there are new images
+      let finalImages = [...existingImages];
+      if (selectedImages.length > 0) {
+        setUploadingImages(true);
+        try {
+          const newImageUrls = await uploadImages(project.id);
+          finalImages = [...finalImages, ...newImageUrls];
+        } catch (error) {
+          console.error("Error uploading images:", error);
+          throw new Error("Erro ao fazer upload das imagens");
+        } finally {
+          setUploadingImages(false);
+        }
+      }
+
+      // Add images to update data
+      const updateDataWithImages = {
+        ...updateData,
+        images: finalImages,
+      };
+
+      await updateProject(project.id, updateDataWithImages, user.uid);
 
       // Redirect back to project management
       router.push(`/dashboard/projects/${project.id}`);
@@ -359,6 +435,120 @@ export default function EditProject() {
                       </p>
                     </div>
                   </label>
+                </div>
+              </div>
+
+              {/* Image Upload */}
+              <div className="rounded-xl backdrop-blur-md bg-white/10 dark:bg-zinc-800/10 border border-white/20 dark:border-zinc-700/30 p-6">
+                <h2 className="text-xl font-semibold text-zinc-800 dark:text-zinc-200 mb-4">
+                  Imagens do Projeto
+                </h2>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
+                  Adicione ou remova imagens do seu projeto (máximo 5 imagens, até 5MB cada)
+                </p>
+
+                <div className="space-y-4">
+                  {/* Existing Images */}
+                  {existingImages.length > 0 && (
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                        Imagens Atuais
+                      </h3>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                        {existingImages.map((imageUrl, index) => (
+                          <div key={index} className="relative group">
+                            <div className="aspect-square rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+                              <Image
+                                src={imageUrl}
+                                alt={`Imagem ${index + 1}`}
+                                width={200}
+                                height={200}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeExistingImage(index)}
+                              className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors cursor-pointer"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Upload New Images */}
+                  {(existingImages.length + selectedImages.length) < 5 && (
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                        Adicionar Novas Imagens
+                      </h3>
+                      <div className="relative">
+                        <input
+                          type="file"
+                          id="image-upload"
+                          multiple
+                          accept="image/*"
+                          onChange={handleImageSelect}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        />
+                        <div className="border-2 border-dashed border-white/30 dark:border-zinc-600/30 rounded-lg p-8 text-center hover:border-brand-yellow/50 dark:hover:border-brand-yellow/50 transition-colors cursor-pointer">
+                          <ImageIcon className="w-12 h-12 mx-auto mb-4 text-zinc-400 dark:text-zinc-500" />
+                          <p className="text-zinc-600 dark:text-zinc-400 mb-2">
+                            Clique para selecionar imagens ou arraste e solte aqui
+                          </p>
+                          <p className="text-xs text-zinc-500 dark:text-zinc-500">
+                            PNG, JPG, JPEG até 5MB
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* New Image Previews */}
+                  {selectedImages.length > 0 && (
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                        Novas Imagens Selecionadas
+                      </h3>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                        {selectedImages.map((file, index) => (
+                          <div key={index} className="relative group">
+                            <div className="aspect-square rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+                              <Image
+                                src={URL.createObjectURL(file)}
+                                alt={`Nova imagem ${index + 1}`}
+                                width={200}
+                                height={200}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeSelectedImage(index)}
+                              className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors cursor-pointer"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                            <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white p-1 text-xs truncate">
+                              {file.name}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    {existingImages.length + selectedImages.length}/5 imagens
+                    {uploadingImages && (
+                      <span className="ml-2 text-brand-yellow">
+                        • Enviando imagens...
+                      </span>
+                    )}
+                  </p>
                 </div>
               </div>
             </div>

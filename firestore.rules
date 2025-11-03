@@ -154,8 +154,12 @@ service cloud.firestore {
           // Applicant can update their own (withdraw)
           || resource.data.applicantUid == request.auth.uid
         );
-        allow delete: if isAuthenticated() && 
-          resource.data.applicantUid == request.auth.uid;
+        allow delete: if isAuthenticated() && (
+          // Project owner can delete applications (when deleting project)
+          get(/databases/$(database)/documents/projects/$(projectId)).data.createdBy == request.auth.uid
+          // Applicant can delete their own application
+          || resource.data.applicantUid == request.auth.uid
+        );
       }
     }
 

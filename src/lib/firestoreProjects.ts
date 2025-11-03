@@ -252,19 +252,20 @@ export async function deleteProject(
       throw new Error("Unauthorized: You can only delete your own projects");
     }
 
-    // Use transaction to delete project and all applications
+    // First, get all applications outside the transaction
+    const applicationsQuery = query(
+      collection(
+        db,
+        COLLECTIONS.PROJECTS,
+        projectId,
+        COLLECTIONS.APPLICATIONS
+      )
+    );
+    const applicationsSnapshot = await getDocs(applicationsQuery);
+
+    // Now use transaction to delete project and all applications
     await runTransaction(db, async (transaction) => {
       // Delete all applications
-      const applicationsQuery = query(
-        collection(
-          db,
-          COLLECTIONS.PROJECTS,
-          projectId,
-          COLLECTIONS.APPLICATIONS
-        )
-      );
-      const applicationsSnapshot = await getDocs(applicationsQuery);
-
       applicationsSnapshot.docs.forEach((appDoc) => {
         transaction.delete(appDoc.ref);
       });
