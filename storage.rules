@@ -169,7 +169,7 @@ service firebase.storage {
                     ).data.ownerId == request.auth.uid;
     }
 
-    // Project images support - Up to 2 images per project
+    // Project images support - Up to 5 images per project
     match /project-images/{projectId}/{imageId} {
       allow read: if true; // Public access for project showcase
       allow write: if isAuthenticated() &&
@@ -188,6 +188,17 @@ service firebase.storage {
                      firestore.get(
                        /databases/(default)/documents/projects/$(projectId)
                      ).data.ownerId == request.auth.uid);
+    }
+
+    // Project images folder listing and bulk operations (for project deletion)
+    match /project-images/{projectId} {
+      allow read: if isAuthenticated() &&
+                   (firestore.get(
+                     /databases/(default)/documents/projects/$(projectId)
+                   ).data.createdBy == request.auth.uid ||
+                   firestore.get(
+                     /databases/(default)/documents/projects/$(projectId)
+                   ).data.ownerId == request.auth.uid);
     }
 
     // Legacy artworks support - Public access for gallery showcase

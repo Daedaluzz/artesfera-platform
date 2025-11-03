@@ -26,6 +26,7 @@ import {
   increment,
   type FieldValue,
 } from "firebase/firestore";
+import { getStorage, ref, deleteObject, listAll } from "firebase/storage";
 import { getClientFirestore } from "@/lib/firebase";
 
 const db = getClientFirestore();
@@ -239,6 +240,30 @@ export async function updateProject(
 }
 
 /**
+ * Delete project images from Storage
+ */
+async function deleteProjectImages(projectId: string): Promise<void> {
+  try {
+    const storage = getStorage();
+    const projectImagesRef = ref(storage, `project-images/${projectId}`);
+    
+    // List all files in the project images folder
+    const listResult = await listAll(projectImagesRef);
+    
+    // Delete all images
+    const deletePromises = listResult.items.map((imageRef) => 
+      deleteObject(imageRef)
+    );
+    
+    await Promise.all(deletePromises);
+    console.log(`✅ Deleted ${listResult.items.length} images for project: ${projectId}`);
+  } catch (error) {
+    console.error("Error deleting project images:", error);
+    // Don't throw here - we still want to delete the project even if image deletion fails
+  }
+}
+
+/**
  * Delete project (owner only)
  */
 export async function deleteProject(
@@ -252,7 +277,7 @@ export async function deleteProject(
       throw new Error("Unauthorized: You can only delete your own projects");
     }
 
-    // First, get all applications outside the transaction
+    // Get all applications outside the transaction
     const applicationsQuery = query(
       collection(
         db,
@@ -263,19 +288,24 @@ export async function deleteProject(
     );
     const applicationsSnapshot = await getDocs(applicationsQuery);
 
-    // Now use transaction to delete project and all applications
+    // First, delete applications from Firestore (but keep the project for Storage rules verification)
     await runTransaction(db, async (transaction) => {
       // Delete all applications
       applicationsSnapshot.docs.forEach((appDoc) => {
         transaction.delete(appDoc.ref);
       });
+    });
 
-      // Delete the project
+    // Delete project images from Storage while the project document still exists
+    await deleteProjectImages(projectId);
+
+    // Finally, delete the project document itself
+    await runTransaction(db, async (transaction) => {
       const projectRef = doc(db, COLLECTIONS.PROJECTS, projectId);
       transaction.delete(projectRef);
     });
 
-    console.log(`✅ Deleted project and all applications: ${projectId}`);
+    console.log(`✅ Deleted project, applications, and images: ${projectId}`);
   } catch (error) {
     console.error("Error deleting project:", error);
     throw error;
