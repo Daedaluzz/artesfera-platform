@@ -3,13 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  MapPin,
-  Clock,
-  Users,
-  Tag,
-  Plus,
-} from "lucide-react";
+import { MapPin, Clock, Users, Tag, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 import {
   listPublicProjects,
@@ -75,9 +69,13 @@ function ProjectCard({ project }: ProjectCardProps) {
                 }
                 className="ml-4"
               >
-                {project.type === "collaboration" ? "Colaboração" : 
-                 project.type === "hire" ? "Contratação" : 
-                 project.type === "other" ? "Outro" : project.type}
+                {project.type === "collaboration"
+                  ? "Colaboração"
+                  : project.type === "hire"
+                  ? "Contratação"
+                  : project.type === "other"
+                  ? "Outro"
+                  : project.type}
               </Badge>
             </div>
 
