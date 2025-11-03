@@ -59,11 +59,26 @@ export default function UsernameProfilePage() {
   const isOwnProfile = user && profileData && user.uid === profileData.uid;
 
   // List of reserved routes that should redirect to actual pages
-  const reservedRoutes = useMemo(() => [
-    'contact', 'about', 'gallery', 'projects', 'login', 'register', 
-    'profile', 'dashboard', 'api', 'admin', 'support', 'help', 
-    'terms', 'privacy', 'daeva'
-  ], []);
+  const reservedRoutes = useMemo(
+    () => [
+      "contact",
+      "about",
+      "gallery",
+      "projects",
+      "login",
+      "register",
+      "profile",
+      "dashboard",
+      "api",
+      "admin",
+      "support",
+      "help",
+      "terms",
+      "privacy",
+      "daeva",
+    ],
+    []
+  );
 
   useEffect(() => {
     const fetchProfileByUsername = async () => {
@@ -240,7 +255,8 @@ export default function UsernameProfilePage() {
               Página não encontrada
             </h3>
             <p className="text-brand-black/60 dark:text-brand-white/60 mb-6">
-              A página &ldquo;/{username}&rdquo; que você está procurando pode ter sido movida ou não existe.
+              A página &ldquo;/{username}&rdquo; que você está procurando pode
+              ter sido movida ou não existe.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <PrimaryButton onClick={() => router.push("/")}>
@@ -250,7 +266,11 @@ export default function UsernameProfilePage() {
                 Explorar Galeria
               </SecondaryButton>
               {username === "contact" && (
-                <SecondaryButton onClick={() => window.location.href = "mailto:contato@artesfera.com"}>
+                <SecondaryButton
+                  onClick={() =>
+                    (window.location.href = "mailto:contato@artesfera.com")
+                  }
+                >
                   Entrar em Contato
                 </SecondaryButton>
               )}

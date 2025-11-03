@@ -1,428 +1,471 @@
 "use client";
 
-import { motion } from "framer-motion";
-import {
-  Search,
-  Filter,
-  Calendar,
-  MapPin,
-  DollarSign,
-  Clock,
-  Users,
-  Briefcase,
-  Award,
-  Heart,
-  Share2,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+import React, { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Search, Filter, MapPin, Clock, Users, Tag, Plus, ChevronDown } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { listPublicProjects, type Project, type ProjectFilters, formatPayment, generateProjectSlug } from "@/lib/firestoreProjects";
+import type { QueryDocumentSnapshot, DocumentData } from "firebase/firestore";
+import { useAuth } from "@/context/AuthContext";
+import { PrimaryButton } from "@/components/ui/primary-button";
+import { SecondaryButton } from "@/components/ui/secondary-button";
 import { Badge } from "@/components/ui/badge";
-import Image from "next/image";
-import { useState } from "react";
+import { Separator } from "@/components/ui/separator";
 
-// Mock data for projects - more realistic and diverse
-const projectsData = [
-  {
-    id: 1,
-    title: "Festival de Arte Urbana 2025",
-    company: "Prefeitura de São Paulo",
-    category: "Artes Visuais",
-    description:
-      "Procuramos artistas visuais, grafiteiros e muralistas para participar do maior festival de arte urbana do Brasil. Oportunidade de expor seu trabalho para mais de 50 mil visitantes.",
-    image:
-      "https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?w=800&q=80",
-    deadline: "15 de Agosto, 2025",
-    location: "São Paulo, SP",
-    salary: "R$ 8.000 - R$ 20.000",
-    type: "Projeto Temporário",
-    duration: "3 meses",
-    positions: 15,
-    applicants: 127,
-    tags: ["Graffiti", "Muralismo", "Arte Urbana", "Exposição"],
-    postedDate: "Há 2 dias",
-    featured: true,
-  },
-  {
-    id: 2,
-    title: "Diretor Musical para Musical Broadway",
-    company: "Teatro Municipal",
-    category: "Música",
-    description:
-      "Buscamos diretor musical experiente para produção de musical inspirado em clássicos da Broadway. Responsável por arranjos, ensaios e direção da orquestra.",
-    image:
-      "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=800&q=80",
-    deadline: "30 de Setembro, 2025",
-    location: "Rio de Janeiro, RJ",
-    salary: "R$ 15.000 - R$ 25.000",
-    type: "Contrato",
-    duration: "6 meses",
-    positions: 1,
-    applicants: 43,
-    tags: ["Direção Musical", "Broadway", "Orquestra", "Teatro"],
-    postedDate: "Há 5 dias",
-    featured: true,
-  },
-  {
-    id: 3,
-    title: "Ilustradores para Livro Infantil",
-    company: "Editora Estrela",
-    category: "Design",
-    description:
-      "Editora procura ilustradores criativos para série de livros infantis. Projeto de longo prazo com possibilidade de continuidade em novos títulos.",
-    image:
-      "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=800&q=80",
-    deadline: "20 de Agosto, 2025",
-    location: "Remoto",
-    salary: "R$ 5.000 - R$ 12.000",
-    type: "Freelance",
-    duration: "4 meses",
-    positions: 3,
-    applicants: 89,
-    tags: ["Ilustração", "Livro Infantil", "Design Editorial", "Remoto"],
-    postedDate: "Há 1 semana",
-    featured: false,
-  },
-  {
-    id: 4,
-    title: "Coreógrafo para Espetáculo de Dança Contemporânea",
-    company: "Cia. Corpo e Alma",
-    category: "Dança",
-    description:
-      "Companhia de dança contemporânea busca coreógrafo para nova produção que explora temas de identidade e memória. Experiência com técnicas modernas é essencial.",
-    image:
-      "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=800&q=80",
-    deadline: "10 de Setembro, 2025",
-    location: "Belo Horizonte, MG",
-    salary: "R$ 10.000 - R$ 18.000",
-    type: "Projeto Temporário",
-    duration: "5 meses",
-    positions: 1,
-    applicants: 34,
-    tags: ["Coreografia", "Dança Contemporânea", "Espetáculo", "Produção"],
-    postedDate: "Há 3 dias",
-    featured: false,
-  },
-  {
-    id: 5,
-    title: "Fotógrafo para Exposição de Moda",
-    company: "Fashion Week Brasil",
-    category: "Fotografia",
-    description:
-      "Procuramos fotógrafo profissional para cobertura completa da Fashion Week Brasil 2025. Portfolio com trabalhos de moda é obrigatório.",
-    image:
-      "https://images.unsplash.com/photo-1492681290082-e932832941e6?w=800&q=80",
-    deadline: "25 de Agosto, 2025",
-    location: "São Paulo, SP",
-    salary: "R$ 12.000 - R$ 22.000",
-    type: "Evento",
-    duration: "2 semanas",
-    positions: 2,
-    applicants: 156,
-    tags: ["Fotografia", "Moda", "Evento", "Editorial"],
-    postedDate: "Há 4 dias",
-    featured: true,
-  },
-  {
-    id: 6,
-    title: "Escritor para Roteiro de Série Dramática",
-    company: "StreamBR Produções",
-    category: "Audiovisual",
-    description:
-      "Plataforma de streaming busca roteirista para desenvolver série dramática brasileira original. Experiência com roteiro televisivo é preferencial.",
-    image:
-      "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=800&q=80",
-    deadline: "5 de Outubro, 2025",
-    location: "Remoto",
-    salary: "R$ 18.000 - R$ 35.000",
-    type: "Contrato",
-    duration: "8 meses",
-    positions: 2,
-    applicants: 201,
-    tags: ["Roteiro", "Série", "Drama", "Streaming", "Remoto"],
-    postedDate: "Há 1 dia",
-    featured: true,
-  },
+// Location options for filters
+const ESTADOS_BRASILEIROS = [
+  "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA",
+  "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN",
+  "RS", "RO", "RR", "SC", "SP", "SE", "TO"
 ];
 
-export default function Projects() {
-  const [savedProjects, setSavedProjects] = useState<number[]>([]);
+const PROJECT_TYPES = [
+  { value: "collaboration", label: "Colaboração" },
+  { value: "hire", label: "Contratação" },
+  { value: "other", label: "Outro" }
+];
 
-  const toggleSave = (projectId: number) => {
-    setSavedProjects((prev) =>
-      prev.includes(projectId)
-        ? prev.filter((id) => id !== projectId)
-        : [...prev, projectId]
-    );
-  };
+interface ProjectCardProps {
+  project: Project;
+}
+
+function ProjectCard({ project }: ProjectCardProps) {
+  const slug = generateProjectSlug(project.title, project.id);
+  const isDeadlineSoon = project.applicationDeadline && 
+    (project.applicationDeadline instanceof Date ? project.applicationDeadline : project.applicationDeadline.toDate()).getTime() - Date.now() < 7 * 24 * 60 * 60 * 1000; // 7 days
+
   return (
-    <div className="min-h-screen py-20 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-16"
-        >
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold font-serif text-brand-black dark:text-brand-white mb-6">
-            Projetos{" "}
-            <span className="text-brand-navy-blue dark:text-brand-yellow">
-              Culturais
-            </span>
-          </h1>
-
-          <p className="text-lg sm:text-xl text-brand-black/80 dark:text-brand-white/80 max-w-3xl mx-auto leading-relaxed">
-            Descubra oportunidades exclusivas no mercado cultural brasileiro.
-            Conecte-se com empresas que valorizam arte e criatividade.
-          </p>
-        </motion.div>
-
-        {/* Search and Filters */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="mb-12"
-        >
-          <div className="relative p-6 rounded-[20px] backdrop-blur-[15px] bg-white/[0.2] dark:bg-black/20 border border-white/[0.3] dark:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.5),inset_0_-1px_0_rgba(255,255,255,0.1),inset_0_0_20px_10px_rgba(255,255,255,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-1px_0_rgba(255,255,255,0.05),inset_0_0_20px_10px_rgba(255,255,255,0.04)]">
-            <div className="flex flex-col lg:flex-row gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-brand-black/60 dark:text-brand-white/60" />
-                <input
-                  type="text"
-                  placeholder="Buscar projetos..."
-                  className="w-full pl-10 pr-4 py-3 rounded-xl backdrop-blur-lg bg-white/[0.1] dark:bg-white/[0.05] border border-white/[0.2] dark:border-white/[0.1] text-brand-black dark:text-brand-white placeholder:text-brand-black/60 dark:placeholder:text-brand-white/60 focus:outline-none focus:ring-2 focus:ring-brand-navy-blue/50 dark:focus:ring-brand-yellow/50"
-                />
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="group"
+    >
+      <Link href={`/projects/${slug}`}>
+        <div className="relative overflow-hidden rounded-xl backdrop-blur-md bg-white/10 dark:bg-zinc-800/10 border border-white/20 dark:border-zinc-700/30 hover:border-white/40 dark:hover:border-zinc-600/50 transition-all duration-300 hover:backdrop-blur-xl hover:bg-white/20 dark:hover:bg-zinc-800/20 hover:translate-y-[-2px] hover:shadow-lg">
+          {/* Reflexive hover effect */}
+          <div className="absolute inset-0 before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:translate-x-[-100%] group-hover:before:translate-x-full before:transition-transform before:duration-700 before:ease-out" />
+          
+          <div className="relative p-6">
+            {/* Header */}
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex-1">
+                <h3 className="text-xl font-semibold text-zinc-800 dark:text-zinc-200 group-hover:text-brand-navy-blue dark:group-hover:text-brand-yellow transition-colors line-clamp-2">
+                  {project.title}
+                </h3>
+                <div className="flex items-center gap-2 mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                  <MapPin className="w-4 h-4" />
+                  <span>{project.city}, {project.state}</span>
+                </div>
               </div>
-              <div className="flex gap-3">
-                <Button variant="outline" size="default">
-                  <Filter className="w-4 h-4 mr-2" />
-                  Filtros
-                </Button>
-                <Button variant="default" size="default">
-                  Buscar
-                </Button>
+              <Badge 
+                variant={project.type === 'collaboration' ? 'default' : project.type === 'hire' ? 'secondary' : 'outline'}
+                className="ml-4"
+              >
+                {PROJECT_TYPES.find(t => t.value === project.type)?.label || project.type}
+              </Badge>
+            </div>
+
+            {/* Description */}
+            <p className="text-zinc-600 dark:text-zinc-400 text-sm mb-4 line-clamp-3">
+              {project.description}
+            </p>
+
+            {/* Tags */}
+            {project.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {project.tags.slice(0, 3).map((tag) => (
+                  <div 
+                    key={tag}
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded-full backdrop-blur-sm bg-white/20 dark:bg-zinc-700/30 border border-white/30 dark:border-zinc-600/30 text-xs text-zinc-700 dark:text-zinc-300"
+                  >
+                    <Tag className="w-3 h-3" />
+                    {tag}
+                  </div>
+                ))}
+                {project.tags.length > 3 && (
+                  <div className="inline-flex items-center px-2 py-1 rounded-full backdrop-blur-sm bg-white/20 dark:bg-zinc-700/30 border border-white/30 dark:border-zinc-600/30 text-xs text-zinc-700 dark:text-zinc-300">
+                    +{project.tags.length - 3}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Footer */}
+            <div className="flex items-center justify-between pt-4 border-t border-white/20 dark:border-zinc-700/30">
+              <div className="flex items-center gap-4 text-sm text-zinc-600 dark:text-zinc-400">
+                <div className="flex items-center gap-1">
+                  <Clock className="w-4 h-4" />
+                  <span>{project.duration}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Users className="w-4 h-4" />
+                  <span>{project.applicantsCount}</span>
+                </div>
+              </div>
+              
+              <div className="text-right">
+                <div className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                  {formatPayment(project.payment)}
+                </div>
+                <div className={`text-xs ${isDeadlineSoon ? 'text-orange-600 dark:text-orange-400' : 'text-zinc-500 dark:text-zinc-500'}`}>
+                  até {(project.applicationDeadline instanceof Date ? project.applicationDeadline : project.applicationDeadline.toDate()).toLocaleDateString('pt-BR')}
+                </div>
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
+      </Link>
+    </motion.div>
+  );
+}
 
-        {/* Projects Grid */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="grid grid-cols-1 lg:grid-cols-2 gap-6"
-        >
-          {/* Project Cards */}
-          {projectsData.map((project, index) => (
-            <motion.div
-              key={project.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="relative group"
-            >
-              <div className="relative rounded-[20px] backdrop-blur-[15px] bg-white/[0.2] dark:bg-black/20 border border-white/[0.3] dark:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.5),inset_0_-1px_0_rgba(255,255,255,0.1),inset_0_0_20px_10px_rgba(255,255,255,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-1px_0_rgba(255,255,255,0.05),inset_0_0_20px_10px_rgba(255,255,255,0.04)] hover:shadow-[0_16px_48px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.6),inset_0_-1px_0_rgba(255,255,255,0.15),inset_0_0_20px_10px_rgba(255,255,255,0.12)] dark:hover:shadow-[0_16px_48px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1),inset_0_0_20px_10px_rgba(255,255,255,0.06)] transition-all duration-300 hover:-translate-y-1 overflow-hidden">
-                {/* Featured Badge */}
-                {project.featured && (
-                  <div className="absolute top-4 left-4 z-10">
-                    <Badge className="bg-brand-orange text-brand-white border-0 shadow-lg">
-                      <Award className="w-3 h-3 mr-1" />
-                      Destaque
-                    </Badge>
-                  </div>
-                )}
+function FilterPanel({ 
+  filters, 
+  onFiltersChange, 
+  isOpen, 
+  onToggle 
+}: { 
+  filters: ProjectFilters;
+  onFiltersChange: (filters: ProjectFilters) => void;
+  isOpen: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <div className="relative">
+      <SecondaryButton
+        onClick={onToggle}
+        className="flex items-center gap-2"
+      >
+        <Filter className="w-4 h-4" />
+        Filtros
+        <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </SecondaryButton>
 
-                {/* Action Buttons */}
-                <div className="absolute top-4 right-4 z-10 flex gap-2">
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => toggleSave(project.id)}
-                    className="w-9 h-9 rounded-full backdrop-blur-lg bg-white/[0.3] dark:bg-black/[0.3] border border-white/[0.4] dark:border-white/[0.2] flex items-center justify-center hover:bg-white/[0.5] dark:hover:bg-black/[0.5] transition-all duration-300"
-                  >
-                    <Heart
-                      className={`w-4 h-4 ${
-                        savedProjects.includes(project.id)
-                          ? "fill-brand-red text-brand-red"
-                          : "text-brand-black dark:text-brand-white"
-                      }`}
-                    />
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    className="w-9 h-9 rounded-full backdrop-blur-lg bg-white/[0.3] dark:bg-black/[0.3] border border-white/[0.4] dark:border-white/[0.2] flex items-center justify-center hover:bg-white/[0.5] dark:hover:bg-black/[0.5] transition-all duration-300"
-                  >
-                    <Share2 className="w-4 h-4 text-brand-black dark:text-brand-white" />
-                  </motion.button>
-                </div>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="absolute top-full left-0 mt-2 w-80 p-4 rounded-xl backdrop-blur-md bg-white/90 dark:bg-zinc-800/90 border border-white/20 dark:border-zinc-700/30 shadow-lg z-10"
+          >
+            {/* Type Filter */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                Tipo
+              </label>
+              <select
+                value={filters.type || ''}
+                onChange={(e) => onFiltersChange({ ...filters, type: (e.target.value || undefined) as ProjectFilters['type'] })}
+                className="w-full px-3 py-2 rounded-lg backdrop-blur-sm bg-white/50 dark:bg-zinc-700/50 border border-white/30 dark:border-zinc-600/30 text-zinc-800 dark:text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow/50"
+              >
+                <option value="">Todos os tipos</option>
+                {PROJECT_TYPES.map(type => (
+                  <option key={type.value} value={type.value}>
+                    {type.label}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-                {/* Project Image */}
-                <div className="relative w-full h-48 overflow-hidden rounded-t-[20px]">
-                  <Image
-                    src={project.image}
-                    alt={project.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+            {/* State Filter */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                Estado
+              </label>
+              <select
+                value={filters.state || ''}
+                onChange={(e) => onFiltersChange({ ...filters, state: e.target.value || undefined })}
+                className="w-full px-3 py-2 rounded-lg backdrop-blur-sm bg-white/50 dark:bg-zinc-700/50 border border-white/30 dark:border-zinc-600/30 text-zinc-800 dark:text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow/50"
+              >
+                <option value="">Todos os estados</option>
+                {ESTADOS_BRASILEIROS.map(estado => (
+                  <option key={estado} value={estado}>
+                    {estado}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-                  {/* Posted Date */}
-                  <div className="absolute bottom-3 left-3">
-                    <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-black/40 backdrop-blur-md text-white rounded-full">
-                      <Clock className="w-3 h-3 mr-1" />
-                      {project.postedDate}
-                    </span>
-                  </div>
-                </div>
+            {/* City Filter */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                Cidade
+              </label>
+              <input
+                type="text"
+                placeholder="Digite a cidade..."
+                value={filters.city || ''}
+                onChange={(e) => onFiltersChange({ ...filters, city: e.target.value || undefined })}
+                className="w-full px-3 py-2 rounded-lg backdrop-blur-sm bg-white/50 dark:bg-zinc-700/50 border border-white/30 dark:border-zinc-600/30 text-zinc-800 dark:text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow/50 placeholder:text-zinc-500 dark:placeholder:text-zinc-400"
+              />
+            </div>
 
-                {/* Project Content */}
-                <div className="p-6">
-                  {/* Company and Category */}
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <Briefcase className="w-4 h-4 text-brand-navy-blue dark:text-brand-yellow" />
-                      <span className="text-sm font-medium text-brand-black dark:text-brand-white">
-                        {project.company}
-                      </span>
-                    </div>
-                    <Badge
-                      variant="outline"
-                      className="bg-brand-navy-blue/10 dark:bg-brand-yellow/10 text-brand-navy-blue dark:text-brand-yellow border-brand-navy-blue/20 dark:border-brand-yellow/20"
-                    >
-                      {project.category}
-                    </Badge>
-                  </div>
+            {/* Status Filter */}
+            <div>
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                Status
+              </label>
+              <select
+                value={filters.status || ''}
+                onChange={(e) => onFiltersChange({ ...filters, status: (e.target.value || undefined) as ProjectFilters['status'] })}
+                className="w-full px-3 py-2 rounded-lg backdrop-blur-sm bg-white/50 dark:bg-zinc-700/50 border border-white/30 dark:border-zinc-600/30 text-zinc-800 dark:text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow/50"
+              >
+                <option value="">Todos</option>
+                <option value="open">Abertos</option>
+                <option value="closed">Fechados</option>
+              </select>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
-                  {/* Title */}
-                  <h3 className="text-xl font-bold text-brand-black dark:text-brand-white mb-2 font-serif group-hover:text-brand-navy-blue dark:group-hover:text-brand-yellow transition-colors duration-300 line-clamp-2">
-                    {project.title}
-                  </h3>
+export default function Projects() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { user } = useAuth();
+  
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
+  
+  // Filters state
+  const [filters, setFilters] = useState<ProjectFilters>({
+    status: 'open', // Default to open projects
+  });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
-                  {/* Description */}
-                  <p className="text-brand-black/70 dark:text-brand-white/70 text-sm leading-relaxed mb-4 line-clamp-3">
-                    {project.description}
-                  </p>
+  // Initialize filters from URL
+  useEffect(() => {
+    const urlFilters: ProjectFilters = { status: 'open' };
+    
+    if (searchParams.get('type')) urlFilters.type = searchParams.get('type') as ProjectFilters['type'];
+    if (searchParams.get('state')) urlFilters.state = searchParams.get('state') || undefined;
+    if (searchParams.get('city')) urlFilters.city = searchParams.get('city') || undefined;
+    if (searchParams.get('status')) urlFilters.status = searchParams.get('status') as ProjectFilters['status'];
+    if (searchParams.get('search')) {
+      urlFilters.search = searchParams.get('search') || undefined;
+      setSearchTerm(searchParams.get('search') || '');
+    }
+    
+    setFilters(urlFilters);
+  }, [searchParams]);
 
-                  {/* Tags */}
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {project.tags.slice(0, 3).map((tag, idx) => (
-                      <span
-                        key={idx}
-                        className="inline-block px-2 py-1 text-xs font-medium bg-white/[0.3] dark:bg-white/[0.1] text-brand-black dark:text-brand-white rounded-md border border-white/[0.2] dark:border-white/[0.1]"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                    {project.tags.length > 3 && (
-                      <span className="inline-block px-2 py-1 text-xs font-medium bg-white/[0.3] dark:bg-white/[0.1] text-brand-black dark:text-brand-white rounded-md border border-white/[0.2] dark:border-white/[0.1]">
-                        +{project.tags.length - 3}
-                      </span>
-                    )}
-                  </div>
+  // Update URL when filters change
+  const updateUrl = useCallback((newFilters: ProjectFilters, search?: string) => {
+    const params = new URLSearchParams();
+    
+    if (newFilters.type) params.set('type', newFilters.type);
+    if (newFilters.state) params.set('state', newFilters.state);
+    if (newFilters.city) params.set('city', newFilters.city);
+    if (newFilters.status && newFilters.status !== 'open') params.set('status', newFilters.status);
+    if (search) params.set('search', search);
+    
+    const queryString = params.toString();
+    const newUrl = queryString ? `/projects?${queryString}` : '/projects';
+    
+    router.replace(newUrl, { scroll: false });
+  }, [router]);
 
-                  {/* Project Details Grid */}
-                  <div className="grid grid-cols-2 gap-3 mb-4 p-3 rounded-xl bg-white/[0.2] dark:bg-white/[0.05]">
-                    <div className="flex items-start gap-2">
-                      <Calendar className="w-4 h-4 text-brand-navy-blue dark:text-brand-yellow flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="text-xs text-brand-black/60 dark:text-brand-white/60">
-                          Prazo
-                        </p>
-                        <p className="text-xs font-semibold text-brand-black dark:text-brand-white">
-                          {project.deadline}
-                        </p>
-                      </div>
-                    </div>
+  // Load projects
+  const loadProjects = useCallback(async (isLoadMore = false) => {
+    try {
+      if (isLoadMore) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+        setError(null);
+      }
 
-                    <div className="flex items-start gap-2">
-                      <MapPin className="w-4 h-4 text-brand-navy-blue dark:text-brand-yellow flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="text-xs text-brand-black/60 dark:text-brand-white/60">
-                          Local
-                        </p>
-                        <p className="text-xs font-semibold text-brand-black dark:text-brand-white">
-                          {project.location}
-                        </p>
-                      </div>
-                    </div>
+      const result = await listPublicProjects({
+        filters: { ...filters, search: searchTerm || undefined },
+        limit: 12,
+        cursor: isLoadMore && lastDoc ? lastDoc : undefined,
+      });
 
-                    <div className="flex items-start gap-2">
-                      <DollarSign className="w-4 h-4 text-brand-green flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="text-xs text-brand-black/60 dark:text-brand-white/60">
-                          Remuneração
-                        </p>
-                        <p className="text-xs font-semibold text-brand-green">
-                          {project.salary}
-                        </p>
-                      </div>
-                    </div>
+      if (isLoadMore) {
+        setProjects(prev => [...prev, ...result.projects]);
+      } else {
+        setProjects(result.projects);
+      }
 
-                    <div className="flex items-start gap-2">
-                      <Clock className="w-4 h-4 text-brand-navy-blue dark:text-brand-yellow flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="text-xs text-brand-black/60 dark:text-brand-white/60">
-                          Duração
-                        </p>
-                        <p className="text-xs font-semibold text-brand-black dark:text-brand-white">
-                          {project.duration}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+      setHasMore(result.hasMore);
+      setLastDoc(result.lastDoc || null);
+    } catch (err) {
+      console.error('Error loading projects:', err);
+      setError('Erro ao carregar projetos. Tente novamente.');
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, [filters, searchTerm, lastDoc]);
 
-                  {/* Additional Info */}
-                  <div className="flex items-center justify-between mb-4 text-xs text-brand-black/60 dark:text-brand-white/60">
-                    <div className="flex items-center gap-1">
-                      <Users className="w-3 h-3" />
-                      <span>
-                        {project.positions}{" "}
-                        {project.positions === 1 ? "vaga" : "vagas"}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Users className="w-3 h-3" />
-                      <span>{project.applicants} candidatos</span>
-                    </div>
-                    <Badge
-                      variant="outline"
-                      className="text-xs bg-white/[0.1] dark:bg-white/[0.05]"
-                    >
-                      {project.type}
-                    </Badge>
-                  </div>
+  // Load projects when filters change
+  useEffect(() => {
+    async function load() {
+      try {
+        setLoading(true);
+        setError(null);
 
-                  {/* Action Buttons */}
-                  <div className="flex gap-3">
-                    <Button variant="outline" size="sm" className="flex-1">
-                      Ver Detalhes
-                    </Button>
-                    <Button
-                      size="sm"
-                      className="flex-1 bg-brand-navy-blue dark:bg-brand-yellow text-brand-white dark:text-brand-black hover:bg-brand-navy-blue/90 dark:hover:bg-brand-yellow/90"
-                    >
-                      Candidatar-se
-                    </Button>
+        const result = await listPublicProjects({
+          filters: { ...filters, search: searchTerm || undefined },
+          limit: 12,
+        });
+
+        setProjects(result.projects);
+        setHasMore(result.hasMore);
+        setLastDoc(result.lastDoc || null);
+      } catch (err) {
+        console.error('Error loading projects:', err);
+        setError('Erro ao carregar projetos. Tente novamente.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    load();
+  }, [filters, searchTerm]);
+
+  // Handle search
+  const handleSearch = useCallback((value: string) => {
+    setSearchTerm(value);
+    updateUrl(filters, value);
+  }, [filters, updateUrl]);
+
+  // Handle filters change
+  const handleFiltersChange = useCallback((newFilters: ProjectFilters) => {
+    setFilters(newFilters);
+    updateUrl(newFilters, searchTerm);
+  }, [searchTerm, updateUrl]);
+
+  // Handle load more
+  const handleLoadMore = useCallback(() => {
+    if (!loadingMore && hasMore) {
+      loadProjects(true);
+    }
+  }, [loadProjects, loadingMore, hasMore]);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-zinc-50 via-white to-zinc-100 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-800">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div>
+              <h1 className="text-4xl font-bold text-zinc-800 dark:text-zinc-200 mb-2">
+                Projetos
+              </h1>
+              <p className="text-lg text-zinc-600 dark:text-zinc-400">
+                Descubra oportunidades de colaboração e contratação na comunidade artística
+              </p>
+            </div>
+            
+            {user && (
+              <PrimaryButton
+                onClick={() => router.push('/projects/create')}
+                className="flex items-center gap-2 whitespace-nowrap"
+              >
+                <Plus className="w-4 h-4" />
+                Criar Projeto
+              </PrimaryButton>
+            )}
+          </div>
+
+          {/* Search and Filters */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            {/* Search */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Buscar projetos..."
+                value={searchTerm}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 rounded-lg backdrop-blur-md bg-white/50 dark:bg-zinc-800/50 border border-white/30 dark:border-zinc-700/30 text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-brand-yellow/50 hover:backdrop-blur-xl hover:bg-white/60 dark:hover:bg-zinc-800/60 transition-all duration-300"
+              />
+            </div>
+
+            {/* Filters */}
+            <FilterPanel
+              filters={filters}
+              onFiltersChange={handleFiltersChange}
+              isOpen={filtersOpen}
+              onToggle={() => setFiltersOpen(!filtersOpen)}
+            />
+          </div>
+        </div>
+
+        <Separator className="mb-8" />
+
+        {/* Content */}
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="rounded-xl backdrop-blur-md bg-white/10 dark:bg-zinc-800/10 border border-white/20 dark:border-zinc-700/30 p-6">
+                  <div className="h-6 bg-zinc-300 dark:bg-zinc-600 rounded mb-4" />
+                  <div className="h-4 bg-zinc-300 dark:bg-zinc-600 rounded mb-2" />
+                  <div className="h-4 bg-zinc-300 dark:bg-zinc-600 rounded w-3/4 mb-4" />
+                  <div className="flex justify-between">
+                    <div className="h-4 bg-zinc-300 dark:bg-zinc-600 rounded w-1/4" />
+                    <div className="h-4 bg-zinc-300 dark:bg-zinc-600 rounded w-1/4" />
                   </div>
                 </div>
               </div>
-            </motion.div>
-          ))}
-        </motion.div>
+            ))}
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <div className="text-red-600 dark:text-red-400 mb-4">{error}</div>
+            <SecondaryButton onClick={() => loadProjects()}>
+              Tentar Novamente
+            </SecondaryButton>
+          </div>
+        ) : projects.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-zinc-600 dark:text-zinc-400 mb-4">
+              Nenhum projeto encontrado com os filtros selecionados.
+            </div>
+            <SecondaryButton onClick={() => {
+              setFilters({ status: 'open' });
+              setSearchTerm('');
+              updateUrl({ status: 'open' }, '');
+            }}>
+              Limpar Filtros
+            </SecondaryButton>
+          </div>
+        ) : (
+          <div>
+            {/* Projects Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              {projects.map((project) => (
+                <ProjectCard key={project.id} project={project} />
+              ))}
+            </div>
 
-        {/* Load More */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="text-center mt-12"
-        >
-          <Button variant="default" size="lg">
-            Carregar Mais Projetos
-          </Button>
-        </motion.div>
+            {/* Load More */}
+            {hasMore && (
+              <div className="text-center">
+                <SecondaryButton
+                  onClick={handleLoadMore}
+                  disabled={loadingMore}
+                  className="min-w-[120px]"
+                >
+                  {loadingMore ? 'Carregando...' : 'Carregar Mais'}
+                </SecondaryButton>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

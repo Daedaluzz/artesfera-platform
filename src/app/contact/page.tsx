@@ -2,14 +2,14 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { 
-  Mail, 
-  MessageCircle, 
-  Phone, 
-  MapPin, 
+import {
+  Mail,
+  MessageCircle,
+  Phone,
+  MapPin,
   Clock,
   Send,
-  ArrowLeft
+  ArrowLeft,
 } from "lucide-react";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { SecondaryButton } from "@/components/ui/secondary-button";
@@ -55,7 +55,8 @@ export default function ContactPage() {
             Entre em Contato
           </h1>
           <p className="text-xl text-brand-black/70 dark:text-brand-white/70 max-w-2xl mx-auto">
-            Estamos aqui para ajudar! Entre em contato conosco para dúvidas, suporte ou parcerias.
+            Estamos aqui para ajudar! Entre em contato conosco para dúvidas,
+            suporte ou parcerias.
           </p>
         </motion.div>
 
@@ -86,10 +87,11 @@ export default function ContactPage() {
             </div>
 
             <p className="text-brand-black/70 dark:text-brand-white/70 mb-6">
-              Para dúvidas gerais, suporte técnico ou parcerias, envie-nos um email.
+              Para dúvidas gerais, suporte técnico ou parcerias, envie-nos um
+              email.
             </p>
 
-            <PrimaryButton 
+            <PrimaryButton
               onClick={handleEmailContact}
               leftIcon={<Send className="w-4 h-4" />}
               className="w-full"
@@ -126,7 +128,7 @@ export default function ContactPage() {
               Para suporte rápido ou dúvidas urgentes, fale conosco no WhatsApp.
             </p>
 
-            <SecondaryButton 
+            <SecondaryButton
               onClick={handleWhatsAppContact}
               leftIcon={<MessageCircle className="w-4 h-4" />}
               className="w-full"
@@ -155,7 +157,8 @@ export default function ContactPage() {
                 Horário de Atendimento
               </h4>
               <p className="text-brand-black/60 dark:text-brand-white/60 text-sm">
-                Segunda a Sexta<br />
+                Segunda a Sexta
+                <br />
                 9h às 18h (BRT)
               </p>
             </div>
@@ -168,7 +171,8 @@ export default function ContactPage() {
                 Localização
               </h4>
               <p className="text-brand-black/60 dark:text-brand-white/60 text-sm">
-                São Paulo, Brasil<br />
+                São Paulo, Brasil
+                <br />
                 Remotamente
               </p>
             </div>
@@ -181,7 +185,8 @@ export default function ContactPage() {
                 Suporte
               </h4>
               <p className="text-brand-black/60 dark:text-brand-white/60 text-sm">
-                Técnico e Comercial<br />
+                Técnico e Comercial
+                <br />
                 Em português
               </p>
             </div>
@@ -199,9 +204,10 @@ export default function ContactPage() {
             Dúvidas Frequentes?
           </h3>
           <p className="text-brand-black/60 dark:text-brand-white/60 mb-6">
-            Antes de entrar em contato, confira nossa central de ajuda com as perguntas mais comuns.
+            Antes de entrar em contato, confira nossa central de ajuda com as
+            perguntas mais comuns.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <SecondaryButton onClick={() => router.push("/help")}>
               Central de Ajuda

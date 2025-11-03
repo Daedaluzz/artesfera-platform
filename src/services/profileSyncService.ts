@@ -49,19 +49,29 @@ function extractPublicFields(userData: ProfileSyncData) {
  */
 async function clientSideSync(userData: ProfileSyncData): Promise<boolean> {
   try {
-    console.log("📝 Performing client-side profile sync for user:", userData.uid);
-    
+    console.log(
+      "📝 Performing client-side profile sync for user:",
+      userData.uid
+    );
+
     const publicData = extractPublicFields(userData);
     const publicProfileRef = doc(db, "publicProfiles", userData.uid);
 
     // Set the document with merge: true to preserve createdAt if it exists
-    await setDoc(publicProfileRef, {
-      ...publicData,
-      // Only set createdAt if the document doesn't exist (handled by merge)
-      createdAt: serverTimestamp(),
-    }, { merge: true });
+    await setDoc(
+      publicProfileRef,
+      {
+        ...publicData,
+        // Only set createdAt if the document doesn't exist (handled by merge)
+        createdAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
 
-    console.log("✅ Client-side profile sync completed for user:", userData.uid);
+    console.log(
+      "✅ Client-side profile sync completed for user:",
+      userData.uid
+    );
     return true;
   } catch (error) {
     console.error("❌ Client-side profile sync failed:", error);
@@ -94,22 +104,29 @@ export async function triggerProfileSync(
 
     if (response.ok) {
       const result = await response.json();
-      
+
       // Check if it was skipped due to admin SDK not being available
       if (result.warning) {
-        console.warn("⚠️ Admin SDK not available, falling back to client-side sync");
+        console.warn(
+          "⚠️ Admin SDK not available, falling back to client-side sync"
+        );
         // Fall back to client-side sync
         return await clientSideSync(userData);
       }
-      
+
       console.log("✅ Profile synchronized via admin SDK:", result);
       return true;
     } else {
       // If admin sync fails, try client-side sync as fallback
-      console.warn("⚠️ Admin sync failed, trying client-side sync. Status:", response.status);
-      const error = await response.json().catch(() => ({ error: "Unknown error" }));
+      console.warn(
+        "⚠️ Admin sync failed, trying client-side sync. Status:",
+        response.status
+      );
+      const error = await response
+        .json()
+        .catch(() => ({ error: "Unknown error" }));
       console.error("Admin sync error:", error);
-      
+
       return await clientSideSync(userData);
     }
   } catch (error) {

@@ -163,52 +163,55 @@ export function AuthProvider({ children }: AuthProviderProps) {
    * Sync user's public profile data
    * Uses secure server-side API to sync data from users to publicProfiles collection
    */
-  const syncPublicProfile = useCallback(async (userId: string, authUser?: User): Promise<void> => {
-    try {
-      // Get the current user's data from Firestore
-      const userRef = doc(db, "users", userId);
-      const userSnap = await getDoc(userRef);
+  const syncPublicProfile = useCallback(
+    async (userId: string, authUser?: User): Promise<void> => {
+      try {
+        // Get the current user's data from Firestore
+        const userRef = doc(db, "users", userId);
+        const userSnap = await getDoc(userRef);
 
-      if (!userSnap.exists()) {
-        throw new Error("User document not found");
+        if (!userSnap.exists()) {
+          throw new Error("User document not found");
+        }
+
+        const userData = userSnap.data();
+
+        // Use provided user or current user from state
+        const currentUser = authUser || user;
+        if (!currentUser) {
+          throw new Error("No authenticated user for sync");
+        }
+
+        // Use the secure server-side sync API
+        const success = await triggerProfileSync(
+          {
+            uid: userData.uid,
+            name: userData.name || "",
+            email: userData.email || "",
+            photoURL: userData.photoURL,
+            bio: userData.bio,
+            tags: userData.tags,
+            website: userData.socials?.website,
+            location: userData.location,
+            username: userData.username,
+            artisticName: userData.artisticName,
+            profileCompleted: userData.profileCompleted,
+          },
+          currentUser
+        );
+
+        if (!success) {
+          throw new Error("Profile sync failed");
+        }
+
+        console.log("✅ Public profile synced successfully via secure API");
+      } catch (error) {
+        console.error("❌ Error syncing public profile:", error);
+        throw error;
       }
-
-      const userData = userSnap.data();
-
-      // Use provided user or current user from state
-      const currentUser = authUser || user;
-      if (!currentUser) {
-        throw new Error("No authenticated user for sync");
-      }
-
-      // Use the secure server-side sync API
-      const success = await triggerProfileSync(
-        {
-          uid: userData.uid,
-          name: userData.name || "",
-          email: userData.email || "",
-          photoURL: userData.photoURL,
-          bio: userData.bio,
-          tags: userData.tags,
-          website: userData.socials?.website,
-          location: userData.location,
-          username: userData.username,
-          artisticName: userData.artisticName,
-          profileCompleted: userData.profileCompleted,
-        },
-        currentUser
-      );
-
-      if (!success) {
-        throw new Error("Profile sync failed");
-      }
-
-      console.log("✅ Public profile synced successfully via secure API");
-    } catch (error) {
-      console.error("❌ Error syncing public profile:", error);
-      throw error;
-    }
-  }, [user]); // Add user as dependency
+    },
+    [user]
+  ); // Add user as dependency
 
   /**
    * Creates or updates user document in Firestore
@@ -218,123 +221,129 @@ export function AuthProvider({ children }: AuthProviderProps) {
    * Creates or updates a user document in Firestore
    * Uses transaction to avoid race conditions
    */
-  const createUserDocument = useCallback(async (user: User): Promise<void> => {
-    const userRef = doc(db, "users", user.uid);
-    let isNewUser = false;
-    let shouldSync = false;
+  const createUserDocument = useCallback(
+    async (user: User): Promise<void> => {
+      const userRef = doc(db, "users", user.uid);
+      let isNewUser = false;
+      let shouldSync = false;
 
-    try {
-      await runTransaction(db, async (transaction) => {
-        const userDoc = await transaction.get(userRef);
+      try {
+        await runTransaction(db, async (transaction) => {
+          const userDoc = await transaction.get(userRef);
 
-        if (!userDoc.exists()) {
-          isNewUser = true;
-          shouldSync = true; // New users always need sync
-          // Generate unique username for new user (simplified logic to avoid circular dependency)
-          const baseName = (
-            user.displayName ||
-            user.email?.split("@")[0] ||
-            "user"
-          )
-            .toLowerCase()
-            .replace(/[^a-z0-9]/g, "")
-            .substring(0, 15);
+          if (!userDoc.exists()) {
+            isNewUser = true;
+            shouldSync = true; // New users always need sync
+            // Generate unique username for new user (simplified logic to avoid circular dependency)
+            const baseName = (
+              user.displayName ||
+              user.email?.split("@")[0] ||
+              "user"
+            )
+              .toLowerCase()
+              .replace(/[^a-z0-9]/g, "")
+              .substring(0, 15);
 
-          let username = baseName;
-          let counter = 1;
+            let username = baseName;
+            let counter = 1;
 
-          // Simple availability check within transaction using usernames collection
-          while (counter < 100) {
-            // Prevent infinite loop
-            const usernameRef = doc(db, "usernames", username);
-            const usernameDoc = await transaction.get(usernameRef);
+            // Simple availability check within transaction using usernames collection
+            while (counter < 100) {
+              // Prevent infinite loop
+              const usernameRef = doc(db, "usernames", username);
+              const usernameDoc = await transaction.get(usernameRef);
 
-            if (!usernameDoc.exists()) {
-              break; // Username available
+              if (!usernameDoc.exists()) {
+                break; // Username available
+              }
+
+              username = `${baseName}${counter}`;
+              counter++;
             }
 
-            username = `${baseName}${counter}`;
-            counter++;
+            // Create new user document with task-specified fields
+            const userData = {
+              uid: user.uid,
+              name: user.displayName || "",
+              email: user.email || "",
+              photoURL: user.photoURL || null,
+              createdAt: serverTimestamp(),
+              lastUpdatedAt: serverTimestamp(),
+              isActive: true,
+              tags: [],
+              bio: "",
+              artisticName: "",
+              username: username, // Add the generated username
+              location: "",
+              profileCompleted: false,
+              preferences: {
+                notifications: {
+                  email: true,
+                  push: true,
+                  marketing: false,
+                },
+                privacy: {
+                  showEmail: false,
+                  showLocation: true,
+                  allowDirectMessages: true,
+                },
+              },
+            };
+
+            // Create username mapping document
+            const usernameData = {
+              userId: user.uid,
+              createdAt: serverTimestamp(),
+            };
+
+            transaction.set(userRef, userData);
+            transaction.set(doc(db, "usernames", username), usernameData);
+            console.log(
+              "✅ Created new user document and username mapping for:",
+              user.uid
+            );
+          } else {
+            // Update existing user with latest auth info, preserving existing data
+            const updateData = {
+              displayName: user.displayName || "",
+              email: user.email || "",
+              photoURL: user.photoURL || null,
+              lastUpdatedAt: serverTimestamp(),
+            };
+
+            transaction.update(userRef, updateData);
+            console.log("✅ Updated existing user document for:", user.uid);
           }
+        });
 
-          // Create new user document with task-specified fields
-          const userData = {
-            uid: user.uid,
-            name: user.displayName || "",
-            email: user.email || "",
-            photoURL: user.photoURL || null,
-            createdAt: serverTimestamp(),
-            lastUpdatedAt: serverTimestamp(),
-            isActive: true,
-            tags: [],
-            bio: "",
-            artisticName: "",
-            username: username, // Add the generated username
-            location: "",
-            profileCompleted: false,
-            preferences: {
-              notifications: {
-                email: true,
-                push: true,
-                marketing: false,
-              },
-              privacy: {
-                showEmail: false,
-                showLocation: true,
-                allowDirectMessages: true,
-              },
-            },
-          };
-
-          // Create username mapping document
-          const usernameData = {
-            userId: user.uid,
-            createdAt: serverTimestamp(),
-          };
-
-          transaction.set(userRef, userData);
-          transaction.set(doc(db, "usernames", username), usernameData);
-          console.log(
-            "✅ Created new user document and username mapping for:",
-            user.uid
-          );
-        } else {
-          // Update existing user with latest auth info, preserving existing data
-          const updateData = {
-            displayName: user.displayName || "",
-            email: user.email || "",
-            photoURL: user.photoURL || null,
-            lastUpdatedAt: serverTimestamp(),
-          };
-
-          transaction.update(userRef, updateData);
-          console.log("✅ Updated existing user document for:", user.uid);
+        // Check if existing user needs sync (for users created before sync feature)
+        if (!isNewUser) {
+          console.log("� Existing user logged in:", user.uid);
+          // Mandatory sync check is now handled in auth state change listener
+          // This prevents duplicate sync attempts
         }
-      });
 
-      // Check if existing user needs sync (for users created before sync feature)
-      if (!isNewUser) {
-        console.log("� Existing user logged in:", user.uid);
-        // Mandatory sync check is now handled in auth state change listener
-        // This prevents duplicate sync attempts
-      }
-
-      // Trigger sync for new users only (existing users handled in auth state listener)
-      if (shouldSync && isNewUser) {
-        try {
-          console.log("🔄 Auto-syncing public profile for new user:", user.uid);
-          await syncPublicProfile(user.uid, user);
-          console.log("✅ Auto-sync completed for new user:", user.uid);
-        } catch (syncError) {
-          console.error("❌ Auto-sync failed for new user:", syncError);
-          // Don't throw error here - user creation succeeded, sync can be retried later
+        // Trigger sync for new users only (existing users handled in auth state listener)
+        if (shouldSync && isNewUser) {
+          try {
+            console.log(
+              "🔄 Auto-syncing public profile for new user:",
+              user.uid
+            );
+            await syncPublicProfile(user.uid, user);
+            console.log("✅ Auto-sync completed for new user:", user.uid);
+          } catch (syncError) {
+            console.error("❌ Auto-sync failed for new user:", syncError);
+            // Don't throw error here - user creation succeeded, sync can be retried later
+          }
         }
+      } catch (error) {
+        console.error("❌ Error creating/updating user document:", error);
+        throw error;
       }
-    } catch (error) {
-      console.error("❌ Error creating/updating user document:", error);
-      throw error;
-    }
-  }, [syncPublicProfile]); // Add syncPublicProfile as dependency
+    },
+    [syncPublicProfile]
+  ); // Add syncPublicProfile as dependency
 
   /**
    * Sign in with Google OAuth
@@ -564,12 +573,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
           // Force sync check for all users on login (handles legacy users)
           try {
-            console.log("🔄 Checking profile sync for user on login:", user.uid);
+            console.log(
+              "🔄 Checking profile sync for user on login:",
+              user.uid
+            );
             const publicProfileRef = doc(db, "publicProfiles", user.uid);
             const publicProfileDoc = await getDoc(publicProfileRef);
-            
+
             if (!publicProfileDoc.exists()) {
-              console.log("🔧 User missing public profile, triggering mandatory sync:", user.uid);
+              console.log(
+                "🔧 User missing public profile, triggering mandatory sync:",
+                user.uid
+              );
               await syncPublicProfile(user.uid, user);
               console.log("✅ Mandatory sync completed for user:", user.uid);
             } else {
@@ -577,11 +592,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
               const publicData = publicProfileDoc.data();
               const userDocRef = doc(db, "users", user.uid);
               const userDoc = await getDoc(userDocRef);
-              
+
               if (userDoc.exists()) {
                 const userData = userDoc.data();
                 if (userData.username && !publicData.username) {
-                  console.log("🔧 Public profile missing username, updating:", user.uid);
+                  console.log(
+                    "🔧 Public profile missing username, updating:",
+                    user.uid
+                  );
                   await syncPublicProfile(user.uid, user);
                   console.log("✅ Username sync completed for user:", user.uid);
                 }

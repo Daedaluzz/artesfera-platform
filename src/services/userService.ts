@@ -167,37 +167,75 @@ export const usernameUtils = {
     }
 
     if (username.length < 3) {
-      return { isValid: false, error: "Username deve ter pelo menos 3 caracteres" };
+      return {
+        isValid: false,
+        error: "Username deve ter pelo menos 3 caracteres",
+      };
     }
 
     if (username.length > 20) {
-      return { isValid: false, error: "Username deve ter no máximo 20 caracteres" };
+      return {
+        isValid: false,
+        error: "Username deve ter no máximo 20 caracteres",
+      };
     }
 
     // Check for valid characters (letters, numbers, underscore, hyphen)
     const validPattern = /^[a-zA-Z0-9_-]+$/;
     if (!validPattern.test(username)) {
-      return { isValid: false, error: "Username pode conter apenas letras, números, _ e -" };
+      return {
+        isValid: false,
+        error: "Username pode conter apenas letras, números, _ e -",
+      };
     }
 
     // Must start with letter or number
     const startsWithAlphaNumeric = /^[a-zA-Z0-9]/;
     if (!startsWithAlphaNumeric.test(username)) {
-      return { isValid: false, error: "Username deve começar com letra ou número" };
+      return {
+        isValid: false,
+        error: "Username deve começar com letra ou número",
+      };
     }
 
     // No consecutive special characters
     const noConsecutiveSpecial = /^(?!.*[-_]{2,})[a-zA-Z0-9_-]+$/;
     if (!noConsecutiveSpecial.test(username)) {
-      return { isValid: false, error: "Username não pode ter _ ou - consecutivos" };
+      return {
+        isValid: false,
+        error: "Username não pode ter _ ou - consecutivos",
+      };
     }
 
     // Reserved usernames
     const reserved = [
-      "admin", "api", "www", "mail", "ftp", "localhost", "artesfera",
-      "support", "help", "info", "contact", "about", "terms", "privacy",
-      "login", "register", "signup", "signin", "profile", "user", "users",
-      "project", "projects", "gallery", "galleries", "daeva", "ai",
+      "admin",
+      "api",
+      "www",
+      "mail",
+      "ftp",
+      "localhost",
+      "artesfera",
+      "support",
+      "help",
+      "info",
+      "contact",
+      "about",
+      "terms",
+      "privacy",
+      "login",
+      "register",
+      "signup",
+      "signin",
+      "profile",
+      "user",
+      "users",
+      "project",
+      "projects",
+      "gallery",
+      "galleries",
+      "daeva",
+      "ai",
     ];
 
     if (reserved.includes(username.toLowerCase())) {
@@ -230,7 +268,7 @@ export const usernameUtils = {
       .toLowerCase()
       .replace(/[^a-z0-9]/g, "")
       .substring(0, 15);
-    
+
     let username = normalizedBase;
     let counter = 1;
 
@@ -252,7 +290,10 @@ export const userFileUtils = {
   /**
    * Delete user profile image
    */
-  deleteProfileImage: async (userId: string, photoURL?: string): Promise<void> => {
+  deleteProfileImage: async (
+    userId: string,
+    photoURL?: string
+  ): Promise<void> => {
     if (!photoURL || !photoURL.includes("firebase")) return;
 
     try {
@@ -266,7 +307,10 @@ export const userFileUtils = {
         console.log(`✅ Deleted profile image for user: ${userId}`);
       }
     } catch (error) {
-      console.error(`❌ Error deleting profile image for user ${userId}:`, error);
+      console.error(
+        `❌ Error deleting profile image for user ${userId}:`,
+        error
+      );
       // Don't throw error - continue with user deletion even if file cleanup fails
     }
   },
@@ -306,7 +350,10 @@ export const userFileUtils = {
       }
       console.log(`✅ Deleted all artwork images for user: ${userId}`);
     } catch (error) {
-      console.error(`❌ Error deleting user artwork images for ${userId}:`, error);
+      console.error(
+        `❌ Error deleting user artwork images for ${userId}:`,
+        error
+      );
       // Don't throw error - continue with user deletion
     }
   },
@@ -326,14 +373,15 @@ export const userService = {
       // Validate and generate username if not provided
       let username = userData.username;
       if (!username) {
-        const baseName = userData.name || userData.email?.split("@")[0] || "user";
+        const baseName =
+          userData.name || userData.email?.split("@")[0] || "user";
         username = await usernameUtils.generateAvailable(baseName);
       } else {
         const validation = usernameUtils.validate(username);
         if (!validation.isValid) {
           throw new Error(validation.error);
         }
-        
+
         const isAvailable = await usernameUtils.checkAvailability(username);
         if (!isAvailable) {
           throw new Error("Username já está em uso");
@@ -343,7 +391,11 @@ export const userService = {
       // Create user document with transaction for atomicity
       await runTransaction(db, async (transaction) => {
         const userRef = doc(db, COLLECTIONS.USERS, uid);
-        const usernameRef = doc(db, COLLECTIONS.USERNAMES, username!.toLowerCase());
+        const usernameRef = doc(
+          db,
+          COLLECTIONS.USERNAMES,
+          username!.toLowerCase()
+        );
 
         // Double-check username availability in transaction
         const existingUsername = await transaction.get(usernameRef);
@@ -462,7 +514,7 @@ export const userService = {
   getByUsername: async (username: string): Promise<UserProfile | null> => {
     try {
       const normalizedUsername = username.toLowerCase();
-      
+
       // First get the userId from usernames collection
       const usernameRef = doc(db, COLLECTIONS.USERNAMES, normalizedUsername);
       const usernameSnap = await getDoc(usernameRef);
@@ -536,8 +588,13 @@ export const userService = {
 
         // Check if username is changing
         const currentUser = await userService.getById(userId);
-        if (currentUser && currentUser.username !== updates.username.toLowerCase()) {
-          const isAvailable = await usernameUtils.checkAvailability(updates.username);
+        if (
+          currentUser &&
+          currentUser.username !== updates.username.toLowerCase()
+        ) {
+          const isAvailable = await usernameUtils.checkAvailability(
+            updates.username
+          );
           if (!isAvailable) {
             throw new Error("Username já está em uso");
           }
@@ -551,41 +608,57 @@ export const userService = {
       };
 
       // Clean up data
-      if (updateData.name && typeof updateData.name === 'string') {
+      if (updateData.name && typeof updateData.name === "string") {
         updateData.name = updateData.name.trim();
       }
-      if (updateData.bio && typeof updateData.bio === 'string') {
+      if (updateData.bio && typeof updateData.bio === "string") {
         updateData.bio = updateData.bio.trim();
       }
-      if (updateData.artisticName && typeof updateData.artisticName === 'string') {
+      if (
+        updateData.artisticName &&
+        typeof updateData.artisticName === "string"
+      ) {
         updateData.artisticName = updateData.artisticName.trim();
       }
-      if (updateData.location && typeof updateData.location === 'string') {
+      if (updateData.location && typeof updateData.location === "string") {
         updateData.location = updateData.location.trim();
       }
-      if (updateData.phone && typeof updateData.phone === 'string') {
+      if (updateData.phone && typeof updateData.phone === "string") {
         updateData.phone = updateData.phone.trim();
       }
-      if (updateData.username && typeof updateData.username === 'string') {
+      if (updateData.username && typeof updateData.username === "string") {
         updateData.username = updateData.username.toLowerCase();
       }
       if (updateData.tags && Array.isArray(updateData.tags)) {
-        updateData.tags = updateData.tags.map((tag: string) => tag.trim().toLowerCase());
+        updateData.tags = updateData.tags.map((tag: string) =>
+          tag.trim().toLowerCase()
+        );
       }
 
       // Handle username changes with transaction
       if (updates.username) {
         const currentUser = await userService.getById(userId);
-        if (currentUser && currentUser.username !== updates.username.toLowerCase()) {
+        if (
+          currentUser &&
+          currentUser.username !== updates.username.toLowerCase()
+        ) {
           await runTransaction(db, async (transaction) => {
             // Remove old username mapping
             if (currentUser.username) {
-              const oldUsernameRef = doc(db, COLLECTIONS.USERNAMES, currentUser.username);
+              const oldUsernameRef = doc(
+                db,
+                COLLECTIONS.USERNAMES,
+                currentUser.username
+              );
               transaction.delete(oldUsernameRef);
             }
 
             // Create new username mapping
-            const newUsernameRef = doc(db, COLLECTIONS.USERNAMES, updates.username!.toLowerCase());
+            const newUsernameRef = doc(
+              db,
+              COLLECTIONS.USERNAMES,
+              updates.username!.toLowerCase()
+            );
             transaction.set(newUsernameRef, {
               userId,
               createdAt: serverTimestamp(),
@@ -628,7 +701,10 @@ export const userService = {
           console.log(`✅ Updated user and synced public profile: ${userId}`);
         }
       } catch (syncError) {
-        console.error(`❌ User updated but sync failed for ${userId}:`, syncError);
+        console.error(
+          `❌ User updated but sync failed for ${userId}:`,
+          syncError
+        );
         // Don't throw error - user update succeeded
       }
     } catch (error) {
@@ -652,7 +728,10 @@ export const userService = {
 
       // Step 1: Delete user files (profile image and artwork images)
       console.log(`🗑️ Step 1: Deleting user files for ${userId}`);
-      await userFileUtils.deleteProfileImage(userId, userData.photoURL || undefined);
+      await userFileUtils.deleteProfileImage(
+        userId,
+        userData.photoURL || undefined
+      );
       await userFileUtils.deleteUserArtworkImages(userId);
 
       // Step 2: Use batch for multiple document deletions
@@ -669,7 +748,11 @@ export const userService = {
 
       // Delete username mapping if exists
       if (userData.username) {
-        const usernameRef = doc(db, COLLECTIONS.USERNAMES, userData.username.toLowerCase());
+        const usernameRef = doc(
+          db,
+          COLLECTIONS.USERNAMES,
+          userData.username.toLowerCase()
+        );
         batch.delete(usernameRef);
       }
 
@@ -679,7 +762,7 @@ export const userService = {
         where("userId", "==", userId)
       );
       const artworksSnapshot = await getDocs(artworksQuery);
-      
+
       artworksSnapshot.docs.forEach((artworkDoc) => {
         batch.delete(artworkDoc.ref);
       });
@@ -687,14 +770,15 @@ export const userService = {
       // Execute batch deletion
       await batch.commit();
 
-      console.log(`✅ Successfully deleted user ${userId} and all related data`);
+      console.log(
+        `✅ Successfully deleted user ${userId} and all related data`
+      );
       console.log(`📊 Deletion summary:
         - User document: deleted
         - Public profile: deleted
-        - Username mapping: ${userData.username ? 'deleted' : 'none'}
+        - Username mapping: ${userData.username ? "deleted" : "none"}
         - Artworks: ${artworksSnapshot.size} deleted
         - Files: cleaned up`);
-
     } catch (error) {
       console.error(`❌ Error deleting user ${userId}:`, error);
       throw error;
@@ -735,7 +819,9 @@ export const userService = {
   /**
    * Validate user data before operations
    */
-  validate: (userData: Partial<UserData>): { isValid: boolean; errors: string[] } => {
+  validate: (
+    userData: Partial<UserData>
+  ): { isValid: boolean; errors: string[] } => {
     const errors: string[] = [];
 
     if (userData.name && userData.name.trim().length < 2) {

@@ -503,7 +503,7 @@ export default function ProfileEdit() {
 
       // Sign out the user after successful deletion
       await signOut();
-      
+
       // Redirect to home page
       router.push("/");
     } catch (error) {
@@ -1012,10 +1012,11 @@ export default function ProfileEdit() {
                 Zona de Perigo
               </h3>
               <p className="text-sm text-brand-black/60 dark:text-brand-white/60">
-                Esta ação é irreversível. Todos os seus dados, obras e perfil serão permanentemente excluídos.
+                Esta ação é irreversível. Todos os seus dados, obras e perfil
+                serão permanentemente excluídos.
               </p>
             </div>
-            
+
             <SecondaryButton
               onClick={handleShowDeleteConfirm}
               disabled={isSaving || isDeleting}
@@ -1045,7 +1046,8 @@ export default function ProfileEdit() {
                     Deletar Perfil
                   </h3>
                   <p className="text-brand-black/70 dark:text-brand-white/70 text-sm">
-                    Esta ação é <strong>irreversível</strong>. Todos os seus dados serão permanentemente excluídos:
+                    Esta ação é <strong>irreversível</strong>. Todos os seus
+                    dados serão permanentemente excluídos:
                   </p>
                 </div>
 

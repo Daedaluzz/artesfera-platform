@@ -50,7 +50,7 @@ export function GalleryCard({
   // Generate owner profile URL
   const ownerProfileUrl = artwork.owner?.username
     ? `/${artwork.owner.username}`
-    : `/${artwork.owner?.uid?.slice(0, 8) || 'unknown'}`;
+    : `/${artwork.owner?.uid?.slice(0, 8) || "unknown"}`;
 
   const handleLike = (e: React.MouseEvent) => {
     e.preventDefault();
