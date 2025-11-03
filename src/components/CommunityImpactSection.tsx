@@ -1,57 +1,61 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Award, BarChart3, Heart, TrendingUp, Users, Zap } from "lucide-react";
+import { 
+  UserPlus, 
+  Search, 
+  Send, 
+  CheckCircle, 
+  PlayCircle,
+  ArrowRight,
+  FileText,
+  Users
+} from "lucide-react";
 
-const impactStats = [
+const gettingStartedSteps = [
   {
-    icon: Users,
-    number: "10K+",
-    label: "Artistas Conectados",
-    description: "Profissionais da arte e cultura cadastrados na plataforma",
+    icon: UserPlus,
+    number: "01",
+    title: "Crie seu Perfil",
+    description: "Cadastre-se gratuitamente e monte seu perfil profissional completo com portfolio, habilidades e experiências.",
+    tip: "Dica: Perfis completos têm 3x mais chances de serem selecionados"
   },
   {
-    icon: Zap,
-    number: "2.5K",
-    label: "Matches Realizados",
-    description: "Conexões bem-sucedidas entre artistas e oportunidades",
+    icon: Search,
+    number: "02", 
+    title: "Explore Oportunidades",
+    description: "Navegue por projetos, editais e oportunidades que se alinham com seu perfil e interesses artísticos.",
+    tip: "Use filtros inteligentes para encontrar matches perfeitos"
   },
   {
-    icon: Award,
-    number: "850+",
-    label: "Projetos Concluídos",
-    description: "Colaborações finalizadas com sucesso através da ArtEsfera",
+    icon: Send,
+    number: "03",
+    title: "Candidate-se",
+    description: "Envie suas candidaturas de forma simples e acompanhe o status em tempo real através do dashboard.",
+    tip: "Personalize cada candidatura para aumentar suas chances"
   },
   {
-    icon: TrendingUp,
-    number: "95%",
-    label: "Taxa de Satisfação",
-    description: "Usuários satisfeitos com as conexões realizadas",
-  },
+    icon: CheckCircle,
+    number: "04",
+    title: "Conecte e Colabore",
+    description: "Após aprovação, conecte-se diretamente com contratantes e inicie colaborações transformadoras.",
+    tip: "Mantenha comunicação ativa para construir relacionamentos duradouros"
+  }
 ];
 
-const communityHighlights = [
+const platformGuides = [
   {
-    icon: Heart,
-    title: "Comunidade Ativa",
-    description:
-      "Uma rede vibrante de artistas, produtores culturais e empresas que colaboram diariamente.",
-    color: "from-pink-500/20 to-red-500/20",
+    icon: FileText,
+    title: "Para Profissionais Criativos",
+    description: "Aprenda a otimizar seu perfil, encontrar oportunidades ideais e se destacar no mercado cultural.",
+    features: ["Otimização de perfil", "Networking estratégico", "Portfolio digital", "Gestão de candidaturas"]
   },
   {
-    icon: BarChart3,
-    title: "Crescimento Sustentável",
-    description:
-      "Impacto mensurável no desenvolvimento do setor cultural brasileiro através de dados e métricas.",
-    color: "from-blue-500/20 to-purple-500/20",
-  },
-  {
-    icon: Award,
-    title: "Qualidade Garantida",
-    description:
-      "Processo de verificação rigoroso que assegura profissionais qualificados e oportunidades legítimas.",
-    color: "from-green-500/20 to-emerald-500/20",
-  },
+    icon: Users,
+    title: "Para Empresas e Produtoras",
+    description: "Descubra como encontrar talentos excepcionais e gerenciar processos seletivos eficientes.",
+    features: ["Publicação de projetos", "Triagem inteligente", "Gestão de candidatos", "Avaliação de portfólios"]
+  }
 ];
 
 export default function CommunityImpactSection() {
@@ -79,9 +83,9 @@ export default function CommunityImpactSection() {
             viewport={{ once: true }}
             className="text-3xl sm:text-4xl lg:text-5xl font-bold font-serif text-brand-black dark:text-brand-white mb-6"
           >
-            Transformando o{" "}
+            Como{" "}
             <span className="text-brand-navy-blue dark:text-brand-yellow">
-              Cenário Cultural
+              Começar
             </span>
           </motion.h2>
           <motion.p
@@ -91,55 +95,57 @@ export default function CommunityImpactSection() {
             viewport={{ once: true }}
             className="text-lg sm:text-xl text-brand-black/80 dark:text-brand-white/80 max-w-3xl mx-auto"
           >
-            Números que comprovam o impacto da ArtEsfera no fortalecimento do
-            ecossistema artístico e cultural brasileiro.
+            Siga estes passos simples para começar sua jornada na ArtEsfera e 
+            conectar-se com oportunidades que transformam carreiras.
           </motion.p>
         </motion.div>
 
-        {/* Impact Stats */}
+        {/* Getting Started Steps */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
           viewport={{ once: true }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-20"
+          className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-20"
         >
-          {impactStats.map((stat, index) => {
-            const IconComponent = stat.icon;
+          {gettingStartedSteps.map((step, index) => {
+            const IconComponent = step.icon;
             return (
               <motion.div
-                key={stat.label}
+                key={step.number}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.5 + index * 0.1 }}
                 viewport={{ once: true }}
-                className="group text-center"
+                className="group"
               >
-                <div className="p-8 rounded-[20px] backdrop-blur-[15px] bg-white/15 dark:bg-black/15 border border-white/30 dark:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.5),inset_0_-1px_0_rgba(255,255,255,0.1)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-1px_0_rgba(255,255,255,0.05)] hover:shadow-[0_12px_48px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.6),inset_0_-1px_0_rgba(255,255,255,0.15)] dark:hover:shadow-[0_12px_48px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1)] transition-all duration-300 hover:-translate-y-2 relative overflow-hidden before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/60 before:to-transparent after:content-[''] after:absolute after:top-0 after:left-0 after:w-px after:h-full after:bg-gradient-to-b after:from-white/60 after:via-transparent after:to-white/20">
-                  <div className="relative z-10">
-                    <div className="w-16 h-16 mx-auto mb-4 relative">
-                      <div className="absolute inset-0 bg-brand-navy-blue/20 dark:bg-brand-yellow/20 rounded-2xl backdrop-blur-sm" />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <IconComponent className="w-8 h-8 text-brand-navy-blue dark:text-brand-yellow" />
-                      </div>
+                <div className="p-8 rounded-[20px] backdrop-blur-[15px] bg-white/15 dark:bg-black/15 border border-white/30 dark:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.5),inset_0_-1px_0_rgba(255,255,255,0.1)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-1px_0_rgba(255,255,255,0.05)] hover:shadow-[0_12px_48px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_12px_48px_rgba(0,0,0,0.4)] transition-all duration-300 hover:-translate-y-2 relative overflow-hidden before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/60 before:to-transparent">
+                  
+                  <div className="flex items-start mb-4">
+                    {/* Step Number */}
+                    <div className="w-12 h-12 rounded-xl backdrop-blur-sm bg-brand-navy-blue/20 dark:bg-brand-yellow/20 border border-brand-navy-blue/30 dark:border-brand-yellow/30 flex items-center justify-center mr-4 flex-shrink-0">
+                      <span className="text-sm font-bold text-brand-navy-blue dark:text-brand-yellow">
+                        {step.number}
+                      </span>
                     </div>
+                    
+                    {/* Icon */}
+                    <div className="w-12 h-12 rounded-xl backdrop-blur-sm bg-white/20 dark:bg-black/20 border border-white/30 dark:border-white/20 flex items-center justify-center ml-auto">
+                      <IconComponent className="w-6 h-6 text-brand-navy-blue dark:text-brand-yellow" />
+                    </div>
+                  </div>
 
-                    <motion.div
-                      initial={{ scale: 1 }}
-                      whileInView={{ scale: [1, 1.1, 1] }}
-                      transition={{ duration: 0.8, delay: 0.7 + index * 0.1 }}
-                      viewport={{ once: true }}
-                      className="text-3xl sm:text-4xl font-bold text-brand-navy-blue dark:text-brand-yellow mb-2"
-                    >
-                      {stat.number}
-                    </motion.div>
-
-                    <h3 className="text-lg font-semibold text-brand-black dark:text-brand-white mb-2 font-serif">
-                      {stat.label}
-                    </h3>
-                    <p className="text-sm text-brand-black/70 dark:text-brand-white/70 leading-relaxed">
-                      {stat.description}
-                    </p>
+                  <h3 className="text-xl font-semibold text-brand-black dark:text-brand-white mb-3 group-hover:text-brand-navy-blue dark:group-hover:text-brand-yellow transition-colors duration-300">
+                    {step.title}
+                  </h3>
+                  
+                  <p className="text-brand-black/70 dark:text-brand-white/70 leading-relaxed mb-4">
+                    {step.description}
+                  </p>
+                  
+                  <div className="flex items-center text-sm text-brand-navy-blue dark:text-brand-yellow">
+                    <PlayCircle className="w-4 h-4 mr-2" />
+                    <span className="font-medium">{step.tip}</span>
                   </div>
                 </div>
               </motion.div>
@@ -147,45 +153,49 @@ export default function CommunityImpactSection() {
           })}
         </motion.div>
 
-        {/* Community Highlights */}
+        {/* Platform Guides */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
           viewport={{ once: true }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          className="grid grid-cols-1 lg:grid-cols-2 gap-8"
         >
-          {communityHighlights.map((highlight, index) => {
-            const IconComponent = highlight.icon;
+          {platformGuides.map((guide, index) => {
+            const IconComponent = guide.icon;
             return (
               <motion.div
-                key={highlight.title}
+                key={guide.title}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.7 + index * 0.1 }}
                 viewport={{ once: true }}
                 className="group"
               >
-                <div className="p-8 rounded-[20px] backdrop-blur-[15px] bg-white/10 dark:bg-black/10 border border-white/30 dark:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.5),inset_0_-1px_0_rgba(255,255,255,0.1)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-1px_0_rgba(255,255,255,0.05)] hover:shadow-[0_16px_48px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.6),inset_0_-1px_0_rgba(255,255,255,0.15)] dark:hover:shadow-[0_16px_48px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1)] transition-all duration-300 hover:-translate-y-2 relative overflow-hidden before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/60 before:to-transparent after:content-[''] after:absolute after:top-0 after:left-0 after:w-px after:h-full after:bg-gradient-to-b after:from-white/60 after:via-transparent after:to-white/20">
-                  {/* Background Gradient */}
-                  <div
-                    className={`absolute inset-0 bg-gradient-to-br ${highlight.color} opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-[20px]`}
-                  />
-
-                  <div className="relative z-10">
-                    <div className="w-14 h-14 mb-6 relative">
-                      <div className="absolute inset-0 bg-brand-navy-blue/20 dark:bg-brand-yellow/20 rounded-xl backdrop-blur-sm group-hover:bg-brand-navy-blue/30 dark:group-hover:bg-brand-yellow/30 transition-colors duration-300" />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <IconComponent className="w-7 h-7 text-brand-navy-blue dark:text-brand-yellow" />
-                      </div>
+                <div className="p-8 rounded-[24px] backdrop-blur-[15px] bg-white/20 dark:bg-black/20 border border-white/40 dark:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.6),inset_0_-1px_0_rgba(255,255,255,0.2)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_16px_48px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_16px_48px_rgba(0,0,0,0.4)] transition-all duration-300 hover:-translate-y-1 relative overflow-hidden before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/80 before:to-transparent">
+                  
+                  <div className="flex items-center mb-6">
+                    <div className="w-14 h-14 rounded-xl backdrop-blur-sm bg-brand-navy-blue/20 dark:bg-brand-yellow/20 border border-brand-navy-blue/30 dark:border-brand-yellow/30 flex items-center justify-center mr-4">
+                      <IconComponent className="w-7 h-7 text-brand-navy-blue dark:text-brand-yellow" />
                     </div>
-
-                    <h3 className="text-xl font-semibold text-brand-black dark:text-brand-white mb-3 font-serif">
-                      {highlight.title}
+                    <h3 className="text-xl font-bold text-brand-black dark:text-brand-white group-hover:text-brand-navy-blue dark:group-hover:text-brand-yellow transition-colors duration-300">
+                      {guide.title}
                     </h3>
-                    <p className="text-brand-black/70 dark:text-brand-white/70 leading-relaxed">
-                      {highlight.description}
-                    </p>
+                  </div>
+                  
+                  <p className="text-brand-black/80 dark:text-brand-white/80 leading-relaxed mb-6">
+                    {guide.description}
+                  </p>
+                  
+                  <div className="space-y-2">
+                    {guide.features.map((feature, featureIndex) => (
+                      <div key={featureIndex} className="flex items-center">
+                        <ArrowRight className="w-4 h-4 text-brand-navy-blue dark:text-brand-yellow mr-3 flex-shrink-0" />
+                        <span className="text-brand-black/70 dark:text-brand-white/70 text-sm">
+                          {feature}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </motion.div>
