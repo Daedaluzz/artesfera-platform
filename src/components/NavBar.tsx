@@ -42,7 +42,7 @@ export default function NavBar() {
   };
 
   return (
-    <>
+    <div className="relative">
       <nav
         role="navigation"
         className="sticky h-16 top-0 w-full z-[9999] overflow-hidden backdrop-blur-2xl bg-gradient-to-br from-white/15 via-white/8 to-white/12 shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_4px_32px_rgba(0,0,0,0.08)] dark:from-white/6 dark:via-white/3 dark:to-white/5 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_4px_32px_rgba(0,0,0,0.15)]"
@@ -254,8 +254,7 @@ export default function NavBar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="fixed top-16 left-0 right-0 z-[9998] lg:hidden px-4"
-            style={{ top: "4rem" }} // 64px = 4rem for the navbar height
+            className="absolute top-full left-0 right-0 z-[9998] lg:hidden px-4 mt-2"
           >
             <div className="relative p-6 rounded-[20px] backdrop-blur-[20px] bg-white/[0.35] dark:bg-black/[0.35] border border-white/[0.4] dark:border-white/[0.25] shadow-[0_12px_40px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.7),inset_0_-1px_0_rgba(255,255,255,0.2),inset_0_0_30px_15px_rgba(255,255,255,0.12)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1),inset_0_0_30px_15px_rgba(255,255,255,0.06)]">
               {/* Mobile Navigation Links */}
@@ -372,6 +371,6 @@ export default function NavBar() {
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </div>
   );
 }

@@ -50,9 +50,11 @@ function createArtworkSlug(username: string, title: string): string {
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "") // Remove accents
-    .replace(/[^a-z0-9\s]/g, "") // Remove special characters
+    .replace(/[^a-z0-9\s-]/g, "") // Remove special characters except hyphens
     .replace(/\s+/g, "-") // Replace spaces with hyphens
-    .trim();
+    .replace(/-+/g, "-") // Replace multiple hyphens with single hyphen
+    .trim()
+    .replace(/^-|-$/g, ""); // Remove leading/trailing hyphens
 
   return `${username}-${cleanTitle}`;
 }
@@ -61,11 +63,15 @@ function createArtworkSlug(username: string, title: string): string {
 function parseArtworkSlug(
   slug: string
 ): { username: string; titleSlug: string } | null {
-  const parts = slug.split("-");
-  if (parts.length < 2) return null;
+  // More robust parsing - find the first hyphen and split there
+  const firstHyphenIndex = slug.indexOf("-");
+  if (firstHyphenIndex === -1 || firstHyphenIndex === 0) return null;
 
-  const username = parts[0];
-  const titleSlug = parts.slice(1).join("-");
+  const username = slug.substring(0, firstHyphenIndex);
+  const titleSlug = slug.substring(firstHyphenIndex + 1);
+
+  // Validate username (should be at least 3 characters)
+  if (username.length < 3) return null;
 
   return { username, titleSlug };
 }
@@ -100,7 +106,9 @@ export default function ArtworkDetailPage() {
 
         if (parsedSlug) {
           // Handle slug-based lookup
-          const { username } = parsedSlug;
+          const { username, titleSlug } = parsedSlug;
+
+          console.log("🔍 Parsing slug:", { slug, username, titleSlug });
 
           // First, get the user by username to get their userId
           const userQuery = query(
@@ -111,14 +119,37 @@ export default function ArtworkDetailPage() {
           const userSnapshot = await getDocs(userQuery);
 
           if (userSnapshot.empty) {
-            setError("Usuário não encontrado");
+            console.log("❌ User not found for username:", username);
+            // Try fallback to direct ID lookup
+            const artworkData = await artworkService.getById(slug);
+            if (artworkData) {
+              console.log("✅ Found artwork by direct ID lookup");
+              if (
+                !artworkData.isPublic &&
+                (!user || user.uid !== artworkData.userId)
+              ) {
+                setError("Esta obra não está disponível publicamente");
+                return;
+              }
+              setArtwork(artworkData);
+              // Fetch creator data
+              const creatorRef = doc(db, "publicProfiles", artworkData.userId);
+              const creatorSnap = await getDoc(creatorRef);
+              if (creatorSnap.exists()) {
+                setCreator(creatorSnap.data() as ArtworkCreator);
+              }
+              return;
+            }
+            setError("Obra não encontrada");
             return;
           }
 
           const userData = userSnapshot.docs[0].data() as ArtworkCreator;
           setCreator(userData);
 
-          // Now search for artwork by userId and title slug match
+          console.log("✅ Found user:", userData.username);
+
+          // Now search for artwork by userId and title match
           const artworksQuery = query(
             collection(db, "artworks"),
             where("userId", "==", userData.uid)
@@ -127,10 +158,25 @@ export default function ArtworkDetailPage() {
 
           let foundArtwork: Artwork | null = null;
 
+          console.log(
+            "🔍 Searching through",
+            artworksSnapshot.docs.length,
+            "artworks"
+          );
+
           // Find artwork by matching title slug
           for (const doc of artworksSnapshot.docs) {
             const artworkData = { id: doc.id, ...doc.data() } as Artwork;
+
+            // Create slug for this artwork to compare
             const artworkSlug = createArtworkSlug(username, artworkData.title);
+
+            console.log("Comparing:", {
+              targetSlug: slug,
+              artworkSlug,
+              artworkTitle: artworkData.title,
+              match: artworkSlug === slug,
+            });
 
             if (artworkSlug === slug) {
               foundArtwork = artworkData;
@@ -139,9 +185,12 @@ export default function ArtworkDetailPage() {
           }
 
           if (!foundArtwork) {
+            console.log("❌ No artwork found matching slug");
             setError("Obra não encontrada");
             return;
           }
+
+          console.log("✅ Found artwork:", foundArtwork.title);
 
           // Check if artwork is public or if user is the owner
           if (
