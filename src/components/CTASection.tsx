@@ -27,9 +27,11 @@ export default function CTASection() {
 
   const handleLearnMore = () => {
     // Scroll to about section or navigate to dedicated about page
-    const aboutSection = document.querySelector('section[data-section="about"]');
+    const aboutSection = document.querySelector(
+      'section[data-section="about"]'
+    );
     if (aboutSection) {
-      aboutSection.scrollIntoView({ behavior: 'smooth' });
+      aboutSection.scrollIntoView({ behavior: "smooth" });
     } else {
       router.push("/about");
     }

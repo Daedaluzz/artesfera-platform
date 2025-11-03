@@ -1,38 +1,42 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { 
-  Sparkles, 
-  Target, 
-  Users, 
-  TrendingUp, 
-  Heart, 
+import {
+  Sparkles,
+  Target,
+  Users,
+  TrendingUp,
+  Heart,
   Brain,
   Palette,
-  Handshake
+  Handshake,
 } from "lucide-react";
 
 const platformTools = [
   {
     icon: Target,
     title: "Matchmaking Inteligente",
-    description: "Conectamos artistas com oportunidades baseado em habilidades, localização e interesses mútuos."
+    description:
+      "Conectamos artistas com oportunidades baseado em habilidades, localização e interesses mútuos.",
   },
   {
     icon: Brain,
     title: "Daeva.AI - Assistente Inteligente",
-    description: "IA especializada para revisar editais, contratos e fornecer orientação jurídico-cultural."
+    description:
+      "IA especializada para revisar editais, contratos e fornecer orientação jurídico-cultural.",
   },
   {
     icon: Users,
     title: "Networking Profissional",
-    description: "Comunidade ativa de profissionais criativos, mentores e empresas do setor cultural."
+    description:
+      "Comunidade ativa de profissionais criativos, mentores e empresas do setor cultural.",
   },
   {
     icon: TrendingUp,
     title: "Capacitação Contínua",
-    description: "Cursos, workshops e certificações para desenvolvimento de carreira no mercado criativo."
-  }
+    description:
+      "Cursos, workshops e certificações para desenvolvimento de carreira no mercado criativo.",
+  },
 ];
 
 const platformBenefits = [
@@ -43,8 +47,8 @@ const platformBenefits = [
       "Perfil profissional completo e portfólio integrado",
       "Candidaturas simplificadas para projetos e editais",
       "Ferramentas de gestão de carreira e networking",
-      "Acesso a mentorias e oportunidades de capacitação"
-    ]
+      "Acesso a mentorias e oportunidades de capacitação",
+    ],
   },
   {
     icon: Handshake,
@@ -53,9 +57,9 @@ const platformBenefits = [
       "Encontre talentos qualificados rapidamente",
       "Gerencie seleções e processos de contratação",
       "Publique oportunidades com alcance direcionado",
-      "Conecte-se com profissionais verificados"
-    ]
-  }
+      "Conecte-se com profissionais verificados",
+    ],
+  },
 ];
 
 export default function TestimonialsSection() {
@@ -79,7 +83,8 @@ export default function TestimonialsSection() {
             Ferramentas que Impulsionam Carreiras
           </h2>
           <p className="text-lg sm:text-xl text-brand-black/80 dark:text-brand-white/80 max-w-3xl mx-auto">
-            Tecnologia desenvolvida especificamente para as necessidades do mercado cultural brasileiro.
+            Tecnologia desenvolvida especificamente para as necessidades do
+            mercado cultural brasileiro.
           </p>
         </motion.div>
 
@@ -97,7 +102,6 @@ export default function TestimonialsSection() {
                 className="group"
               >
                 <div className="relative p-6 rounded-[20px] backdrop-blur-[15px] bg-white/25 dark:bg-black/25 border border-white/30 dark:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.5),inset_0_-1px_0_rgba(255,255,255,0.1)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-1px_0_rgba(255,255,255,0.05)] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_16px_48px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_16px_48px_rgba(0,0,0,0.4)] overflow-hidden before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/60 before:to-transparent">
-                  
                   <div className="flex items-start mb-4">
                     <div className="w-12 h-12 rounded-xl backdrop-blur-sm bg-brand-navy-blue/20 dark:bg-brand-yellow/20 border border-brand-navy-blue/30 dark:border-brand-yellow/30 flex items-center justify-center mr-4 flex-shrink-0">
                       <IconComponent className="w-6 h-6 text-brand-navy-blue dark:text-brand-yellow" />
@@ -131,7 +135,6 @@ export default function TestimonialsSection() {
                 className="group"
               >
                 <div className="relative p-8 rounded-[24px] backdrop-blur-[15px] bg-white/30 dark:bg-black/30 border border-white/40 dark:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.6),inset_0_-1px_0_rgba(255,255,255,0.2)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_48px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_16px_48px_rgba(0,0,0,0.4)] overflow-hidden before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/80 before:to-transparent">
-                  
                   <div className="flex items-center mb-6">
                     <div className="w-14 h-14 rounded-xl backdrop-blur-sm bg-brand-navy-blue/20 dark:bg-brand-yellow/20 border border-brand-navy-blue/30 dark:border-brand-yellow/30 flex items-center justify-center mr-4">
                       <IconComponent className="w-7 h-7 text-brand-navy-blue dark:text-brand-yellow" />
@@ -140,7 +143,7 @@ export default function TestimonialsSection() {
                       {benefit.title}
                     </h3>
                   </div>
-                  
+
                   <ul className="space-y-3">
                     {benefit.features.map((feature, featureIndex) => (
                       <li key={featureIndex} className="flex items-start">
@@ -172,9 +175,10 @@ export default function TestimonialsSection() {
             </h3>
           </div>
           <p className="text-lg text-brand-black/80 dark:text-brand-white/80 max-w-3xl mx-auto leading-relaxed">
-            Democratizar o acesso a oportunidades no mercado cultural, criando um ecossistema 
-            onde o talento encontra reconhecimento e as empresas descobrem profissionais 
-            excepcionais que transformam projetos em arte.
+            Democratizar o acesso a oportunidades no mercado cultural, criando
+            um ecossistema onde o talento encontra reconhecimento e as empresas
+            descobrem profissionais excepcionais que transformam projetos em
+            arte.
           </p>
         </motion.div>
       </div>
