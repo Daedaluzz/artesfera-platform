@@ -2,10 +2,12 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Calendar, MapPin, Plus, X } from "lucide-react";
+import Image from "next/image";
+import { ArrowLeft, Calendar, MapPin, Plus, X, Image as ImageIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import {
   createProject,
+  updateProject,
   generateProjectSlug,
   type CreateProjectData,
 } from "@/lib/firestoreProjects";
@@ -14,6 +16,7 @@ import { PrimaryButton } from "@/components/ui/primary-button";
 import { SecondaryButton } from "@/components/ui/secondary-button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 // Location options
 const ESTADOS_BRASILEIROS = [
@@ -79,6 +82,7 @@ interface FormData {
   paymentAmount: string;
   paymentCurrency: string;
   paymentRaw: string;
+  images: string[];
 }
 
 export default function CreateProject() {
@@ -98,10 +102,13 @@ export default function CreateProject() {
     paymentAmount: "",
     paymentCurrency: "BRL",
     paymentRaw: "",
+    images: [],
   });
 
   const [newTag, setNewTag] = useState("");
   const [loading, setLoading] = useState(false);
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [uploadingImages, setUploadingImages] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Check if user is logged in
@@ -134,6 +141,39 @@ export default function CreateProject() {
       ...prev,
       tags: prev.tags.filter((tag) => tag !== tagToRemove),
     }));
+  };
+
+  // Handle image selection
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    const imageFiles = Array.from(files).filter(file => {
+      const isImage = file.type.startsWith('image/');
+      const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB limit
+      return isImage && isValidSize;
+    });
+
+    setSelectedImages(prev => [...prev, ...imageFiles].slice(0, 5)); // Max 5 images
+  };
+
+  // Remove selected image
+  const removeSelectedImage = (index: number) => {
+    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // Upload images to Firebase Storage
+  const uploadImages = async (projectId: string): Promise<string[]> => {
+    if (selectedImages.length === 0) return [];
+
+    const storage = getStorage();
+    const uploadPromises = selectedImages.map(async (file, index) => {
+      const imageRef = ref(storage, `project-images/${projectId}/${Date.now()}-${index}`);
+      await uploadBytes(imageRef, file);
+      return getDownloadURL(imageRef);
+    });
+
+    return Promise.all(uploadPromises);
   };
 
   // Validate form
@@ -213,7 +253,7 @@ export default function CreateProject() {
         payment.raw = formData.paymentRaw;
       }
 
-      // Prepare project data
+      // Create project first to get ID
       const projectData: CreateProjectData = {
         title: formData.title.trim(),
         description: formData.description.trim(),
@@ -226,8 +266,19 @@ export default function CreateProject() {
         payment,
       };
 
-      // Create project
       const projectId = await createProject(projectData, user.uid);
+
+      // Upload images if any
+      if (selectedImages.length > 0) {
+        setUploadingImages(true);
+        const imageUrls = await uploadImages(projectId);
+        
+        // Update project with image URLs
+        if (imageUrls.length > 0) {
+          const updateData = { images: imageUrls };
+          await updateProject(projectId, updateData, user.uid);
+        }
+      }
 
       // Generate slug and redirect
       const slug = generateProjectSlug(projectData.title, projectId);
@@ -238,6 +289,7 @@ export default function CreateProject() {
       alert(message || "Erro ao criar projeto. Tente novamente.");
     } finally {
       setLoading(false);
+      setUploadingImages(false);
     }
   };
 
@@ -668,7 +720,7 @@ export default function CreateProject() {
                           <button
                             type="button"
                             onClick={() => removeTag(tag)}
-                            className="ml-1 hover:text-red-600 dark:hover:text-red-400"
+                            className="ml-1 hover:text-red-600 dark:hover:text-red-400 cursor-pointer"
                           >
                             <X className="w-3 h-3" />
                           </button>
@@ -679,6 +731,72 @@ export default function CreateProject() {
 
                   <p className="text-xs text-zinc-500 dark:text-zinc-400">
                     {formData.tags.length}/10 tags
+                  </p>
+                </div>
+              </div>
+
+              {/* Image Upload */}
+              <div className="rounded-xl backdrop-blur-md bg-white/10 dark:bg-zinc-800/10 border border-white/20 dark:border-zinc-700/30 p-6">
+                <h2 className="text-xl font-semibold text-zinc-800 dark:text-zinc-200 mb-4">
+                  Imagens do Projeto
+                </h2>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
+                  Adicione imagens para mostrar seu projeto (máximo 5 imagens, até 5MB cada)
+                </p>
+
+                <div className="space-y-4">
+                  {/* Upload Button */}
+                  <div className="relative">
+                    <input
+                      type="file"
+                      id="image-upload"
+                      multiple
+                      accept="image/*"
+                      onChange={handleImageSelect}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                    <div className="border-2 border-dashed border-white/30 dark:border-zinc-600/30 rounded-lg p-8 text-center hover:border-brand-yellow/50 dark:hover:border-brand-yellow/50 transition-colors cursor-pointer">
+                      <ImageIcon className="w-12 h-12 mx-auto mb-4 text-zinc-400 dark:text-zinc-500" />
+                      <p className="text-zinc-600 dark:text-zinc-400 mb-2">
+                        Clique para selecionar imagens ou arraste e solte aqui
+                      </p>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-500">
+                        PNG, JPG, JPEG até 5MB
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Image Previews */}
+                  {selectedImages.length > 0 && (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                      {selectedImages.map((file, index) => (
+                        <div key={index} className="relative group">
+                          <div className="aspect-square rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+                            <Image
+                              src={URL.createObjectURL(file)}
+                              alt={`Preview ${index + 1}`}
+                              width={200}
+                              height={200}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeSelectedImage(index)}
+                            className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors cursor-pointer"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                          <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white p-1 text-xs truncate">
+                            {file.name}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    {selectedImages.length}/5 imagens selecionadas
                   </p>
                 </div>
               </div>
@@ -747,7 +865,7 @@ export default function CreateProject() {
                   disabled={loading}
                   className="w-full"
                 >
-                  {loading ? "Criando Projeto..." : "Criar Projeto"}
+                  {uploadingImages ? "Enviando Imagens..." : loading ? "Criando Projeto..." : "Criar Projeto"}
                 </PrimaryButton>
 
                 <SecondaryButton

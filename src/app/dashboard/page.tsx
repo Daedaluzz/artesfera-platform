@@ -109,7 +109,7 @@ function DashboardContent() {
             </div>
             <button
               onClick={handleSignOut}
-              className="flex items-center gap-2 px-4 py-2 rounded-[12px] backdrop-blur-[10px] bg-white/[0.1] dark:bg-black/10 border border-white/[0.2] dark:border-white/10 text-brand-black dark:text-brand-white hover:bg-white/[0.2] dark:hover:bg-black/20 transition-all duration-200"
+              className="flex items-center gap-2 px-4 py-2 rounded-[12px] backdrop-blur-[10px] bg-white/[0.1] dark:bg-black/10 border border-white/[0.2] dark:border-white/10 text-brand-black dark:text-brand-white hover:bg-white/[0.2] dark:hover:bg-black/20 transition-all duration-200 cursor-pointer"
             >
               <LogOut className="w-4 h-4" />
               Sair
@@ -137,7 +137,7 @@ function DashboardContent() {
                 </h3>
               </div>
               <Link href="/projects/create">
-                <button className="flex items-center gap-2 px-4 py-2 rounded-[12px] backdrop-blur-[10px] bg-white/[0.1] dark:bg-black/10 border border-white/[0.2] dark:border-white/10 text-brand-black dark:text-brand-white hover:bg-white/[0.2] dark:hover:bg-black/20 transition-all duration-200">
+                <button className="flex items-center gap-2 px-4 py-2 rounded-[12px] backdrop-blur-[10px] bg-white/[0.1] dark:bg-black/10 border border-white/[0.2] dark:border-white/10 text-brand-black dark:text-brand-white hover:bg-white/[0.2] dark:hover:bg-black/20 transition-all duration-200 cursor-pointer">
                   <Plus className="w-4 h-4" />
                   Criar Projeto
                 </button>
@@ -164,7 +164,7 @@ function DashboardContent() {
                         Nenhum projeto criado ainda
                       </p>
                       <Link href="/projects/create">
-                        <button className="px-3 py-2 text-sm rounded-lg bg-brand-navy-blue/20 dark:bg-brand-yellow/20 text-brand-navy-blue dark:text-brand-yellow hover:bg-brand-navy-blue/30 dark:hover:bg-brand-yellow/30 transition-colors">
+                        <button className="px-3 py-2 text-sm rounded-lg bg-brand-navy-blue/20 dark:bg-brand-yellow/20 text-brand-navy-blue dark:text-brand-yellow hover:bg-brand-navy-blue/30 dark:hover:bg-brand-yellow/30 transition-colors cursor-pointer">
                           Criar Primeiro Projeto
                         </button>
                       </Link>
@@ -231,7 +231,7 @@ function DashboardContent() {
                         Nenhuma candidatura enviada ainda
                       </p>
                       <Link href="/projects">
-                        <button className="px-3 py-2 text-sm rounded-lg bg-brand-navy-blue/20 dark:bg-brand-yellow/20 text-brand-navy-blue dark:text-brand-yellow hover:bg-brand-navy-blue/30 dark:hover:bg-brand-yellow/30 transition-colors">
+                        <button className="px-3 py-2 text-sm rounded-lg bg-brand-navy-blue/20 dark:bg-brand-yellow/20 text-brand-navy-blue dark:text-brand-yellow hover:bg-brand-navy-blue/30 dark:hover:bg-brand-yellow/30 transition-colors cursor-pointer">
                           Explorar Projetos
                         </button>
                       </Link>

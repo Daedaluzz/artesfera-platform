@@ -61,6 +61,7 @@ export interface Project {
   };
   status: "open" | "closed";
   applicantsCount: number;
+  images?: string[];
 }
 
 export interface CreateProjectData {
@@ -78,6 +79,7 @@ export interface CreateProjectData {
     mode: "currency" | "a_combinar" | "other";
     raw?: string;
   };
+  images?: string[];
 }
 
 export interface UpdateProjectData

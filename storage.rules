@@ -173,6 +173,7 @@ service firebase.storage {
     match /project-images/{projectId}/{imageId} {
       allow read: if true; // Public access for project showcase
       allow write: if isAuthenticated() &&
+                    isValidImageFile() &&
                     isUnderSizeLimit(10) && // 10MB limit for project images
                     (firestore.get(
                       /databases/(default)/documents/projects/$(projectId)
