@@ -544,7 +544,7 @@ export default function ProjectDetail({ projectId }: ProjectDetailProps) {
                     <div className="text-sm text-zinc-600 dark:text-zinc-400">
                       Remuneração
                     </div>
-                    <div className="font-semibold text-zinc-800 dark:text-zinc-200">
+                    <div className="font-semibold text-green-600 dark:text-green-400">
                       {formatPayment(project.payment)}
                     </div>
                   </div>

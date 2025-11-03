@@ -1100,7 +1100,7 @@ export default function Profile() {
                                   <MapPin className="w-3 h-3" />
                                   {project.city}, {project.state}
                                 </span>
-                                <span className="flex items-center gap-1">
+                                <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
                                   <Clock className="w-3 h-3" />
                                   {formatPayment(project.payment)}
                                 </span>

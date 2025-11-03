@@ -160,7 +160,7 @@ function ProjectCard({ project }: ProjectCardProps) {
               </div>
 
               <div className="text-right">
-                <div className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                <div className="text-sm font-medium text-green-600 dark:text-green-400">
                   {formatPayment(project.payment)}
                 </div>
                 <div

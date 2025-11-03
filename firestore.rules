@@ -137,6 +137,14 @@ service cloud.firestore {
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['applicantsCount', 'updatedAt']) &&
         // Ensure applicantsCount is being incremented (not decremented or set to arbitrary value)
         request.resource.data.applicantsCount > resource.data.applicantsCount;
+      // Allow authenticated users to decrement applicantsCount when withdrawing applications
+      allow update: if isAuthenticated() && 
+        // Only allow updating applicantsCount and updatedAt fields
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['applicantsCount', 'updatedAt']) &&
+        // Ensure applicantsCount is being decremented (withdrawal)
+        request.resource.data.applicantsCount < resource.data.applicantsCount &&
+        // Ensure it's not going below 0
+        request.resource.data.applicantsCount >= 0;
       // Project applications subcollection
       match /applications/{applicationId} {
         allow read: if isAuthenticated() && (
@@ -186,9 +194,11 @@ service cloud.firestore {
       allow delete: if isAuthenticated() && resource.data.userUid == request.auth.uid;
     }
 
-    // Collection group rule for applications (enables getUserApplications)
+    // Collection group rule for applications (enables getUserApplications and withdrawal)
     match /{path=**}/applications/{applicationId} {
       allow read: if isAuthenticated() && 
+        resource.data.applicantUid == request.auth.uid;
+      allow update: if isAuthenticated() && 
         resource.data.applicantUid == request.auth.uid;
     }
 

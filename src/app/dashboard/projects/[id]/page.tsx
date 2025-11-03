@@ -285,7 +285,7 @@ function ProjectManagementContent() {
                   <label className="block text-sm font-medium text-brand-black dark:text-brand-white mb-1">
                     Pagamento
                   </label>
-                  <div className="flex items-center gap-1 text-sm text-brand-black/70 dark:text-brand-white/70">
+                  <div className="flex items-center gap-1 text-sm text-green-600 dark:text-green-400">
                     <DollarSign className="w-4 h-4" />
                     {formatPayment(project.payment)}
                   </div>
