@@ -246,17 +246,19 @@ async function deleteProjectImages(projectId: string): Promise<void> {
   try {
     const storage = getStorage();
     const projectImagesRef = ref(storage, `project-images/${projectId}`);
-    
+
     // List all files in the project images folder
     const listResult = await listAll(projectImagesRef);
-    
+
     // Delete all images
-    const deletePromises = listResult.items.map((imageRef) => 
+    const deletePromises = listResult.items.map((imageRef) =>
       deleteObject(imageRef)
     );
-    
+
     await Promise.all(deletePromises);
-    console.log(`✅ Deleted ${listResult.items.length} images for project: ${projectId}`);
+    console.log(
+      `✅ Deleted ${listResult.items.length} images for project: ${projectId}`
+    );
   } catch (error) {
     console.error("Error deleting project images:", error);
     // Don't throw here - we still want to delete the project even if image deletion fails
@@ -279,12 +281,7 @@ export async function deleteProject(
 
     // Get all applications outside the transaction
     const applicationsQuery = query(
-      collection(
-        db,
-        COLLECTIONS.PROJECTS,
-        projectId,
-        COLLECTIONS.APPLICATIONS
-      )
+      collection(db, COLLECTIONS.PROJECTS, projectId, COLLECTIONS.APPLICATIONS)
     );
     const applicationsSnapshot = await getDocs(applicationsQuery);
 

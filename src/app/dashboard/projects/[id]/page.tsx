@@ -153,8 +153,8 @@ function ProjectManagementContent() {
 
   const handleManageApplications = () => {
     // Scroll to applications section
-    const applicationsSection = document.querySelector('[data-applications]');
-    applicationsSection?.scrollIntoView({ behavior: 'smooth' });
+    const applicationsSection = document.querySelector("[data-applications]");
+    applicationsSection?.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleDeleteProject = async () => {
@@ -169,7 +169,7 @@ function ProjectManagementContent() {
     try {
       setDeletingProject(true);
       await deleteProject(project.id, user.uid);
-      router.push('/dashboard');
+      router.push("/dashboard");
     } catch (error) {
       console.error("Error deleting project:", error);
       alert("Erro ao excluir projeto. Tente novamente.");
@@ -339,7 +339,7 @@ function ProjectManagementContent() {
               </h3>
 
               <div className="space-y-3">
-                <SecondaryButton 
+                <SecondaryButton
                   onClick={handleEditProject}
                   className="w-full flex items-center gap-2"
                 >
@@ -347,7 +347,7 @@ function ProjectManagementContent() {
                   Editar Projeto
                 </SecondaryButton>
 
-                <SecondaryButton 
+                <SecondaryButton
                   onClick={handleManageApplications}
                   className="w-full flex items-center gap-2"
                 >
@@ -355,7 +355,7 @@ function ProjectManagementContent() {
                   Gerenciar Candidaturas
                 </SecondaryButton>
 
-                <SecondaryButton 
+                <SecondaryButton
                   onClick={handleDeleteProject}
                   disabled={deletingProject}
                   className="w-full flex items-center gap-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"

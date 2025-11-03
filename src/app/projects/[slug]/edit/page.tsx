@@ -74,25 +74,28 @@ export default function EditProject() {
         const projectData = await getProject(projectId);
 
         if (!projectData) {
-          router.push('/dashboard');
+          router.push("/dashboard");
           return;
         }
 
         // Check if user owns this project
         if (projectData.createdBy !== user.uid) {
-          router.push('/dashboard');
+          router.push("/dashboard");
           return;
         }
 
         setProject(projectData);
-        
+
         // Set existing images
         setExistingImages(projectData.images || []);
-        
+
         // Populate form with project data
-        const deadline = projectData.applicationDeadline instanceof Date 
-          ? projectData.applicationDeadline 
-          : (projectData.applicationDeadline as { toDate?: () => Date })?.toDate?.() || new Date();
+        const deadline =
+          projectData.applicationDeadline instanceof Date
+            ? projectData.applicationDeadline
+            : (
+                projectData.applicationDeadline as { toDate?: () => Date }
+              )?.toDate?.() || new Date();
 
         setFormData({
           title: projectData.title,
@@ -100,7 +103,7 @@ export default function EditProject() {
           city: projectData.city,
           state: projectData.state,
           duration: projectData.duration,
-          applicationDeadline: deadline.toISOString().split('T')[0],
+          applicationDeadline: deadline.toISOString().split("T")[0],
           tags: projectData.tags || [],
           type: projectData.type,
           paymentMode: projectData.payment.mode,
@@ -111,7 +114,7 @@ export default function EditProject() {
         });
       } catch (error) {
         console.error("Error loading project:", error);
-        router.push('/dashboard');
+        router.push("/dashboard");
       } finally {
         setLoading(false);
       }
@@ -140,10 +143,14 @@ export default function EditProject() {
       return isImage && isValidSize;
     });
 
-    const totalImages = existingImages.length + selectedImages.length + imageFiles.length;
+    const totalImages =
+      existingImages.length + selectedImages.length + imageFiles.length;
     if (totalImages > 5) {
       const availableSlots = 5 - existingImages.length - selectedImages.length;
-      setSelectedImages((prev) => [...prev, ...imageFiles.slice(0, availableSlots)]);
+      setSelectedImages((prev) => [
+        ...prev,
+        ...imageFiles.slice(0, availableSlots),
+      ]);
     } else {
       setSelectedImages((prev) => [...prev, ...imageFiles]);
     }
@@ -217,7 +224,10 @@ export default function EditProject() {
       if (!formData.paymentAmount || parseFloat(formData.paymentAmount) <= 0) {
         newErrors.paymentAmount = "Valor deve ser maior que zero";
       }
-    } else if (formData.paymentMode === "other" && !formData.paymentRaw.trim()) {
+    } else if (
+      formData.paymentMode === "other" &&
+      !formData.paymentRaw.trim()
+    ) {
       newErrors.paymentRaw = "Descrição do pagamento é obrigatória";
     }
 
@@ -301,7 +311,9 @@ export default function EditProject() {
       <div className="min-h-screen bg-gradient-to-br from-zinc-50 via-white to-zinc-100 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-800 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-yellow mx-auto mb-4"></div>
-          <p className="text-zinc-600 dark:text-zinc-400">Carregando projeto...</p>
+          <p className="text-zinc-600 dark:text-zinc-400">
+            Carregando projeto...
+          </p>
         </div>
       </div>
     );
@@ -362,7 +374,9 @@ export default function EditProject() {
                       maxLength={100}
                     />
                     {errors.title && (
-                      <p className="text-red-500 text-sm mt-1">{errors.title}</p>
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.title}
+                      </p>
                     )}
                     <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                       {formData.title.length}/100 caracteres
@@ -375,14 +389,18 @@ export default function EditProject() {
                     </label>
                     <textarea
                       value={formData.description}
-                      onChange={(e) => handleChange("description", e.target.value)}
+                      onChange={(e) =>
+                        handleChange("description", e.target.value)
+                      }
                       placeholder="Descreva detalhadamente o que você precisa..."
                       rows={6}
                       className="w-full px-4 py-3 rounded-lg backdrop-blur-sm bg-white/50 dark:bg-zinc-700/50 border border-white/30 dark:border-zinc-600/30 text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-brand-yellow/50 resize-none"
                       maxLength={2000}
                     />
                     {errors.description && (
-                      <p className="text-red-500 text-sm mt-1">{errors.description}</p>
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.description}
+                      </p>
                     )}
                     <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                       {formData.description.length}/2000 caracteres
@@ -396,7 +414,7 @@ export default function EditProject() {
                 <h2 className="text-xl font-semibold text-zinc-800 dark:text-zinc-200 mb-4">
                   Status do Projeto
                 </h2>
-                
+
                 <div className="space-y-3">
                   <label className="flex items-center gap-3 p-3 rounded-lg border border-white/20 dark:border-zinc-700/30 hover:bg-white/10 dark:hover:bg-zinc-700/20 transition-colors cursor-pointer">
                     <input
@@ -444,7 +462,8 @@ export default function EditProject() {
                   Imagens do Projeto
                 </h2>
                 <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
-                  Adicione ou remova imagens do seu projeto (máximo 5 imagens, até 5MB cada)
+                  Adicione ou remova imagens do seu projeto (máximo 5 imagens,
+                  até 5MB cada)
                 </p>
 
                 <div className="space-y-4">
@@ -480,7 +499,7 @@ export default function EditProject() {
                   )}
 
                   {/* Upload New Images */}
-                  {(existingImages.length + selectedImages.length) < 5 && (
+                  {existingImages.length + selectedImages.length < 5 && (
                     <div className="space-y-2">
                       <h3 className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
                         Adicionar Novas Imagens
@@ -497,7 +516,8 @@ export default function EditProject() {
                         <div className="border-2 border-dashed border-white/30 dark:border-zinc-600/30 rounded-lg p-8 text-center hover:border-brand-yellow/50 dark:hover:border-brand-yellow/50 transition-colors cursor-pointer">
                           <ImageIcon className="w-12 h-12 mx-auto mb-4 text-zinc-400 dark:text-zinc-500" />
                           <p className="text-zinc-600 dark:text-zinc-400 mb-2">
-                            Clique para selecionar imagens ou arraste e solte aqui
+                            Clique para selecionar imagens ou arraste e solte
+                            aqui
                           </p>
                           <p className="text-xs text-zinc-500 dark:text-zinc-500">
                             PNG, JPG, JPEG até 5MB
@@ -558,7 +578,9 @@ export default function EditProject() {
               <div className="flex gap-3">
                 <SecondaryButton
                   type="button"
-                  onClick={() => router.push(`/dashboard/projects/${project.id}`)}
+                  onClick={() =>
+                    router.push(`/dashboard/projects/${project.id}`)
+                  }
                   disabled={saving}
                   className="flex-1"
                 >
