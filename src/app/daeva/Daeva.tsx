@@ -262,7 +262,7 @@ export default function Daeva() {
       const requestBody: Record<string, unknown> = {
         message,
         specialization,
-        stream: true, // Enable streaming
+        stream: false, // Temporarily disable streaming for debugging
       };
 
       // Include document data if available
@@ -270,6 +270,9 @@ export default function Daeva() {
         requestBody.documentText = document.extractedText;
         requestBody.documentName = document.fileName;
       }
+
+      console.log("Sending request to:", currentConfig.apiEndpoint);
+      console.log("Request body:", requestBody);
 
       const response = await fetch(currentConfig.apiEndpoint, {
         method: "POST",
@@ -279,52 +282,36 @@ export default function Daeva() {
         body: JSON.stringify(requestBody),
       });
 
+      console.log("Response status:", response.status);
+      console.log("Response headers:", response.headers);
+
       if (!response.ok) {
-        throw new Error("Failed to get response from API");
+        const errorText = await response.text();
+        console.error("API Error Response:", errorText);
+        throw new Error(`Failed to get response from API: ${response.status}`);
       }
 
-      // Handle streaming response
-      if (response.headers.get("content-type")?.includes("text/event-stream")) {
-        const reader = response.body?.getReader();
-        const decoder = new TextDecoder();
-        let fullContent = "";
+      // Handle regular JSON response
+      const data = await response.json();
+      console.log("API Response data:", data);
 
-        if (reader) {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            const chunk = decoder.decode(value);
-            const lines = chunk.split("\n");
-
-            for (const line of lines) {
-              if (line.startsWith("data: ")) {
-                try {
-                  const data = JSON.parse(line.slice(6));
-                  if (data.content) {
-                    fullContent += data.content;
-                    if (onChunk) {
-                      onChunk(data.content);
-                    }
-                  }
-                } catch {
-                  // Skip invalid JSON
-                }
-              }
-            }
+      if (data.content) {
+        // Simulate typing effect if onChunk is provided
+        if (onChunk) {
+          const content = data.content;
+          for (let i = 0; i < content.length; i += 3) {
+            const chunk = content.slice(i, i + 3);
+            onChunk(chunk);
+            await new Promise((resolve) => setTimeout(resolve, 30)); // 30ms delay between chunks
           }
         }
-
-        return fullContent;
+        return data.content;
       } else {
-        // Fallback to regular response
-        const data = await response.json();
-        return data.content || "Desculpe, ocorreu um erro. Tente novamente.";
+        throw new Error("No content in API response");
       }
     } catch (error) {
       console.error("API Error:", error);
-      // Fallback to simulated response for now
-      return currentConfig.welcomeMessage;
+      throw error; // Re-throw to be handled by caller
     }
   };
 

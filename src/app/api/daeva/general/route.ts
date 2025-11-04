@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, documentText, documentName, stream = true } = await request.json();
+    const {
+      message,
+      documentText,
+      documentName,
+      stream = false, // Temporarily disable streaming to debug
+    } = await request.json();
 
     if (!message || typeof message !== "string") {
       return NextResponse.json({ error: "Mensagem inválida" }, { status: 400 });
@@ -44,13 +49,13 @@ Com base neste documento, forneça orientações específicas e práticas para o
 
 Pergunta do usuário: ${message}`;
 
-    // Google Gemini API call with streaming support
+    console.log("API Key exists:", !!process.env.LLM_API_KEY);
+    console.log("Model:", process.env.LLM_MODEL);
+    console.log("Temperature:", process.env.LLM_TEMPERATURE);
+
+    // Google Gemini API call - simplified for debugging
     const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${
-        process.env.LLM_MODEL
-      }:${stream ? "streamGenerateContent" : "generateContent"}?key=${
-        process.env.LLM_API_KEY
-      }`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${process.env.LLM_MODEL}:generateContent?key=${process.env.LLM_API_KEY}`,
       {
         method: "POST",
         headers: {
@@ -74,71 +79,24 @@ Pergunta do usuário: ${message}`;
       }
     );
 
+    console.log("Gemini response status:", geminiResponse.status);
+
     if (!geminiResponse.ok) {
-      throw new Error(`Gemini API error: ${geminiResponse.status}`);
-    }
-
-    // Handle streaming response
-    if (stream && geminiResponse.body) {
-      const encoder = new TextEncoder();
-      const decoder = new TextDecoder();
-
-      const readableStream = new ReadableStream({
-        async start(controller) {
-          const reader = geminiResponse.body!.getReader();
-
-          try {
-            while (true) {
-              const { done, value } = await reader.read();
-
-              if (done) {
-                controller.close();
-                break;
-              }
-
-              const chunk = decoder.decode(value);
-              const lines = chunk.split("\n");
-
-              for (const line of lines) {
-                if (line.startsWith("data: ")) {
-                  try {
-                    const data = JSON.parse(line.slice(6));
-                    const content =
-                      data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-                    if (content) {
-                      controller.enqueue(
-                        encoder.encode(
-                          `data: ${JSON.stringify({ content })}\n\n`
-                        )
-                      );
-                    }
-                  } catch {
-                    // Skip invalid JSON lines
-                  }
-                }
-              }
-            }
-          } catch (error) {
-            controller.error(error);
-          }
-        },
-      });
-
-      return new Response(readableStream, {
-        headers: {
-          "Content-Type": "text/event-stream",
-          "Cache-Control": "no-cache",
-          Connection: "keep-alive",
-        },
-      });
+      const errorText = await geminiResponse.text();
+      console.error("Gemini API error:", errorText);
+      throw new Error(
+        `Gemini API error: ${geminiResponse.status} - ${errorText}`
+      );
     }
 
     // Handle regular response
     const data = await geminiResponse.json();
+    console.log("Gemini response data:", JSON.stringify(data, null, 2));
+
     const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!content) {
+      console.error("No content in response:", data);
       throw new Error("No content received from Gemini API");
     }
 
