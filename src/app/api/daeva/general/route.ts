@@ -73,8 +73,28 @@ Pergunta do usuário: ${message}`;
           ],
           generationConfig: {
             temperature: parseFloat(process.env.LLM_TEMPERATURE || "0.7"),
-            maxOutputTokens: 1500,
+            maxOutputTokens: 4000, // Increased token limit for longer responses
+            topP: 0.95, // Add topP for better generation
+            topK: 40, // Add topK for more diverse responses
           },
+          safetySettings: [
+            {
+              category: "HARM_CATEGORY_HARASSMENT",
+              threshold: "BLOCK_MEDIUM_AND_ABOVE"
+            },
+            {
+              category: "HARM_CATEGORY_HATE_SPEECH", 
+              threshold: "BLOCK_MEDIUM_AND_ABOVE"
+            },
+            {
+              category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+              threshold: "BLOCK_MEDIUM_AND_ABOVE"
+            },
+            {
+              category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+              threshold: "BLOCK_MEDIUM_AND_ABOVE"
+            }
+          ]
         }),
       }
     );
@@ -93,7 +113,18 @@ Pergunta do usuário: ${message}`;
     const data = await geminiResponse.json();
     console.log("Gemini response data:", JSON.stringify(data, null, 2));
 
-    const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    const candidate = data.candidates?.[0];
+    const content = candidate?.content?.parts?.[0]?.text;
+    
+    // Check for finish reason to understand why generation stopped
+    const finishReason = candidate?.finishReason;
+    console.log("Finish reason:", finishReason);
+    
+    if (finishReason === "MAX_TOKENS") {
+      console.warn("Response truncated due to token limit");
+    } else if (finishReason === "SAFETY") {
+      console.warn("Response blocked by safety filters");
+    }
 
     if (!content) {
       console.error("No content in response:", data);
@@ -104,6 +135,7 @@ Pergunta do usuário: ${message}`;
       content,
       hasDocument: !!(documentText && documentName),
       documentName: documentName || null,
+      finishReason: finishReason || "STOP", // Include finish reason for debugging
     });
   } catch (error) {
     console.error("Error in general Daeva API:", error);

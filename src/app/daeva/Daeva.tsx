@@ -294,6 +294,16 @@ export default function Daeva() {
       // Handle regular JSON response
       const data = await response.json();
       console.log("API Response data:", data);
+      
+      // Log finish reason for debugging truncated responses
+      if (data.finishReason) {
+        console.log("Response finish reason:", data.finishReason);
+        if (data.finishReason === "MAX_TOKENS") {
+          console.warn("Response was truncated due to token limit");
+        } else if (data.finishReason === "SAFETY") {
+          console.warn("Response was blocked by safety filters");
+        }
+      }
 
       if (data.content) {
         // Simulate typing effect if onChunk is provided
