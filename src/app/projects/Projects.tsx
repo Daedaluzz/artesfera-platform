@@ -193,7 +193,7 @@ export default function Projects() {
   // Load projects on mount
   useEffect(() => {
     loadProjects();
-  }, []);
+  }, [loadProjects]);
 
   // Handle load more
   const handleLoadMore = useCallback(() => {

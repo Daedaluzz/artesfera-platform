@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
       message,
       documentText,
       documentName,
-      stream = false, // Temporarily disable streaming to debug
+      // stream = false, // Temporarily disable streaming to debug
     } = await request.json();
 
     if (!message || typeof message !== "string") {
