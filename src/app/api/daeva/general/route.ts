@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, documentText, documentName } = await request.json();
+    const { message, documentText, documentName, stream = true } = await request.json();
 
     if (!message || typeof message !== "string") {
       return NextResponse.json({ error: "Mensagem inválida" }, { status: 400 });
     }
 
     // Build specialized prompt for cultural grants assistance
-    let systemPrompt = `Você é a Daeva, uma IA especializada em editais culturais e fomento à cultura no Brasil. Sua missão é ajudar artistas, produtores culturais e fazedores de cultura a entender editais, criar projetos culturais competitivos e navegar nos processos de seleção pública.
+    let systemPrompt = `Você é a Daeva, uma IA especializada em editais culturais e fomento à cultura no Brasil. Continue a conversa de forma natural, sem se reapresentar a cada resposta.
 
 Suas especialidades incluem:
 - Análise e interpretação de editais culturais (Lei Aldir Blanc, ProAC, editais municipais, estaduais e federais)
@@ -25,7 +25,10 @@ Características da sua comunicação:
 - Prática e orientada a resultados
 - Empática com os desafios dos proponentes
 - Conhecedora da realidade cultural brasileira
-- Focada em soluções viáveis`;
+- Focada em soluções viáveis
+- Continue conversas de forma natural, sem se reapresentar
+
+IMPORTANTE: Não se apresente novamente a cada resposta. Responda diretamente à pergunta do usuário de forma conversacional.`;
 
     // Add document context if available
     if (documentText && documentName) {
@@ -41,9 +44,13 @@ Com base neste documento, forneça orientações específicas e práticas para o
 
 Pergunta do usuário: ${message}`;
 
-    // Google Gemini API call
+    // Google Gemini API call with streaming support
     const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${process.env.LLM_MODEL}:generateContent?key=${process.env.LLM_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${
+        process.env.LLM_MODEL
+      }:${stream ? "streamGenerateContent" : "generateContent"}?key=${
+        process.env.LLM_API_KEY
+      }`,
       {
         method: "POST",
         headers: {
@@ -71,6 +78,63 @@ Pergunta do usuário: ${message}`;
       throw new Error(`Gemini API error: ${geminiResponse.status}`);
     }
 
+    // Handle streaming response
+    if (stream && geminiResponse.body) {
+      const encoder = new TextEncoder();
+      const decoder = new TextDecoder();
+
+      const readableStream = new ReadableStream({
+        async start(controller) {
+          const reader = geminiResponse.body!.getReader();
+
+          try {
+            while (true) {
+              const { done, value } = await reader.read();
+
+              if (done) {
+                controller.close();
+                break;
+              }
+
+              const chunk = decoder.decode(value);
+              const lines = chunk.split("\n");
+
+              for (const line of lines) {
+                if (line.startsWith("data: ")) {
+                  try {
+                    const data = JSON.parse(line.slice(6));
+                    const content =
+                      data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                    if (content) {
+                      controller.enqueue(
+                        encoder.encode(
+                          `data: ${JSON.stringify({ content })}\n\n`
+                        )
+                      );
+                    }
+                  } catch {
+                    // Skip invalid JSON lines
+                  }
+                }
+              }
+            }
+          } catch (error) {
+            controller.error(error);
+          }
+        },
+      });
+
+      return new Response(readableStream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
+        },
+      });
+    }
+
+    // Handle regular response
     const data = await geminiResponse.json();
     const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
@@ -78,10 +142,10 @@ Pergunta do usuário: ${message}`;
       throw new Error("No content received from Gemini API");
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       content,
       hasDocument: !!(documentText && documentName),
-      documentName: documentName || null
+      documentName: documentName || null,
     });
   } catch (error) {
     console.error("Error in general Daeva API:", error);

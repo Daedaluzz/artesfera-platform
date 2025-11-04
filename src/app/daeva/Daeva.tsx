@@ -66,7 +66,8 @@ const specializationConfigs: Record<SpecializationType, SpecializationConfig> =
   {
     general: {
       title: "Daeva AI",
-      subtitle: "Assistente especializada em editais culturais e fomento à cultura",
+      subtitle:
+        "Assistente especializada em editais culturais e fomento à cultura",
       icon: Sparkles,
       placeholder: "Digite sua mensagem para a Daeva...",
       apiEndpoint: "/api/daeva/general",
@@ -75,7 +76,10 @@ const specializationConfigs: Record<SpecializationType, SpecializationConfig> =
       suggestions: [
         { icon: Upload, text: "Como analisar um edital cultural?" },
         { icon: FileText, text: "Quais documentos preciso para me inscrever?" },
-        { icon: DollarSign, text: "Como fazer um orçamento para projeto cultural?" },
+        {
+          icon: DollarSign,
+          text: "Como fazer um orçamento para projeto cultural?",
+        },
         { icon: Star, text: "Dicas para um projeto ser aprovado" },
       ],
     },
@@ -204,7 +208,8 @@ export default function Daeva() {
   const [isLoading, setIsLoading] = useState(false);
   const [showTitle, setShowTitle] = useState(true);
   const [hasInteracted, setHasInteracted] = useState(false);
-  const [uploadedDocument, setUploadedDocument] = useState<UploadedDocument | null>(null);
+  const [uploadedDocument, setUploadedDocument] =
+    useState<UploadedDocument | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -249,18 +254,21 @@ export default function Daeva() {
   // Dynamic API call based on specialization
   const sendMessageToAPI = async (
     message: string,
-    specialization: SpecializationType
+    specialization: SpecializationType,
+    document?: UploadedDocument | null,
+    onChunk?: (chunk: string) => void
   ) => {
     try {
       const requestBody: Record<string, unknown> = {
         message,
         specialization,
+        stream: true, // Enable streaming
       };
 
       // Include document data if available
-      if (uploadedDocument) {
-        requestBody.documentText = uploadedDocument.extractedText;
-        requestBody.documentName = uploadedDocument.fileName;
+      if (document) {
+        requestBody.documentText = document.extractedText;
+        requestBody.documentName = document.fileName;
       }
 
       const response = await fetch(currentConfig.apiEndpoint, {
@@ -275,8 +283,44 @@ export default function Daeva() {
         throw new Error("Failed to get response from API");
       }
 
-      const data = await response.json();
-      return data.content || "Desculpe, ocorreu um erro. Tente novamente.";
+      // Handle streaming response
+      if (response.headers.get("content-type")?.includes("text/event-stream")) {
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+        let fullContent = "";
+
+        if (reader) {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value);
+            const lines = chunk.split("\n");
+
+            for (const line of lines) {
+              if (line.startsWith("data: ")) {
+                try {
+                  const data = JSON.parse(line.slice(6));
+                  if (data.content) {
+                    fullContent += data.content;
+                    if (onChunk) {
+                      onChunk(data.content);
+                    }
+                  }
+                } catch {
+                  // Skip invalid JSON
+                }
+              }
+            }
+          }
+        }
+
+        return fullContent;
+      } else {
+        // Fallback to regular response
+        const data = await response.json();
+        return data.content || "Desculpe, ocorreu um erro. Tente novamente.";
+      }
     } catch (error) {
       console.error("API Error:", error);
       // Fallback to simulated response for now
@@ -307,30 +351,45 @@ export default function Daeva() {
     setInputValue("");
     setIsLoading(true);
 
+    // Create a placeholder assistant message for streaming
+    const assistantMessageId = (Date.now() + 1).toString();
+    const assistantMessage: Message = {
+      id: assistantMessageId,
+      type: "assistant",
+      content: "",
+      timestamp: new Date(),
+    };
+
+    // Add empty assistant message
+    setMessages((prev) => [...prev, assistantMessage]);
+
     try {
-      // Call the appropriate API based on current specialization
-      const assistantContent = await sendMessageToAPI(
+      // Call the API with streaming support
+      await sendMessageToAPI(
         messageContent,
-        specialization
+        specialization,
+        uploadedDocument, // Pass document context
+        (chunk: string) => {
+          // Update the assistant message content with each chunk
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantMessageId
+                ? { ...msg, content: msg.content + chunk }
+                : msg
+            )
+          );
+        }
       );
-
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        type: "assistant",
-        content: assistantContent,
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error("Error sending message:", error);
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        type: "assistant",
-        content: "Desculpe, ocorreu um erro. Tente novamente.",
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, errorMessage]);
+      // Update with error message
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === assistantMessageId
+            ? { ...msg, content: "Desculpe, ocorreu um erro. Tente novamente." }
+            : msg
+        )
+      );
     } finally {
       setIsLoading(false);
     }
@@ -344,7 +403,9 @@ export default function Daeva() {
   };
 
   // Document upload handler
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -399,7 +460,11 @@ Agora posso analisar este edital e ajudá-lo a entender todos os requisitos, cri
       setMessages((prev) => [...prev, systemMessage]);
     } catch (error) {
       console.error("Upload error:", error);
-      alert(error instanceof Error ? error.message : "Erro ao fazer upload do arquivo");
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Erro ao fazer upload do arquivo"
+      );
     } finally {
       setIsUploading(false);
       // Reset the file input
@@ -414,7 +479,8 @@ Agora posso analisar este edital e ajudá-lo a entender todos os requisitos, cri
     const systemMessage: Message = {
       id: Date.now().toString(),
       type: "assistant",
-      content: "📄 Documento removido. Você pode fazer upload de um novo arquivo PDF para análise.",
+      content:
+        "📄 Documento removido. Você pode fazer upload de um novo arquivo PDF para análise.",
       timestamp: new Date(),
     };
     setMessages((prev) => [...prev, systemMessage]);
@@ -718,9 +784,10 @@ Agora posso analisar este edital e ajudá-lo a entender todos os requisitos, cri
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyPress}
-                placeholder={uploadedDocument 
-                  ? "Pergunte sobre o edital carregado..."
-                  : "Digite sua mensagem para a Daeva..."
+                placeholder={
+                  uploadedDocument
+                    ? "Pergunte sobre o edital carregado..."
+                    : "Digite sua mensagem para a Daeva..."
                 }
                 rows={1}
                 className="w-full px-4 py-3 pr-12 bg-transparent border-none outline-none resize-none text-brand-black dark:text-brand-white placeholder:text-brand-black/50 dark:placeholder:text-brand-white/50 text-sm leading-relaxed max-h-28 overflow-y-auto"
@@ -738,8 +805,9 @@ Agora posso analisar este edital e ajudá-lo a entender todos os requisitos, cri
 
             {/* Disclaimer Text */}
             <p className="text-xs text-brand-black/80 dark:text-brand-white/80 text-center mt-2">
-              A Daeva pode analisar editais em PDF e ajudar na elaboração de projetos culturais. 
-              Sempre verifique informações importantes nos documentos oficiais.
+              A Daeva pode analisar editais em PDF e ajudar na elaboração de
+              projetos culturais. Sempre verifique informações importantes nos
+              documentos oficiais.
             </p>
           </div>
         </div>
