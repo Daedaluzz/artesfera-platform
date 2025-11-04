@@ -12,7 +12,6 @@ import {
   Sparkles,
   FileText,
   Handshake,
-  Lightbulb,
   Search,
   DollarSign,
   Calendar,
@@ -21,6 +20,9 @@ import {
   Users,
   TrendingUp,
   Camera,
+  Upload,
+  X,
+  File,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import DaevaSidebar from "@/components/DaevaSidebar";
@@ -30,6 +32,14 @@ interface Message {
   type: "user" | "assistant";
   content: string;
   timestamp: Date;
+  documentName?: string;
+}
+
+interface UploadedDocument {
+  fileName: string;
+  fileSize: number;
+  extractedText: string;
+  pageCount: number;
 }
 
 type SpecializationType =
@@ -56,23 +66,17 @@ const specializationConfigs: Record<SpecializationType, SpecializationConfig> =
   {
     general: {
       title: "Daeva AI",
-      subtitle: "Sua assistente especializada no mercado cultural brasileiro",
+      subtitle: "Assistente especializada em editais culturais e fomento à cultura",
       icon: Sparkles,
       placeholder: "Digite sua mensagem para a Daeva...",
       apiEndpoint: "/api/daeva/general",
       welcomeMessage:
-        "Olá! Sou a Daeva, sua assistente especializada no mercado cultural brasileiro. Como posso ajudá-lo hoje?",
+        "Olá! Sou a Daeva, sua assistente especializada em editais culturais. Faça upload de um edital em PDF e eu ajudo você a entender todos os requisitos e a criar um projeto competitivo!",
       suggestions: [
-        { icon: Brain, text: "Como posso me candidatar a editais culturais?" },
-        { icon: FileText, text: "Ajude-me a criar um projeto cultural" },
-        {
-          icon: Handshake,
-          text: "Preciso de um contrato para colaboração artística",
-        },
-        {
-          icon: Lightbulb,
-          text: "Quais são as tendências do mercado cultural atual?",
-        },
+        { icon: Upload, text: "Como analisar um edital cultural?" },
+        { icon: FileText, text: "Quais documentos preciso para me inscrever?" },
+        { icon: DollarSign, text: "Como fazer um orçamento para projeto cultural?" },
+        { icon: Star, text: "Dicas para um projeto ser aprovado" },
       ],
     },
     editais: {
@@ -200,8 +204,11 @@ export default function Daeva() {
   const [isLoading, setIsLoading] = useState(false);
   const [showTitle, setShowTitle] = useState(true);
   const [hasInteracted, setHasInteracted] = useState(false);
+  const [uploadedDocument, setUploadedDocument] = useState<UploadedDocument | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const currentConfig = specializationConfigs[specialization];
 
@@ -245,16 +252,23 @@ export default function Daeva() {
     specialization: SpecializationType
   ) => {
     try {
+      const requestBody: Record<string, unknown> = {
+        message,
+        specialization,
+      };
+
+      // Include document data if available
+      if (uploadedDocument) {
+        requestBody.documentText = uploadedDocument.extractedText;
+        requestBody.documentName = uploadedDocument.fileName;
+      }
+
       const response = await fetch(currentConfig.apiEndpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          message,
-          specialization,
-          // Add any additional context or parameters here
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -327,6 +341,83 @@ export default function Daeva() {
       e.preventDefault();
       handleSendMessage();
     }
+  };
+
+  // Document upload handler
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (file.type !== "application/pdf") {
+      alert("Apenas arquivos PDF são aceitos.");
+      return;
+    }
+
+    // Validate file size (10MB limit)
+    if (file.size > 10 * 1024 * 1024) {
+      alert("Arquivo muito grande. Limite máximo: 10MB");
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/daeva/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Erro ao fazer upload do arquivo");
+      }
+
+      const result = await response.json();
+      setUploadedDocument(result);
+
+      // Add a system message indicating document was uploaded
+      const systemMessage: Message = {
+        id: Date.now().toString(),
+        type: "assistant",
+        content: `✅ **Documento "${result.fileName}" carregado com sucesso!**
+
+📄 **Informações do documento:**
+- **Páginas:** ${result.pageCount}
+- **Tamanho:** ${(result.fileSize / 1024 / 1024).toFixed(2)} MB
+
+Agora posso analisar este edital e ajudá-lo a entender todos os requisitos, critérios de avaliação e orientá-lo na elaboração de um projeto competitivo. 
+
+**O que você gostaria de saber sobre este edital?**`,
+        timestamp: new Date(),
+        documentName: result.fileName,
+      };
+
+      setMessages((prev) => [...prev, systemMessage]);
+    } catch (error) {
+      console.error("Upload error:", error);
+      alert(error instanceof Error ? error.message : "Erro ao fazer upload do arquivo");
+    } finally {
+      setIsUploading(false);
+      // Reset the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  const removeUploadedDocument = () => {
+    setUploadedDocument(null);
+    const systemMessage: Message = {
+      id: Date.now().toString(),
+      type: "assistant",
+      content: "📄 Documento removido. Você pode fazer upload de um novo arquivo PDF para análise.",
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, systemMessage]);
   };
 
   return (
@@ -567,13 +658,70 @@ export default function Daeva() {
         {/* Input Area */}
         <div className="flex-shrink-0 p-4">
           <div className="max-w-3xl mx-auto relative">
+            {/* Document Upload Area */}
+            {uploadedDocument ? (
+              <div className="mb-3 p-3 rounded-lg backdrop-blur-md bg-green-500/10 border border-green-500/20 dark:bg-green-400/10 dark:border-green-400/20">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <File className="w-4 h-4 text-green-600 dark:text-green-400" />
+                    <span className="text-sm font-medium text-green-700 dark:text-green-300">
+                      {uploadedDocument.fileName}
+                    </span>
+                    <span className="text-xs text-green-600/70 dark:text-green-400/70">
+                      ({uploadedDocument.pageCount} páginas)
+                    </span>
+                  </div>
+                  <Button
+                    onClick={removeUploadedDocument}
+                    size="sm"
+                    variant="ghost"
+                    className="h-6 w-6 p-0 text-green-600 hover:text-red-500 dark:text-green-400 dark:hover:text-red-400"
+                  >
+                    <X className="w-3 h-3" />
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="mb-3">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+                <Button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                  variant="outline"
+                  size="sm"
+                  className="w-full mb-2 bg-white/5 border-white/20 hover:bg-white/10 text-brand-black dark:text-brand-white"
+                >
+                  {isUploading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 border-2 border-brand-navy-blue/30 border-t-brand-navy-blue dark:border-brand-yellow/30 dark:border-t-brand-yellow rounded-full animate-spin" />
+                      Processando PDF...
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Upload className="w-4 h-4" />
+                      📄 Fazer upload de edital (PDF)
+                    </div>
+                  )}
+                </Button>
+              </div>
+            )}
+
             <div className="relative rounded-[18px] backdrop-blur-[12px] bg-white/[0.2] dark:bg-white/[0.1] border border-white/[0.25] dark:border-white/[0.15] shadow-[0_6px_25px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.1),inset_0_0_15px_8px_rgba(255,255,255,0.08)] dark:shadow-[0_6px_25px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.25),inset_0_-1px_0_rgba(255,255,255,0.04),inset_0_0_15px_8px_rgba(255,255,255,0.04)]">
               <textarea
                 ref={textareaRef}
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyPress}
-                placeholder="Digite sua mensagem para a Daeva..."
+                placeholder={uploadedDocument 
+                  ? "Pergunte sobre o edital carregado..."
+                  : "Digite sua mensagem para a Daeva..."
+                }
                 rows={1}
                 className="w-full px-4 py-3 pr-12 bg-transparent border-none outline-none resize-none text-brand-black dark:text-brand-white placeholder:text-brand-black/50 dark:placeholder:text-brand-white/50 text-sm leading-relaxed max-h-28 overflow-y-auto"
                 style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
@@ -590,8 +738,8 @@ export default function Daeva() {
 
             {/* Disclaimer Text */}
             <p className="text-xs text-brand-black/80 dark:text-brand-white/80 text-center mt-2">
-              A Daeva pode cometer erros. Considere verificar informações
-              importantes.
+              A Daeva pode analisar editais em PDF e ajudar na elaboração de projetos culturais. 
+              Sempre verifique informações importantes nos documentos oficiais.
             </p>
           </div>
         </div>
