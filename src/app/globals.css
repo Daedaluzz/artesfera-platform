@@ -96,7 +96,7 @@
 :root {
   /* ArtEsfera Custom Fonts */
   --font-sans: "Lato", sans-serif;
-  --font-serif: "DM Serif Display", serif;
+  --font-serif: "Lato", sans-serif;
   --font-script: "Caveat", cursive;
 
   /* Apple 2025 Liquid Glass Color Scheme - Light Mode */

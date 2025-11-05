@@ -150,7 +150,7 @@ export default function Gallery() {
         className="text-center mb-16"
       >
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold font-serif text-brand-black dark:text-brand-white mb-6">
-          Galeria
+          Galeria{" "}
           <span className="text-brand-navy-blue dark:text-brand-yellow">
             ArtEsfera
           </span>

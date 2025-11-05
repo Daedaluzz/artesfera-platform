@@ -99,7 +99,7 @@ export default function CommunityImpactSection() {
             viewport={{ once: true }}
             className="text-3xl sm:text-4xl lg:text-5xl font-bold font-serif text-brand-black dark:text-brand-white mb-6"
           >
-            Como
+            Como{" "}
             <span className="text-brand-navy-blue dark:text-brand-yellow">
               Começar
             </span>

@@ -35,10 +35,10 @@ export default function AboutSection() {
                 className="space-y-6 text-lg sm:text-xl text-brand-black/80 dark:text-brand-white/80 leading-relaxed"
               >
                 <p>
-                  A
+                  A{" "}
                   <strong className="text-brand-navy-blue dark:text-brand-yellow">
                     ArtEsfera
-                  </strong>
+                  </strong>{" "}
                   é uma plataforma completa que conecta o universo artístico e
                   cultural brasileiro, oferecendo ferramentas profissionais para
                   transformar talento em oportunidades reais.
