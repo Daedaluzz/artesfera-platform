@@ -331,8 +331,9 @@ export default function Daeva() {
     // Mark that user has interacted
     setHasInteracted(true);
 
-    // Hide title on first message
-    if (messages.length === 0) {
+    // Hide title on first user message (regardless of system messages)
+    const hasUserMessages = messages.some(msg => msg.type === "user");
+    if (!hasUserMessages) {
       setShowTitle(false);
     }
 
@@ -455,6 +456,11 @@ Agora posso analisar este edital e ajudá-lo a entender todos os requisitos, cri
       };
 
       setMessages((prev) => [...prev, systemMessage]);
+      
+      // Hide title and suggestions when document is uploaded
+      setShowTitle(false);
+      setHasInteracted(true);
+      
     } catch (error) {
       console.error("Upload error:", error);
       alert(
