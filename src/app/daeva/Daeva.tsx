@@ -295,6 +295,14 @@ export default function Daeva() {
       const data = await response.json();
       console.log("API Response data:", data);
 
+      // Log which API key was used
+      if (data.usedApiKey) {
+        console.log(`Response generated using ${data.usedApiKey} API key`);
+        if (data.usedApiKey === "fallback") {
+          console.warn("Primary API key failed, used fallback API key");
+        }
+      }
+
       // Log finish reason for debugging truncated responses
       if (data.finishReason) {
         console.log("Response finish reason:", data.finishReason);
@@ -332,7 +340,7 @@ export default function Daeva() {
     setHasInteracted(true);
 
     // Hide title on first user message (regardless of system messages)
-    const hasUserMessages = messages.some(msg => msg.type === "user");
+    const hasUserMessages = messages.some((msg) => msg.type === "user");
     if (!hasUserMessages) {
       setShowTitle(false);
     }
@@ -456,11 +464,10 @@ Agora posso analisar este edital e ajudá-lo a entender todos os requisitos, cri
       };
 
       setMessages((prev) => [...prev, systemMessage]);
-      
+
       // Hide title and suggestions when document is uploaded
       setShowTitle(false);
       setHasInteracted(true);
-      
     } catch (error) {
       console.error("Upload error:", error);
       alert(

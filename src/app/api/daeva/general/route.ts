@@ -49,65 +49,115 @@ Com base neste documento, forneça orientações específicas e práticas para o
 
 Pergunta do usuário: ${message}`;
 
-    console.log("API Key exists:", !!process.env.LLM_API_KEY);
+    console.log("Primary API Key exists:", !!process.env.LLM_API_KEY);
+    console.log("Fallback API Key exists:", !!process.env.LLM_API_KEY2);
     console.log("Model:", process.env.LLM_MODEL);
     console.log("Temperature:", process.env.LLM_TEMPERATURE);
 
-    // Google Gemini API call - simplified for debugging
-    const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${process.env.LLM_MODEL}:generateContent?key=${process.env.LLM_API_KEY}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: systemPrompt,
-                },
-              ],
-            },
-          ],
-          generationConfig: {
-            temperature: parseFloat(process.env.LLM_TEMPERATURE || "0.7"),
-            maxOutputTokens: 4000, // Increased token limit for longer responses
-            topP: 0.95, // Add topP for better generation
-            topK: 40, // Add topK for more diverse responses
+    // Helper function to make Gemini API call with a specific key
+    const makeGeminiCall = async (apiKey: string, keyType: string) => {
+      console.log(`Attempting API call with ${keyType} key`);
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${process.env.LLM_MODEL}:generateContent?key=${apiKey}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-          safetySettings: [
-            {
-              category: "HARM_CATEGORY_HARASSMENT",
-              threshold: "BLOCK_MEDIUM_AND_ABOVE",
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  {
+                    text: systemPrompt,
+                  },
+                ],
+              },
+            ],
+            generationConfig: {
+              temperature: parseFloat(process.env.LLM_TEMPERATURE || "0.7"),
+              maxOutputTokens: 4000, // Increased token limit for longer responses
+              topP: 0.95, // Add topP for better generation
+              topK: 40, // Add topK for more diverse responses
             },
-            {
-              category: "HARM_CATEGORY_HATE_SPEECH",
-              threshold: "BLOCK_MEDIUM_AND_ABOVE",
-            },
-            {
-              category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-              threshold: "BLOCK_MEDIUM_AND_ABOVE",
-            },
-            {
-              category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-              threshold: "BLOCK_MEDIUM_AND_ABOVE",
-            },
-          ],
-        }),
-      }
-    );
-
-    console.log("Gemini response status:", geminiResponse.status);
-
-    if (!geminiResponse.ok) {
-      const errorText = await geminiResponse.text();
-      console.error("Gemini API error:", errorText);
-      throw new Error(
-        `Gemini API error: ${geminiResponse.status} - ${errorText}`
+            safetySettings: [
+              {
+                category: "HARM_CATEGORY_HARASSMENT",
+                threshold: "BLOCK_MEDIUM_AND_ABOVE",
+              },
+              {
+                category: "HARM_CATEGORY_HATE_SPEECH",
+                threshold: "BLOCK_MEDIUM_AND_ABOVE",
+              },
+              {
+                category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                threshold: "BLOCK_MEDIUM_AND_ABOVE",
+              },
+              {
+                category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+                threshold: "BLOCK_MEDIUM_AND_ABOVE",
+              },
+            ],
+          }),
+        }
       );
+
+      return { response, keyType };
+    };
+
+    // Try primary API key first, then fallback to secondary
+    let geminiResponse;
+    let usedKeyType = "primary";
+
+    try {
+      if (!process.env.LLM_API_KEY) {
+        throw new Error("Primary API key not configured");
+      }
+
+      const result = await makeGeminiCall(process.env.LLM_API_KEY, "primary");
+      geminiResponse = result.response;
+      usedKeyType = result.keyType;
+
+      if (!geminiResponse.ok) {
+        const errorText = await geminiResponse.text();
+        console.error("Primary API key failed:", errorText);
+        throw new Error(
+          `Primary API error: ${geminiResponse.status} - ${errorText}`
+        );
+      }
+    } catch (primaryError) {
+      console.warn("Primary API key failed, trying fallback:", primaryError);
+
+      if (!process.env.LLM_API_KEY2) {
+        throw new Error(
+          "Fallback API key not configured and primary key failed"
+        );
+      }
+
+      try {
+        const result = await makeGeminiCall(
+          process.env.LLM_API_KEY2,
+          "fallback"
+        );
+        geminiResponse = result.response;
+        usedKeyType = result.keyType;
+
+        if (!geminiResponse.ok) {
+          const errorText = await geminiResponse.text();
+          console.error("Fallback API key also failed:", errorText);
+          throw new Error(
+            `Both API keys failed. Fallback error: ${geminiResponse.status} - ${errorText}`
+          );
+        }
+      } catch (fallbackError) {
+        console.error("Both API keys failed:", fallbackError);
+        throw new Error("Both primary and fallback API keys failed");
+      }
     }
+
+    console.log(`Successfully used ${usedKeyType} API key`);
+    console.log("Gemini response status:", geminiResponse.status);
 
     // Handle regular response
     const data = await geminiResponse.json();
@@ -136,6 +186,7 @@ Pergunta do usuário: ${message}`;
       hasDocument: !!(documentText && documentName),
       documentName: documentName || null,
       finishReason: finishReason || "STOP", // Include finish reason for debugging
+      usedApiKey: usedKeyType, // Include which API key was used
     });
   } catch (error) {
     console.error("Error in general Daeva API:", error);
