@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -198,6 +198,16 @@ const specializationConfigs: Record<SpecializationType, SpecializationConfig> =
     },
   };
 
+interface ConversationContext {
+  messages: Message[];
+  createdAt: number;
+  lastActivity: number;
+}
+
+// Context window settings
+const CONTEXT_WINDOW_DURATION = 25 * 60 * 1000; // 25 minutes in milliseconds
+const MAX_CONTEXT_MESSAGES = 10; // Keep last 10 messages for context
+
 export default function Daeva() {
   const searchParams = useSearchParams();
   const [specialization, setSpecialization] = useState<SpecializationType>(
@@ -211,11 +221,79 @@ export default function Daeva() {
   const [uploadedDocument, setUploadedDocument] =
     useState<UploadedDocument | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [conversationContext, setConversationContext] =
+    useState<ConversationContext>({
+      messages: [],
+      createdAt: Date.now(),
+      lastActivity: Date.now(),
+    });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const contextCleanupRef = useRef<NodeJS.Timeout | null>(null);
 
   const currentConfig = specializationConfigs[specialization];
+
+  // Function to update conversation context
+  const updateConversationContext = useCallback((newMessages: Message[]) => {
+    const now = Date.now();
+    const contextMessages = newMessages
+      .filter((msg) => msg.type === "user" || msg.type === "assistant")
+      .slice(-MAX_CONTEXT_MESSAGES);
+
+    setConversationContext((prev) => ({
+      messages: contextMessages,
+      createdAt: prev.createdAt,
+      lastActivity: now,
+    }));
+  }, []);
+
+  // Function to check if context should be reset
+  const shouldResetContext = useCallback(() => {
+    const now = Date.now();
+    return now - conversationContext.lastActivity > CONTEXT_WINDOW_DURATION;
+  }, [conversationContext.lastActivity]);
+
+  // Function to reset conversation context
+  const resetConversationContext = useCallback(() => {
+    console.log("Context window expired, resetting conversation context");
+    setConversationContext({
+      messages: [],
+      createdAt: Date.now(),
+      lastActivity: Date.now(),
+    });
+  }, []);
+
+  // Auto-cleanup context window
+  useEffect(() => {
+    if (contextCleanupRef.current) {
+      clearTimeout(contextCleanupRef.current);
+    }
+
+    if (conversationContext.messages.length > 0) {
+      contextCleanupRef.current = setTimeout(() => {
+        if (shouldResetContext()) {
+          resetConversationContext();
+        }
+      }, CONTEXT_WINDOW_DURATION);
+    }
+
+    return () => {
+      if (contextCleanupRef.current) {
+        clearTimeout(contextCleanupRef.current);
+      }
+    };
+  }, [
+    conversationContext.lastActivity,
+    conversationContext.messages.length,
+    shouldResetContext,
+    resetConversationContext,
+  ]);
+
+  // Update context when messages change
+  useEffect(() => {
+    updateConversationContext(messages);
+  }, [messages, updateConversationContext]);
 
   // Reset chat function
   const resetChat = () => {
@@ -224,6 +302,7 @@ export default function Daeva() {
     setIsLoading(false);
     setShowTitle(true);
     setHasInteracted(false);
+    resetConversationContext();
   };
 
   // Handle specialization change
@@ -259,6 +338,11 @@ export default function Daeva() {
     onChunk?: (chunk: string) => void
   ) => {
     try {
+      // Check if context should be reset due to timeout
+      if (shouldResetContext()) {
+        resetConversationContext();
+      }
+
       const requestBody: Record<string, unknown> = {
         message,
         specialization,
@@ -269,6 +353,17 @@ export default function Daeva() {
       if (document) {
         requestBody.documentText = document.extractedText;
         requestBody.documentName = document.fileName;
+      }
+
+      // Include conversation context for continuity
+      if (conversationContext.messages.length > 0) {
+        const contextMessages = conversationContext.messages.map((msg) => ({
+          role: msg.type === "user" ? "user" : "assistant",
+          content: msg.content,
+          timestamp: msg.timestamp,
+        }));
+        requestBody.conversationHistory = contextMessages;
+        console.log(`Including ${contextMessages.length} context messages`);
       }
 
       console.log("Sending request to:", currentConfig.apiEndpoint);
@@ -734,6 +829,29 @@ Agora posso analisar este edital e ajudá-lo a entender todos os requisitos, cri
         {/* Input Area */}
         <div className="flex-shrink-0 p-4">
           <div className="max-w-3xl mx-auto relative">
+            {/* Context Status Indicator */}
+            {conversationContext.messages.length > 0 && (
+              <div className="mb-2 p-2 rounded-lg backdrop-blur-md bg-blue-500/10 border border-blue-500/20 dark:bg-blue-400/10 dark:border-blue-400/20">
+                <div className="flex items-center gap-2 text-xs">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 dark:bg-blue-400 animate-pulse"></div>
+                  <span className="text-blue-700 dark:text-blue-300">
+                    Contexto ativo: {conversationContext.messages.length}{" "}
+                    mensagens
+                    {/* Show time remaining */}
+                    {(() => {
+                      const remaining = Math.max(
+                        0,
+                        CONTEXT_WINDOW_DURATION -
+                          (Date.now() - conversationContext.lastActivity)
+                      );
+                      const minutes = Math.floor(remaining / 60000);
+                      return ` • ${minutes}min restantes`;
+                    })()}
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* Document Upload Area */}
             {uploadedDocument ? (
               <div className="mb-3 p-3 rounded-lg backdrop-blur-md bg-green-500/10 border border-green-500/20 dark:bg-green-400/10 dark:border-green-400/20">

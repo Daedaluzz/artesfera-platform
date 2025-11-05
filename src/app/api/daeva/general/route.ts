@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 
+interface ConversationMessage {
+  role: "user" | "assistant";
+  content: string;
+  timestamp: Date;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const {
       message,
       documentText,
       documentName,
+      conversationHistory,
       // stream = false, // Temporarily disable streaming to debug
     } = await request.json();
 
@@ -45,9 +52,7 @@ ${documentText}
 Com base neste documento, forneça orientações específicas e práticas para o usuário.`;
     }
 
-    systemPrompt += `\n\nResponda sempre em português brasileiro de forma clara e estruturada.
-
-Pergunta do usuário: ${message}`;
+    systemPrompt += `\n\nResponda sempre em português brasileiro de forma clara e estruturada.`;
 
     console.log("Primary API Key exists:", !!process.env.LLM_API_KEY);
     console.log("Fallback API Key exists:", !!process.env.LLM_API_KEY2);
@@ -58,6 +63,40 @@ Pergunta do usuário: ${message}`;
     const makeGeminiCall = async (apiKey: string, keyType: string) => {
       console.log(`Attempting API call with ${keyType} key`);
 
+      // Build conversation contents with history
+      const contents = [];
+
+      // Add system prompt as first message
+      contents.push({
+        parts: [{ text: systemPrompt }],
+      });
+
+      // Add conversation history if available
+      if (conversationHistory && Array.isArray(conversationHistory)) {
+        (conversationHistory as ConversationMessage[]).forEach((msg) => {
+          if (msg.role === "user") {
+            contents.push({
+              parts: [{ text: msg.content }],
+            });
+          } else if (msg.role === "assistant") {
+            contents.push({
+              parts: [{ text: msg.content }],
+            });
+          }
+        });
+      }
+
+      // Add current user message
+      contents.push({
+        parts: [{ text: `Pergunta do usuário: ${message}` }],
+      });
+
+      console.log(
+        `Building conversation with ${contents.length} parts (including ${
+          conversationHistory?.length || 0
+        } history messages)`
+      );
+
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${process.env.LLM_MODEL}:generateContent?key=${apiKey}`,
         {
@@ -66,15 +105,7 @@ Pergunta do usuário: ${message}`;
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  {
-                    text: systemPrompt,
-                  },
-                ],
-              },
-            ],
+            contents,
             generationConfig: {
               temperature: parseFloat(process.env.LLM_TEMPERATURE || "0.7"),
               maxOutputTokens: 4000, // Increased token limit for longer responses
