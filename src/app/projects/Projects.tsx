@@ -159,6 +159,12 @@ export default function Projects() {
   const loadProjects = useCallback(
     async (isLoadMore = false) => {
       try {
+        console.log(
+          `[Projects] Loading projects - isLoadMore: ${isLoadMore}, lastDoc: ${
+            lastDoc ? "present" : "null"
+          }`
+        );
+
         if (isLoadMore) {
           setLoadingMore(true);
         } else {
@@ -170,6 +176,10 @@ export default function Projects() {
           limit: 12,
           cursor: isLoadMore && lastDoc ? lastDoc : undefined,
         });
+
+        console.log(
+          `[Projects] Loaded ${result.projects.length} projects, hasMore: ${result.hasMore}`
+        );
 
         if (isLoadMore) {
           setProjects((prev) => [...prev, ...result.projects]);
@@ -187,20 +197,46 @@ export default function Projects() {
         setLoadingMore(false);
       }
     },
-    [lastDoc]
+    [] // Removed lastDoc dependency to prevent infinite loop
   );
 
   // Load projects on mount
   useEffect(() => {
     loadProjects();
-  }, [loadProjects]);
+  }, []); // Removed loadProjects dependency to prevent infinite loop
 
   // Handle load more
   const handleLoadMore = useCallback(() => {
     if (!loadingMore && hasMore) {
-      loadProjects(true);
+      console.log("[Projects] Loading more projects triggered");
+      // Create a new load function that captures the current lastDoc
+      const loadMoreProjects = async () => {
+        try {
+          setLoadingMore(true);
+
+          const result = await listPublicProjects({
+            limit: 12,
+            cursor: lastDoc || undefined,
+          });
+
+          console.log(
+            `[Projects] Load more: got ${result.projects.length} additional projects`
+          );
+
+          setProjects((prev) => [...prev, ...result.projects]);
+          setHasMore(result.hasMore);
+          setLastDoc(result.lastDoc || null);
+        } catch (err) {
+          console.error("Error loading more projects:", err);
+          setError("Erro ao carregar mais projetos. Tente novamente.");
+        } finally {
+          setLoadingMore(false);
+        }
+      };
+
+      loadMoreProjects();
     }
-  }, [loadProjects, loadingMore, hasMore]);
+  }, [loadingMore, hasMore, lastDoc]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-50 via-white to-zinc-100 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-800">
