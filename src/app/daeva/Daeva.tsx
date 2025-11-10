@@ -272,8 +272,15 @@ export default function Daeva() {
 
     if (conversationContext.messages.length > 0) {
       contextCleanupRef.current = setTimeout(() => {
-        if (shouldResetContext()) {
-          resetConversationContext();
+        // Check if context should be reset inline to avoid dependency issues
+        const now = Date.now();
+        if (now - conversationContext.lastActivity > CONTEXT_WINDOW_DURATION) {
+          console.log("Context window expired, resetting conversation context");
+          setConversationContext({
+            messages: [],
+            createdAt: Date.now(),
+            lastActivity: Date.now(),
+          });
         }
       }, CONTEXT_WINDOW_DURATION);
     }
@@ -286,14 +293,13 @@ export default function Daeva() {
   }, [
     conversationContext.lastActivity,
     conversationContext.messages.length,
-    shouldResetContext,
-    resetConversationContext,
+    // Removed shouldResetContext and resetConversationContext to prevent infinite loop
   ]);
 
   // Update context when messages change
   useEffect(() => {
     updateConversationContext(messages);
-  }, [messages, updateConversationContext]);
+  }, [messages]); // Removed updateConversationContext from dependency array to prevent infinite loop
 
   // Reset chat function
   const resetChat = () => {
@@ -346,7 +352,7 @@ export default function Daeva() {
       const requestBody: Record<string, unknown> = {
         message,
         specialization,
-        stream: false, // Temporarily disable streaming for debugging
+        stream: true, // Enable streaming for better UX
       };
 
       // Include document data if available
@@ -386,41 +392,72 @@ export default function Daeva() {
         throw new Error(`Failed to get response from API: ${response.status}`);
       }
 
-      // Handle regular JSON response
-      const data = await response.json();
-      console.log("API Response data:", data);
+      // Check if response is streaming (server-sent events)
+      const contentType = response.headers.get("content-type");
+      if (contentType?.includes("text/event-stream")) {
+        // Handle streaming response
+        console.log("Handling streaming response");
 
-      // Log which API key was used
-      if (data.usedApiKey) {
-        console.log(`Response generated using ${data.usedApiKey} API key`);
-        if (data.usedApiKey === "fallback") {
-          console.warn("Primary API key failed, used fallback API key");
+        if (!response.body) {
+          throw new Error("Response body is null");
         }
-      }
 
-      // Log finish reason for debugging truncated responses
-      if (data.finishReason) {
-        console.log("Response finish reason:", data.finishReason);
-        if (data.finishReason === "MAX_TOKENS") {
-          console.warn("Response was truncated due to token limit");
-        } else if (data.finishReason === "SAFETY") {
-          console.warn("Response was blocked by safety filters");
-        }
-      }
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
 
-      if (data.content) {
-        // Simulate typing effect if onChunk is provided
-        if (onChunk) {
-          const content = data.content;
-          for (let i = 0; i < content.length; i += 3) {
-            const chunk = content.slice(i, i + 3);
-            onChunk(chunk);
-            await new Promise((resolve) => setTimeout(resolve, 30)); // 30ms delay between chunks
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+            buffer = lines.pop() || ""; // Keep the incomplete line in buffer
+
+            for (const line of lines) {
+              if (line.startsWith("data: ")) {
+                const data = line.slice(6); // Remove 'data: ' prefix
+
+                if (data === "[DONE]") {
+                  console.log("Streaming completed");
+                  return;
+                }
+
+                try {
+                  const parsed = JSON.parse(data);
+                  if (parsed.content && onChunk) {
+                    onChunk(parsed.content);
+                  }
+                } catch (e) {
+                  console.warn("Failed to parse chunk:", data);
+                }
+              }
+            }
           }
+        } finally {
+          reader.releaseLock();
         }
-        return data.content;
       } else {
-        throw new Error("No content in API response");
+        // Handle regular JSON response
+        const data = await response.json();
+        console.log("API Response data:", data);
+
+        if (data.content) {
+          // Simulate typing effect if onChunk is provided
+          if (onChunk) {
+            const content = data.content;
+            for (let i = 0; i < content.length; i += 3) {
+              const chunk = content.slice(i, i + 3);
+              onChunk(chunk);
+              await new Promise((resolve) => setTimeout(resolve, 30)); // 30ms delay between chunks
+            }
+          }
+          return data.content;
+        } else {
+          throw new Error("No content in API response");
+        }
       }
     } catch (error) {
       console.error("API Error:", error);

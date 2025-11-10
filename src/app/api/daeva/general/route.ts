@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-interface ConversationMessage {
-  role: "user" | "assistant";
-  content: string;
-  timestamp: Date;
-}
+import { GoogleGenAI } from "@google/genai";
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,8 +7,8 @@ export async function POST(request: NextRequest) {
       message,
       documentText,
       documentName,
-      conversationHistory,
-      // stream = false, // Temporarily disable streaming to debug
+      stream = false,
+      conversationHistory = [],
     } = await request.json();
 
     if (!message || typeof message !== "string") {
@@ -54,177 +49,152 @@ Com base neste documento, forneça orientações específicas e práticas para o
 
     systemPrompt += `\n\nResponda sempre em português brasileiro de forma clara e estruturada.`;
 
-    console.log("Primary API Key exists:", !!process.env.LLM_API_KEY);
-    console.log("Fallback API Key exists:", !!process.env.LLM_API_KEY2);
+    console.log("API Key exists:", !!process.env.LLM_API_KEY);
     console.log("Model:", process.env.LLM_MODEL);
     console.log("Temperature:", process.env.LLM_TEMPERATURE);
 
-    // Helper function to make Gemini API call with a specific key
-    const makeGeminiCall = async (apiKey: string, keyType: string) => {
-      console.log(`Attempting API call with ${keyType} key`);
+    // Initialize Google GenAI client
+    const ai = new GoogleGenAI({
+      apiKey: process.env.LLM_API_KEY,
+    });
 
-      // Build conversation contents with history
-      const contents = [];
+    if (stream) {
+      // Handle streaming response
+      if (conversationHistory && conversationHistory.length > 0) {
+        // Use chat interface for conversation history
+        const history = conversationHistory.map((msg: any) => ({
+          role: msg.role === "assistant" ? "model" : msg.role,
+          parts: [{ text: msg.content }],
+        }));
 
-      // Add system prompt as first message
-      contents.push({
-        parts: [{ text: systemPrompt }],
-      });
+        const chat = ai.chats.create({
+          model: process.env.LLM_MODEL || "gemini-2.5-flash",
+          history: history,
+          config: {
+            systemInstruction: systemPrompt,
+            temperature: parseFloat(process.env.LLM_TEMPERATURE || "0.7"),
+            maxOutputTokens: 4000,
+            topP: 0.95,
+            topK: 40,
+          },
+        });
 
-      // Add conversation history if available
-      if (conversationHistory && Array.isArray(conversationHistory)) {
-        (conversationHistory as ConversationMessage[]).forEach((msg) => {
-          if (msg.role === "user") {
-            contents.push({
-              parts: [{ text: msg.content }],
-            });
-          } else if (msg.role === "assistant") {
-            contents.push({
-              parts: [{ text: msg.content }],
-            });
-          }
+        const stream = await chat.sendMessageStream({
+          message: message,
+        });
+
+        // Create a readable stream
+        const encoder = new TextEncoder();
+        const readableStream = new ReadableStream({
+          async start(controller) {
+            try {
+              for await (const chunk of stream) {
+                const text = chunk.text || "";
+                if (text) {
+                  controller.enqueue(
+                    encoder.encode(
+                      `data: ${JSON.stringify({ content: text })}\n\n`
+                    )
+                  );
+                }
+              }
+              controller.enqueue(encoder.encode(`data: [DONE]\n\n`));
+              controller.close();
+            } catch (error) {
+              console.error("Streaming error:", error);
+              controller.error(error);
+            }
+          },
+        });
+
+        return new Response(readableStream, {
+          headers: {
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache",
+            Connection: "keep-alive",
+          },
+        });
+      } else {
+        // Simple streaming without conversation history
+        const response = await ai.models.generateContentStream({
+          model: process.env.LLM_MODEL || "gemini-2.5-flash",
+          contents: message,
+          config: {
+            systemInstruction: systemPrompt,
+            temperature: parseFloat(process.env.LLM_TEMPERATURE || "0.7"),
+            maxOutputTokens: 4000,
+            topP: 0.95,
+            topK: 40,
+          },
+        });
+
+        // Create a readable stream
+        const encoder = new TextEncoder();
+        const readableStream = new ReadableStream({
+          async start(controller) {
+            try {
+              for await (const chunk of response) {
+                const text = chunk.text || "";
+                if (text) {
+                  controller.enqueue(
+                    encoder.encode(
+                      `data: ${JSON.stringify({ content: text })}\n\n`
+                    )
+                  );
+                }
+              }
+              controller.enqueue(encoder.encode(`data: [DONE]\n\n`));
+              controller.close();
+            } catch (error) {
+              console.error("Streaming error:", error);
+              controller.error(error);
+            }
+          },
+        });
+
+        return new Response(readableStream, {
+          headers: {
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache",
+            Connection: "keep-alive",
+          },
         });
       }
-
-      // Add current user message
-      contents.push({
-        parts: [{ text: `Pergunta do usuário: ${message}` }],
+    } else {
+      // Handle non-streaming response (existing code)
+      const response = await ai.models.generateContent({
+        model: process.env.LLM_MODEL || "gemini-2.5-flash",
+        contents: message,
+        config: {
+          systemInstruction: systemPrompt,
+          temperature: parseFloat(process.env.LLM_TEMPERATURE || "0.7"),
+          maxOutputTokens: 4000,
+          topP: 0.95,
+          topK: 40,
+        },
       });
 
-      console.log(
-        `Building conversation with ${contents.length} parts (including ${
-          conversationHistory?.length || 0
-        } history messages)`
-      );
+      console.log("Gemini response received");
 
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${process.env.LLM_MODEL}:generateContent?key=${apiKey}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            contents,
-            generationConfig: {
-              temperature: parseFloat(process.env.LLM_TEMPERATURE || "0.7"),
-              maxOutputTokens: 4000, // Increased token limit for longer responses
-              topP: 0.95, // Add topP for better generation
-              topK: 40, // Add topK for more diverse responses
-            },
-            safetySettings: [
-              {
-                category: "HARM_CATEGORY_HARASSMENT",
-                threshold: "BLOCK_MEDIUM_AND_ABOVE",
-              },
-              {
-                category: "HARM_CATEGORY_HATE_SPEECH",
-                threshold: "BLOCK_MEDIUM_AND_ABOVE",
-              },
-              {
-                category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-                threshold: "BLOCK_MEDIUM_AND_ABOVE",
-              },
-              {
-                category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-                threshold: "BLOCK_MEDIUM_AND_ABOVE",
-              },
-            ],
-          }),
-        }
-      );
+      const content = response.text;
 
-      return { response, keyType };
-    };
-
-    // Try primary API key first, then fallback to secondary
-    let geminiResponse;
-    let usedKeyType = "primary";
-
-    try {
-      if (!process.env.LLM_API_KEY) {
-        throw new Error("Primary API key not configured");
+      if (!content) {
+        console.error("No content in response:", response);
+        throw new Error("No content received from Gemini API");
       }
 
-      const result = await makeGeminiCall(process.env.LLM_API_KEY, "primary");
-      geminiResponse = result.response;
-      usedKeyType = result.keyType;
-
-      if (!geminiResponse.ok) {
-        const errorText = await geminiResponse.text();
-        console.error("Primary API key failed:", errorText);
-        throw new Error(
-          `Primary API error: ${geminiResponse.status} - ${errorText}`
-        );
-      }
-    } catch (primaryError) {
-      console.warn("Primary API key failed, trying fallback:", primaryError);
-
-      if (!process.env.LLM_API_KEY2) {
-        throw new Error(
-          "Fallback API key not configured and primary key failed"
-        );
-      }
-
-      try {
-        const result = await makeGeminiCall(
-          process.env.LLM_API_KEY2,
-          "fallback"
-        );
-        geminiResponse = result.response;
-        usedKeyType = result.keyType;
-
-        if (!geminiResponse.ok) {
-          const errorText = await geminiResponse.text();
-          console.error("Fallback API key also failed:", errorText);
-          throw new Error(
-            `Both API keys failed. Fallback error: ${geminiResponse.status} - ${errorText}`
-          );
-        }
-      } catch (fallbackError) {
-        console.error("Both API keys failed:", fallbackError);
-        throw new Error("Both primary and fallback API keys failed");
-      }
+      return NextResponse.json({
+        content,
+        hasDocument: !!(documentText && documentName),
+        documentName: documentName || null,
+      });
     }
-
-    console.log(`Successfully used ${usedKeyType} API key`);
-    console.log("Gemini response status:", geminiResponse.status);
-
-    // Handle regular response
-    const data = await geminiResponse.json();
-    console.log("Gemini response data:", JSON.stringify(data, null, 2));
-
-    const candidate = data.candidates?.[0];
-    const content = candidate?.content?.parts?.[0]?.text;
-
-    // Check for finish reason to understand why generation stopped
-    const finishReason = candidate?.finishReason;
-    console.log("Finish reason:", finishReason);
-
-    if (finishReason === "MAX_TOKENS") {
-      console.warn("Response truncated due to token limit");
-    } else if (finishReason === "SAFETY") {
-      console.warn("Response blocked by safety filters");
-    }
-
-    if (!content) {
-      console.error("No content in response:", data);
-      throw new Error("No content received from Gemini API");
-    }
-
-    return NextResponse.json({
-      content,
-      hasDocument: !!(documentText && documentName),
-      documentName: documentName || null,
-      finishReason: finishReason || "STOP", // Include finish reason for debugging
-      usedApiKey: usedKeyType, // Include which API key was used
-    });
   } catch (error) {
     console.error("Error in general Daeva API:", error);
 
     // Enhanced fallback response for cultural grants
     const fallbackResponse =
-      "Olá! Sou a Daeva, sua assistente especializada em editais culturais e fomento à cultura. No momento estou com dificuldades técnicas, mas posso ajudá-lo com análise de editais, elaboração de projetos culturais e orientações sobre processos seletivos. Tente novamente em alguns instantes.";
+      "Olá! Sou a Daeva. No momento estou com dificuldades técnicas, mas posso ajudá-lo com análise de editais, elaboração de projetos culturais e orientações sobre processos seletivos. Tente novamente em alguns instantes.";
 
     return NextResponse.json({ content: fallbackResponse });
   }
