@@ -69,10 +69,12 @@ Com base neste documento, forneça orientações específicas e práticas para o
       // Handle streaming response
       if (conversationHistory && conversationHistory.length > 0) {
         // Use chat interface for conversation history
-        const history = (conversationHistory as ConversationMessage[]).map((msg) => ({
-          role: msg.role === "assistant" ? "model" : msg.role,
-          parts: [{ text: msg.content }],
-        }));
+        const history = (conversationHistory as ConversationMessage[]).map(
+          (msg) => ({
+            role: msg.role === "assistant" ? "model" : msg.role,
+            parts: [{ text: msg.content }],
+          })
+        );
 
         const chat = ai.chats.create({
           model: process.env.LLM_MODEL || "gemini-2.5-flash",
