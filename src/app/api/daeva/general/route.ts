@@ -15,6 +15,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Mensagem inválida" }, { status: 400 });
     }
 
+    // Type for conversation message
+    interface ConversationMessage {
+      role: "user" | "assistant";
+      content: string;
+      timestamp?: number;
+    }
+
     // Build specialized prompt for cultural grants assistance
     let systemPrompt = `Você é a Daeva, uma IA especializada em editais culturais e fomento à cultura no Brasil. Continue a conversa de forma natural, sem se reapresentar a cada resposta.
 
@@ -62,7 +69,7 @@ Com base neste documento, forneça orientações específicas e práticas para o
       // Handle streaming response
       if (conversationHistory && conversationHistory.length > 0) {
         // Use chat interface for conversation history
-        const history = conversationHistory.map((msg: any) => ({
+        const history = (conversationHistory as ConversationMessage[]).map((msg) => ({
           role: msg.role === "assistant" ? "model" : msg.role,
           parts: [{ text: msg.content }],
         }));

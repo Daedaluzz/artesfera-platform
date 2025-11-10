@@ -299,7 +299,8 @@ export default function Daeva() {
   // Update context when messages change
   useEffect(() => {
     updateConversationContext(messages);
-  }, [messages]); // Removed updateConversationContext from dependency array to prevent infinite loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages]); // Intentionally omitting updateConversationContext to prevent infinite loop
 
   // Reset chat function
   const resetChat = () => {
@@ -430,7 +431,7 @@ export default function Daeva() {
                   if (parsed.content && onChunk) {
                     onChunk(parsed.content);
                   }
-                } catch (e) {
+                } catch {
                   console.warn("Failed to parse chunk:", data);
                 }
               }
