@@ -350,17 +350,30 @@ export default function Daeva() {
         resetConversationContext();
       }
 
+      // Prepare the message with document context if available
+      let finalMessage = message;
+      if (document && document.extractedText) {
+        finalMessage = `Documento anexado: "${document.fileName}"
+
+Conteúdo do documento:
+${document.extractedText}
+
+---
+
+Pergunta do usuário: ${message}`;
+
+        console.log("Including document text in message:", {
+          fileName: document.fileName,
+          textLength: document.extractedText.length,
+          finalMessageLength: finalMessage.length,
+        });
+      }
+
       const requestBody: Record<string, unknown> = {
-        message,
+        message: finalMessage,
         specialization,
         stream: true, // Enable streaming for better UX
       };
-
-      // Include document data if available
-      if (document) {
-        requestBody.documentText = document.extractedText;
-        requestBody.documentName = document.fileName;
-      }
 
       // Include conversation context for continuity
       if (conversationContext.messages.length > 0) {
@@ -478,15 +491,28 @@ export default function Daeva() {
       setShowTitle(false);
     }
 
+    // Prepare the message content with document context if available
+    let messageContent = inputValue.trim();
+    if (uploadedDocument && uploadedDocument.extractedText) {
+      messageContent = `[Documento anexado: ${
+        uploadedDocument.fileName
+      }]\n\n${inputValue.trim()}`;
+
+      console.log("Message includes document:", {
+        fileName: uploadedDocument.fileName,
+        textLength: uploadedDocument.extractedText.length,
+        originalMessage: inputValue.trim(),
+      });
+    }
+
     const userMessage: Message = {
       id: Date.now().toString(),
       type: "user",
-      content: inputValue.trim(),
+      content: messageContent,
       timestamp: new Date(),
     };
 
     setMessages((prev) => [...prev, userMessage]);
-    const messageContent = inputValue.trim();
     setInputValue("");
     setIsLoading(true);
 
@@ -502,10 +528,13 @@ export default function Daeva() {
     // Add empty assistant message
     setMessages((prev) => [...prev, assistantMessage]);
 
+    // Store the original user input for the API call
+    const originalMessage = inputValue.trim();
+
     try {
       // Call the API with streaming support
       await sendMessageToAPI(
-        messageContent,
+        originalMessage, // Use original message, sendMessageToAPI will add document context
         specialization,
         uploadedDocument, // Pass document context
         (chunk: string) => {

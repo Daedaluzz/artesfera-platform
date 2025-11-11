@@ -5,8 +5,6 @@ export async function POST(request: NextRequest) {
   try {
     const {
       message,
-      documentText,
-      documentName,
       stream = false,
       conversationHistory = [],
     } = await request.json();
@@ -44,21 +42,12 @@ Características da sua comunicação:
 
 IMPORTANTE: Não se apresente novamente a cada resposta. Responda diretamente à pergunta do usuário de forma conversacional.`;
 
-    // Add document context if available
-    if (documentText && documentName) {
-      systemPrompt += `\n\nVocê está analisando o seguinte documento: "${documentName}"
-
-Conteúdo do documento:
-${documentText}
-
-Com base neste documento, forneça orientações específicas e práticas para o usuário.`;
-    }
-
     systemPrompt += `\n\nResponda sempre em português brasileiro de forma clara e estruturada.`;
 
     console.log("API Key exists:", !!process.env.LLM_API_KEY);
     console.log("Model:", process.env.LLM_MODEL);
     console.log("Temperature:", process.env.LLM_TEMPERATURE);
+    console.log("Message length:", message.length);
 
     // Initialize Google GenAI client
     const ai = new GoogleGenAI({
@@ -194,8 +183,6 @@ Com base neste documento, forneça orientações específicas e práticas para o
 
       return NextResponse.json({
         content,
-        hasDocument: !!(documentText && documentName),
-        documentName: documentName || null,
       });
     }
   } catch (error) {
